@@ -45,6 +45,9 @@ class SimulationEngine:
         if len(by_id) != len(requests):
             raise ValueError("request IDs must be unique")
 
+        self.iterations = 0
+        self.prompt_tokens_processed = 0
+        self.output_tokens_generated = 0
         pending = sorted(requests, key=lambda request: request.arrival_time_ms)
         active: list[InferenceRequest] = []
         start_ms = self.clock.now_ms()
@@ -58,6 +61,8 @@ class SimulationEngine:
             plan = self.scheduler.plan(active, self.config.token_budget)
             plan.validate()
             if not plan.items:
+                if active:
+                    raise RuntimeError("scheduler produced no work for active requests")
                 self._advance_to_next_arrival(pending)
                 continue
 
@@ -69,7 +74,7 @@ class SimulationEngine:
             for item in plan.items:
                 request = by_id[item.request_id]
                 if item.kind == WorkKind.PREFILL:
-                    request.apply_prefill(item.tokens)
+                    request.apply_prefill(item.tokens, now)
                     self.prompt_tokens_processed += item.tokens
                 else:
                     request.apply_decode(item.tokens, now)
@@ -91,8 +96,13 @@ class SimulationEngine:
             if len(active) >= self.config.max_active_sequences:
                 return
             request = pending.pop(0)
-            request.mark_admitted()
-            active.append(request)
+            request.mark_admitted(self.clock.now_ms())
+            if request.state == RequestState.COMPLETED:
+                self.memory.release_request(request.request_id)
+                request.allocated_blocks.clear()
+                request.shared_blocks.clear()
+            elif request.state not in {RequestState.CANCELLED, RequestState.FAILED}:
+                active.append(request)
 
     def _advance_to_next_arrival(self, pending: list[InferenceRequest]) -> None:
         if not pending:

@@ -13,7 +13,7 @@ Middle_Man is planned as an educational LLM serving simulator and coding-agent c
 - simulation engine
 - simulated model runner
 
-Later roadmap items such as continuous batching, preemption, prefix caching, benchmarks, visualization, Agent Gateway, MCP tools, Codex integration, and Claude Code integration are not implemented yet.
+Later roadmap items such as continuous batching, preemption, prefix caching, benchmarks, visualization, Agent Gateway, MCP tools, Codex integration, and Claude Code integration are not implemented yet. Configuration flags for preemption and prefix caching default to disabled.
 
 ## Quick Start
 
@@ -53,10 +53,11 @@ The simulator uses virtual time. It does not load a model, sleep, require PyTorc
 ## CLI
 
 ```bash
+python -m middle_man
 python -m middle_man simulate --requests 8 --token-budget 64 --kv-blocks 128
 ```
 
-The CLI prints actual values from the simulation run: request count, scheduler iterations, elapsed simulated milliseconds, prompt tokens processed, and output tokens generated.
+The bare command displays help. The `simulate` command prints actual values from the run: request count, scheduler iterations, elapsed simulated milliseconds, prompt tokens processed, and output tokens generated.
 
 ## Honesty About Scope
 

@@ -68,17 +68,29 @@ class InferenceRequest:
     def total_allocated_block_count(self) -> int:
         return len(self.allocated_blocks) + len(self.shared_blocks)
 
-    def mark_admitted(self) -> None:
+    def mark_admitted(self, now_ms: float) -> None:
         if self.state in {RequestState.QUEUED, RequestState.PREEMPTED}:
-            self.state = RequestState.PREFILLING if not self.prefill_complete else RequestState.DECODING
+            if not self.prefill_complete:
+                self.state = RequestState.PREFILLING
+            elif self.generation_complete:
+                self._complete(now_ms)
+            else:
+                self.state = RequestState.DECODING
 
-    def apply_prefill(self, tokens: int) -> None:
+    def apply_prefill(self, tokens: int, now_ms: float) -> None:
         if tokens < 0:
             raise ValueError("tokens must be non-negative")
         if self.state not in {RequestState.PREFILLING, RequestState.PREEMPTED, RequestState.QUEUED}:
             raise ValueError(f"cannot prefill request in state {self.state}")
-        self.prompt_processed = min(self.prompt_tokens, self.prompt_processed + tokens)
-        self.state = RequestState.DECODING if self.prefill_complete else RequestState.PREFILLING
+        if tokens > self.remaining_prompt_tokens:
+            raise ValueError("prefill tokens cannot exceed remaining prompt tokens")
+        self.prompt_processed += tokens
+        if not self.prefill_complete:
+            self.state = RequestState.PREFILLING
+        elif self.generation_complete:
+            self._complete(now_ms)
+        else:
+            self.state = RequestState.DECODING
 
     def apply_decode(self, tokens: int, now_ms: float) -> None:
         if tokens < 0:
@@ -87,12 +99,17 @@ class InferenceRequest:
             raise ValueError("cannot decode before prefill completes")
         if self.state != RequestState.DECODING:
             raise ValueError(f"cannot decode request in state {self.state}")
+        if tokens > self.remaining_output_tokens:
+            raise ValueError("decode tokens cannot exceed remaining output tokens")
         if tokens and self.first_token_time_ms is None:
             self.first_token_time_ms = now_ms
-        self.output_generated = min(self.max_output_tokens, self.output_generated + tokens)
+        self.output_generated += tokens
         if self.generation_complete:
-            self.state = RequestState.COMPLETED
-            self.completion_time_ms = now_ms
+            self._complete(now_ms)
+
+    def _complete(self, now_ms: float) -> None:
+        self.state = RequestState.COMPLETED
+        self.completion_time_ms = now_ms
 
     def mark_preempted(self, lost_tokens: int) -> None:
         self.preemption_count += 1

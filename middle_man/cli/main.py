@@ -26,7 +26,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
-    if args.command in {None, "simulate"}:
+    if args.command is None:
+        parser.print_help()
+        return
+    if args.command == "simulate":
         run_simulate(args)
         return
     parser.error(f"unknown command: {args.command}")

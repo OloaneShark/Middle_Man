@@ -34,8 +34,8 @@ class LabConfig:
     kv_blocks: int = 128
     tokens_per_block: int = 16
     scheduler: SchedulerKind = SchedulerKind.DECODE_PRIORITY
-    prefix_cache_enabled: bool = True
-    preemption_enabled: bool = True
+    prefix_cache_enabled: bool = False
+    preemption_enabled: bool = False
     random_seed: int = 7
     debug: bool = False
     runner_costs: RunnerCostConfig = RunnerCostConfig()

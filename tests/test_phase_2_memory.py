@@ -12,6 +12,7 @@ def test_kv_allocator_uses_block_ids_and_releases_them() -> None:
     released = memory.release_request("req-1")
     assert released == 3
     assert memory.free_block_count == 4
+    assert memory.request_blocks("req-1") == ()
 
 
 def test_kv_allocator_can_assign_non_contiguous_blocks_after_release() -> None:
@@ -22,11 +23,36 @@ def test_kv_allocator_can_assign_non_contiguous_blocks_after_release() -> None:
     assert memory.allocate_blocks("c", 3) == (0, 1, 4)
 
 
-def test_kv_allocator_reports_exhaustion() -> None:
-    memory = KVBlockManager(total_blocks=2, tokens_per_block=4)
-    memory.allocate_for_tokens("req-1", 8)
+def test_released_blocks_are_reusable() -> None:
+    memory = KVBlockManager(total_blocks=3, tokens_per_block=4)
+    original = memory.allocate_blocks("first", 2)
+    memory.release_request("first")
+    reused = memory.allocate_blocks("second", 2)
+    assert reused == original
+
+
+def test_kv_allocator_reports_exhaustion_without_partial_allocation() -> None:
+    memory = KVBlockManager(total_blocks=3, tokens_per_block=4)
+    memory.allocate_blocks("existing", 2)
+    before = memory.snapshot()
+
     with pytest.raises(AllocationError):
-        memory.allocate_for_tokens("req-2", 1)
+        memory.allocate_blocks("too-large", 2)
+
+    assert memory.snapshot() == before
+    assert memory.request_blocks("too-large") == ()
+    assert memory.request_blocks("existing") == (0, 1)
+
+
+def test_used_blocks_never_exceed_total_blocks() -> None:
+    memory = KVBlockManager(total_blocks=4, tokens_per_block=4)
+    memory.allocate_blocks("a", 2)
+    assert memory.snapshot().used_blocks <= memory.snapshot().total_blocks
+    memory.allocate_blocks("b", 2)
+    assert memory.snapshot().used_blocks == memory.snapshot().total_blocks
+    with pytest.raises(AllocationError):
+        memory.allocate_blocks("c", 1)
+    assert memory.snapshot().used_blocks == memory.snapshot().total_blocks
 
 
 def test_ensure_capacity_allocates_only_missing_blocks() -> None:

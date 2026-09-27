@@ -1,6 +1,6 @@
 # Middle_Man Architecture
 
-This document describes what exists in the repository after the Phase 1-4 implementation pass. Later roadmap items from the full Middle_Man specification are intentionally not implemented yet.
+This document describes what exists in the repository after the Phase 1-4 implementation and hardening passes. Later roadmap items from the full Middle_Man specification are intentionally not implemented yet.
 
 Implemented phases:
 
@@ -12,6 +12,7 @@ Implemented phases:
 Not implemented in this pass:
 
 - continuous batching as a claimed feature
+- metrics framework
 - preemption
 - prefix caching
 - benchmark suites
@@ -56,7 +57,7 @@ The current code is focused on Middle_Man Lab. Gateway directories are deliberat
 - `RunnerCostConfig`
 - `SchedulerKind`
 
-Configuration validation rejects non-positive token budgets, sequence limits, KV block counts, and block sizes. Runner cost values must be non-negative.
+Configuration validation rejects non-positive token budgets, sequence limits, KV block counts, and block sizes. Runner cost values must be non-negative. The reserved preemption and prefix-cache switches default to `False` because those features do not exist yet.
 
 ### Clock
 
@@ -65,7 +66,7 @@ Configuration validation rejects non-positive token budgets, sequence limits, KV
 - `VirtualClock`: deterministic simulated time used by the engine and tests
 - `WallClock`: optional real-time implementation
 
-The engine uses the clock abstraction and does not call `time.time()` directly.
+The engine uses the clock abstraction and does not call `time.time()` directly. An injected clock is allowed to continue forward across separate engine runs.
 
 ### Request Model
 
@@ -85,7 +86,9 @@ A request tracks:
 - completion timestamp
 - future-phase metadata such as preemption counters and prefix fields
 
-The request object enforces important local invariants. It cannot decode before prefill is complete, and it moves from queued to prefilling to decoding to completed through explicit methods.
+The request object enforces local token bounds and lifecycle invariants. It cannot decode before prefill is complete, cannot process more tokens than declared, and cannot resume work after completion.
+
+A request with no prompt enters decoding when admitted if it requests output. A request with no output completes as soon as prefill finishes. If both prompt and output counts are zero, admission completes it immediately. Completion uses the current simulation time supplied by the engine.
 
 ## Phase 2: KV Block Allocator
 
@@ -105,7 +108,9 @@ The allocator supports:
 - non-contiguous allocation after releases
 - per-request block tables
 - allocation exhaustion errors
+- atomic failure when one allocation request cannot be satisfied
 - releasing all blocks for a completed request
+- reuse of released blocks
 - utilization snapshots
 
 Prefix sharing and preemption-aware release are future phases and are not implemented here.
@@ -124,7 +129,7 @@ A `SchedulePlan` validates that scheduled tokens do not exceed the configured bu
 - `DecodePriorityScheduler`: schedules one decode token per decoding request first, then uses the remaining budget for prefill.
 - `BalancedScheduler`: gives decode work part of the budget while ensuring prefilling requests still make progress.
 
-Chunked prefill emerges from the token budget. A 500-token prompt with a 64-token budget is scheduled as a 64-token prefill chunk, then continues in later engine iterations.
+Chunked prefill emerges from the token budget. A 20-token prompt with a 4-token budget requires five prefill iterations before decode can begin.
 
 Schedulers do not allocate memory and do not mutate request state. They only produce a plan.
 
@@ -168,29 +173,35 @@ apply request progress
 release completed request blocks
 ```
 
-The engine returns an `EngineResult` with completed request objects, iteration count, elapsed simulated time, processed prompt tokens, and generated output tokens.
+The engine returns an `EngineResult` with request objects, iteration count, elapsed simulated time, processed prompt tokens, and generated output tokens. Counters in each result describe only that invocation of `run()`; the clock itself is not reset between invocations.
 
 ## Current Invariants Covered by Tests
 
 The Phase 1-4 tests verify:
 
-- configuration validation
+- configuration validation and disabled future-feature defaults
 - deterministic clock advancement
-- request lifecycle transitions
+- normal and zero-token request lifecycle transitions
 - decode-before-prefill rejection
-- block allocation and release
-- allocation exhaustion
+- prompt and output token bounds
+- completed requests cannot resume work
+- block allocation, release, reuse, and mapping cleanup
+- atomic allocation exhaustion
+- used blocks never exceed total blocks
 - non-contiguous block allocation after release
 - capacity checks allocate only missing blocks
-- scheduler token-budget enforcement
-- chunked prefill behavior
+- scheduler token-budget enforcement across prefill, decode, and mixed workloads
+- engine-level multi-iteration chunked prefill
 - decode-priority ordering
 - balanced scheduling behavior
 - deterministic runner costs
-- engine completion
+- per-run counter isolation when an engine is reused
+- `max_active_sequences` admission limits
+- zero-output engine completion without idle loops
 - final KV block release
 - arrival-time advancement without sleeping
+- clean CLI help with no subcommand
 
 ## Roadmap Boundary
 
-The full Middle_Man specification remains the roadmap, but this session intentionally stops at Phase 4. Phase 5 should add continuous batching deliberately, with its own tests and documentation updates, instead of treating incidental engine behavior as a finished feature.
+The full Middle_Man specification remains the roadmap, but this hardening pass still stops at Phase 4. Phase 5 must add continuous batching deliberately, with its own behavior, tests, and documentation, instead of treating incidental engine admission behavior as a finished feature.
