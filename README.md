@@ -2,7 +2,7 @@
 
 Standing between the request and the model.
 
-Middle_Man Lab currently implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. No model, GPU, PyTorch, or provider API is required.
+Middle_Man Lab implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. The separate Agent Gateway foundation implements Phases 11-14: local repository indexing, incremental caching, and explainable relevance search. Neither subsystem requires a model, GPU, PyTorch, or provider API.
 
 ## Quick Start
 
@@ -66,6 +66,26 @@ python -m middle_man benchmark scheduler-comparison --plot
 
 Plots are saved headlessly under `benchmark_results/` or `--output-dir`: an event-based request timeline, sampled KV utilization, TTFT distribution, and a throughput comparison when multiple cases succeed. Plots use only observed simulator events and metrics and are labeled **SIMULATED**. Matplotlib is not needed for simulation or benchmark reporting.
 
+## Agent Gateway (Local)
+
+The Gateway answers which repository files and symbols are relevant to a task. It does not yet package source snippets or send context to an agent. Python is parsed with the standard-library AST; other recognized text languages are represented accurately without claiming deep syntax parsing. File imports, test-to-source edges, symbol locations, Git state, and path/name matches inform ranking.
+
+```bash
+python -m middle_man index --repo .
+python -m middle_man inspect --repo .
+python -m middle_man context find "KV preemption" --repo .
+python -m middle_man context find "SimulationEngine" --repo . --top-k 5
+python -m middle_man cache status --repo .
+python -m middle_man cache rebuild --repo .
+python -m middle_man cache clear --repo .
+```
+
+The first scan writes a versioned JSON index to `.middle_man_cache/index.json`. Later scans hash file bytes and reuse parsed records with unchanged hashes. Changed and new files are parsed; deleted files and their relationships disappear. Cache corruption or schema/configuration mismatch triggers a rebuild. `cache clear` removes only the index file. Source files remain the source of truth; the cache stores metadata, symbols, and imports, not full source copies.
+
+Default exclusions include `.git`, virtual environments, dependency/build/cache directories, `.env*`, private keys, and common secret-bearing filenames. Root `.gitignore` and `.middlemanignore` are supported with a conservative glob subset: patterns, directory patterns, and negation in order; `.middlemanignore` is applied after `.gitignore`. This is not full Git ignore semantics. Oversized files remain in the map with an `oversized` status but are not parsed. Filename filtering is only a safety foundation, not complete secret detection.
+
+The search API returns ranked PRIMARY and RELATED files with explicit scoring reasons. It uses exact paths/symbols, normalized filename/symbol/import terms, one-hop import and test links, trace paths, and a modest changed-file boost only for already relevant files. It never calls an AI model or network API.
+
 ## Scope
 
-Phase 11 Agent Gateway work, repository indexing, Context Packs, MCP, Codex and Claude integrations, provider APIs, and real model execution are not implemented. The project makes no claim about provider token savings.
+Context Packs (Phase 15), MCP, Codex and Claude integrations, provider APIs, secret-value redaction, and real model execution are not implemented. The project makes no claim about provider token savings.

@@ -1,6 +1,6 @@
 # Middle_Man Architecture
 
-This document describes the implemented Lab through Phase 10. The existing Phase 1-8 simulator remains the foundation for workload comparisons and inspection.
+This document describes the implemented Lab through Phase 10 and the separate local Agent Gateway foundation through Phase 14. Lab behavior remains unchanged.
 
 ## Components
 
@@ -80,4 +80,24 @@ Once a request processes the reusable prefix, the cache retains references to it
 
 The suite preserves all 54 Phase 1-8 tests and adds workload, benchmark, determinism, failure, serialization, CLI, trace, and visualization coverage. Each completed benchmark case reports zero final KV blocks owned by its isolated memory manager.
 
-Phase 11 Agent Gateway work, repository indexing, Context Packs, MCP, Codex and Claude integrations, provider APIs, and real PyTorch execution are not implemented.
+Agent Gateway repository indexing and relevance search are implemented through Phase 14. Context Packs, MCP, Codex and Claude integrations, provider APIs, and real PyTorch execution are not implemented.
+
+## Phases 11-14: Local Agent Gateway
+
+```text
+repository -> safe scanner -> parser registry -> immutable RepositoryIndex
+                |                  |                  |
+          ignore/size rules    Python AST        symbols/imports/tests
+                |                                     |
+                +--------> versioned JSON cache <----+
+                                                      |
+query + optional trace/changed paths -> relevance engine -> ranked reasons
+```
+
+`GatewayConfig` is separate from `LabConfig`. It validates a pathlib repository root, an in-root cache path, file-size and search limits, symlink behavior, Git use, and parsing mode. Paths are resolved against the root and stored as relative POSIX paths. The scanner does not traverse outside the root. Directory symlinks are skipped by default; even when following symlinks is enabled, external targets are rejected. Obvious secret-bearing names and generated/dependency directories are excluded before reading source. Root `.gitignore` and `.middlemanignore` use a conservative ordered glob subset, with Middle_Man rules applied last. This is not complete Git ignore behavior or content-based secret detection.
+
+Every discovered non-ignored file has an immutable `IndexedFile` record with SHA-256 of actual bytes, size, mtime, language, text/binary status, test convention, parse status, and compact structural data. Oversized files remain visible but are not parsed. Python's built-in AST extracts classes, functions, async methods, decorators, module constants, and imports. Other recognized text languages use `PlainTextParser` until richer adapters exist. Syntax failures stay local to the malformed file. `RepositoryIndex` exposes immutable records and read-only lookup maps for files, symbols, imports, reverse imports, and tests. Local Python imports resolve to repository module paths; `IMPORTS`, `TESTS`, and `CONTAINS_SYMBOL` relationships are rebuilt from current records each scan.
+
+The indexer hashes files on every scan, then reuses cached parsed records when hashes match. A changed hash reparses only that file; deleted records and obsolete edges disappear. The cache stores metadata, symbols, and imports, not full source. `INDEX_SCHEMA_VERSION = 1` is independent of the package version. The JSON cache is written with an atomic replacement, and corruption, schema mismatch, root mismatch, or parsing-policy mismatch causes a safe rebuild. `cache clear` unlinks only Middle_Man's `index.json`. Identity includes normalized root, name, optional Git branch/HEAD, timestamp, and schema version. Git calls use subprocess argument arrays; Git is optional.
+
+`RelevanceEngine` ranks exact paths and symbols most strongly, then filename, symbol, path, and import terms. One-hop imports, reverse imports, and test edges add smaller RELATED signals. Error trace paths/identifiers can contribute direct signals; changed files get a modest boost only after another relevance signal. CamelCase and snake_case terms are normalized while exact identifiers remain available. Weights live in one table, results carry factual reasons, and deterministic score/path ordering plus a minimum threshold excludes unrelated files. This answers **which files and symbols matter**, not **which source excerpts to send**. No external model or API is involved.

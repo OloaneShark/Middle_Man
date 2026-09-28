@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 
 from middle_man.cli.benchmark import run_benchmark
+from middle_man.cli.gateway import add_gateway_commands, run_gateway
 from middle_man.lab.config import LabConfig, SchedulerKind
 from middle_man.lab.engine import SimulationEngine
 from middle_man.lab.request import InferenceRequest
@@ -42,6 +43,8 @@ def build_parser() -> argparse.ArgumentParser:
     benchmark.add_argument("--output-dir", default="benchmark_results")
     benchmark.add_argument("--verbose", action="store_true")
 
+    add_gateway_commands(subparsers)
+
     return parser
 
 
@@ -56,6 +59,9 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args.command == "benchmark":
         run_benchmark(args)
+        return
+    if args.command in {"index", "inspect", "context", "cache"}:
+        run_gateway(args)
         return
     parser.error(f"unknown command: {args.command}")
 
