@@ -1,6 +1,6 @@
 # Middle_Man Architecture
 
-This document describes the implemented Lab through Phase 8. The existing Phase 1-4 request, clock, scheduler, allocator, runner, and CLI remain the foundation.
+This document describes the implemented Lab through Phase 10. The existing Phase 1-8 simulator remains the foundation for workload comparisons and inspection.
 
 ## Components
 
@@ -25,6 +25,10 @@ arrivals -> engine admission -> scheduler -> memory controller -> simulated runn
 - `events.py` defines immutable trace records.
 - `metrics.py` converts actual request state, events, and KV samples into structured results.
 - `engine.py` coordinates these components and returns `EngineResult`.
+- `workloads.py` describes immutable request inputs and deterministic presets.
+- `benchmarks.py`, `suites.py`, and `comparison.py` run isolated cases and calculate measured differences.
+- `reporting.py`, `serialization.py`, and `trace.py` present structured results and events.
+- `visualization.py` renders optional headless plots from recorded data.
 
 ## Phase 5: Continuous Batching
 
@@ -54,8 +58,26 @@ Only full prefix blocks are shareable. For 16-token blocks and a 20-token declar
 
 Once a request processes the reusable prefix, the cache retains references to its prefix block IDs. A later compatible request attaches the same physical IDs and increments each reference count. Request release decrements only its ownership; cache ownership keeps the entry valid. Preemption releases a victim's references without destroying cache-held or other requests' references. On resumption, a still-valid cache entry may satisfy part of the rebuild debt. Cache entries are released at the end of a run, including failed runs; successful workloads leave no KV blocks owned by the run.
 
+## Phase 9: Workloads and Benchmarks
+
+`workloads.py` defines frozen `RequestSpec` and `WorkloadSpec` values. `WorkloadSpec.create_requests()` builds fresh mutable `InferenceRequest` objects for every run. Presets cover short chat, mixed chat, long context, burst traffic, memory pressure, shared prefixes, and decode/prefill competition. Generated variation uses a local seeded random generator; comparisons share one immutable workload and seed.
+
+`benchmarks.py` runs each `BenchmarkCase` with a fresh engine, virtual clock, and KV manager. It returns structured metrics, event counts and trace events, configuration, seed, request count, and final KV ownership. Expected `AllocationError` and `SimulationError` cases become structured `BenchmarkFailure` values. Other exceptions propagate. `BenchmarkSuite` groups cases. `suites.py` defines scheduler, prefix-cache, memory-pressure, token-budget, active-sequence, and chunked-prefill comparisons, plus simple mixed and short-chat runs. The no-preemption constrained memory case intentionally reports a failure.
+
+`comparison.py` computes absolute and percentage deltas against the first successful baseline, leaving percentage change undefined when the baseline is zero. It does not label a universal winner. A cache-enabled run may do less prompt work and finish sooner while retaining more KV blocks; throughput counts *executed* work, so its direction can also differ from elapsed-time improvement.
+
+`serialization.py` writes JSON with complete structured results and CSV with flat case/aggregate rows. Exports include version, UTC timestamp, seed, workload, Lab configuration, failure details, and an explicit `simulated` marker. Output filenames are sanitized. The default `benchmark_results/` directory is Git-ignored; generated results are not committed by default.
+
+## Phase 10: CLI, Traces, and Plots
+
+`python -m middle_man simulate` remains supported. `--debug` formats the existing event stream into timestamped work, lifecycle, and memory sections with cumulative prompt progress; `--trace-json` exports the same events. No second trace source is maintained.
+
+`python -m middle_man benchmark --list` lists suites without running them. `benchmark NAME` runs a suite and prints measurements with an explicit simulated-performance label. `--seed`, `--json`, `--csv`, `--output-dir`, `--verbose`, and `--plot` control benchmark output. The CLI delegates execution, formatting, and storage to separate Lab modules.
+
+`visualization.py` imports matplotlib only when a plot is requested and uses a headless backend. It can save a request timeline from observed admission/work/preemption/completion events, KV utilization from recorded samples, a TTFT distribution, and a throughput comparison. The timeline connects actual lifecycle event times; work types are point markers because the simulator does not record per-item start intervals. Performance plots say `SIMULATED`. Install the optional `viz` extra for plotting; the core simulator and benchmark API have no matplotlib dependency.
+
 ## Verification Boundary
 
-The suite retains all 36 hardened Phase 1-4 tests and adds Phase 5-8 unit and engine integration coverage for admission order, measurements, memory pressure, recomputation, deterministic traces, prefix reuse, partial blocks, reference counts, and prefix/preemption interaction.
+The suite preserves all 54 Phase 1-8 tests and adds workload, benchmark, determinism, failure, serialization, CLI, trace, and visualization coverage. Each completed benchmark case reports zero final KV blocks owned by its isolated memory manager.
 
-Phase 9 benchmarks and visualization are future work. Agent Gateway, repository indexing, MCP, Codex and Claude integrations, provider APIs, and real PyTorch execution are not implemented.
+Phase 11 Agent Gateway work, repository indexing, Context Packs, MCP, Codex and Claude integrations, provider APIs, and real PyTorch execution are not implemented.

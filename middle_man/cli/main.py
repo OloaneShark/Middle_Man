@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import argparse
 
+from middle_man.cli.benchmark import run_benchmark
 from middle_man.lab.config import LabConfig, SchedulerKind
 from middle_man.lab.engine import SimulationEngine
 from middle_man.lab.request import InferenceRequest
+from middle_man.lab.serialization import save_trace_json
+from middle_man.lab.suites import SUITE_DESCRIPTIONS
+from middle_man.lab.trace import format_trace
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -25,6 +29,18 @@ def build_parser() -> argparse.ArgumentParser:
     simulate.add_argument("--prefix-key", default="shared-prefix")
     simulate.add_argument("--shared-prefix-tokens", type=int, default=0)
     simulate.add_argument("--scheduler", choices=[item.value for item in SchedulerKind], default=SchedulerKind.DECODE_PRIORITY.value)
+    simulate.add_argument("--debug", action="store_true", help="print a readable event trace")
+    simulate.add_argument("--trace-json", help="save structured simulation events to JSON")
+
+    benchmark = subparsers.add_parser("benchmark", help="run deterministic Lab benchmarks")
+    benchmark.add_argument("name", nargs="?", choices=list(SUITE_DESCRIPTIONS))
+    benchmark.add_argument("--list", action="store_true", help="list benchmark suites")
+    benchmark.add_argument("--seed", type=int, default=7)
+    benchmark.add_argument("--json", action="store_true", help="save structured JSON")
+    benchmark.add_argument("--csv", action="store_true", help="save flat CSV")
+    benchmark.add_argument("--plot", action="store_true", help="save optional matplotlib plots")
+    benchmark.add_argument("--output-dir", default="benchmark_results")
+    benchmark.add_argument("--verbose", action="store_true")
 
     return parser
 
@@ -37,6 +53,9 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args.command == "simulate":
         run_simulate(args)
+        return
+    if args.command == "benchmark":
+        run_benchmark(args)
         return
     parser.error(f"unknown command: {args.command}")
 
@@ -84,6 +103,11 @@ def run_simulate(args: argparse.Namespace) -> None:
         f"Misses: {metrics.prefix_cache_misses}  "
         f"Reused tokens: {metrics.prefix_reused_tokens}"
     )
+    if args.debug:
+        print()
+        print(format_trace(result))
+    if args.trace_json:
+        print(f"Trace JSON: {save_trace_json(result, args.trace_json)}")
 
 
 if __name__ == "__main__":
