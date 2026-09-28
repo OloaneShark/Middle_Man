@@ -2,7 +2,7 @@
 
 Standing between the request and the model.
 
-Middle_Man Lab implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. The separate Agent Gateway implements Phases 11-19: local repository indexing, incremental caching, explainable relevance search, Context Packs, Git diff-aware context, deterministic output compaction, factual Project Memory, and Session Handoff. Neither subsystem requires a model, GPU, PyTorch, or provider API.
+Middle_Man Lab implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. The separate Agent Gateway implements Phases 11-19: local repository indexing, incremental caching, explainable relevance search, Context Packs, Git diff-aware context, deterministic output compaction, factual Project Memory, and Session Handoff. Phases 20-21 add an optional local MCP server and Codex setup. No Middle_Man subsystem requires a model, GPU, PyTorch, or provider API.
 
 ## Quick Start
 
@@ -151,6 +151,23 @@ A handoff requires an **explicit task**. It does not infer developer intent, tes
 
 Handoffs are immutable versioned JSON records under `.middle_man_cache/handoffs/`, with a safe latest-ID pointer. Old records are retained. Reading compares branch, HEAD, referenced file hashes/existence, and Project Memory fingerprint; stale records remain readable and show `BRANCH_CHANGED`, `HEAD_CHANGED`, `FILE_CHANGED`, `FILE_REMOVED`, and/or `PROJECT_MEMORY_CHANGED`. Handoff size and the local reconstruction estimate use `ceil(UTF-8 bytes / 4)`. The baseline is the full current text of deduplicated changed/selected readable files plus raw **supplied** tool output. This is a local estimated context comparison, not provider billing or plan usage; a negative difference means the handoff is larger than that baseline. A configurable soft limit warns without truncating facts.
 
+## MCP and Codex
+
+Install the optional SDK and run the local stdio server for one repository:
+
+```bash
+pip install -e ".[mcp]"
+python -m middle_man mcp serve --repo .
+```
+
+The server exposes ten bounded, read-only Gateway tools for state, handoff, relevance, Context Packs, expansion, Git changes, output compaction, context estimates, selection explanations, and repository structure. This command speaks MCP on stdout; use it through an MCP client rather than as an interactive shell command. Codex registration, verification, fallback behavior, and usage accounting are in [docs/CODEX_SETUP.md](docs/CODEX_SETUP.md). The root [AGENTS.md](AGENTS.md) gives Codex short repository-specific guidance.
+
+```bash
+python -m middle_man mcp usage --repo . --json
+```
+
+Local usage records contain only metadata and input hashes. Reported token sizes are heuristic context estimates, not Codex plan usage or provider billing. Neither the server nor the Gateway sends repository content to an external service.
+
 ## Scope
 
-MCP, Codex and Claude integrations, provider adapters, external AI/API calls, and real model execution are not implemented. Phase 20 has not begun. The project makes no claim about provider token or plan-usage savings.
+Claude integration, provider adapters, external AI/API calls, and real model execution are not implemented. Phase 22 has not begun. The project makes no claim about provider token or plan-usage savings.

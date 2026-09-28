@@ -24,6 +24,7 @@ dependencies = []
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
 viz = ["matplotlib>=3.8"]
+mcp = ["mcp>=2,<3"]
 
 [project.scripts]
 middle-man = "middle_man.cli.main:main"

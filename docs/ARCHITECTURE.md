@@ -1,6 +1,6 @@
 # Middle_Man Architecture
 
-This document describes the implemented Lab through Phase 10 and the separate local Agent Gateway through Phase 19. Lab behavior remains unchanged.
+This document describes the implemented Lab through Phase 10, the local Agent Gateway through Phase 19, and the optional local MCP/Codex integration in Phases 20-21. Lab behavior remains unchanged.
 
 ## Components
 
@@ -80,7 +80,7 @@ Once a request processes the reusable prefix, the cache retains references to it
 
 The suite preserves all 54 Phase 1-8 tests and adds workload, benchmark, determinism, failure, serialization, CLI, trace, and visualization coverage. Each completed benchmark case reports zero final KV blocks owned by its isolated memory manager.
 
-Agent Gateway indexing and relevance search are implemented through Phase 14, with local Context Packs, Git diff context, and output compaction through Phase 17. MCP, Codex and Claude integrations, provider APIs, and real PyTorch execution are not implemented.
+Agent Gateway indexing and relevance search are implemented through Phase 14, with local Context Packs, Git diff context, and output compaction through Phase 17. A local MCP server and Codex guidance are implemented in Phases 20-21. Claude integration, provider APIs, and real PyTorch execution are not implemented.
 
 ## Phases 11-14: Local Agent Gateway
 
@@ -171,6 +171,18 @@ explicit task + current GitDiffReader + refreshed ProjectMemory
 
 On read, the service reindexes and refreshes Project Memory to report `HEAD_CHANGED`, `BRANCH_CHANGED`, `FILE_CHANGED`, `FILE_REMOVED`, and `PROJECT_MEMORY_CHANGED`. Old records remain available. Semantic fingerprints exclude creation time. The payload reports serialized bytes and `ceil(UTF-8 bytes / 4)` estimated tokens; a configurable soft limit warns without silent truncation. The documented reconstruction baseline is the full current text of deduplicated changed/referenced readable files, plus raw supplied tool output. The handoff payload is compared to that baseline; the difference may be negative. These are local context estimates, **not** Codex/Claude billing or plan usage. CLI reads stdin only with `--pytest-stdin`.
 
+## Phase 20: Local MCP Server
+
+`middle_man.mcp.gateway.MCPGateway` adapts the existing Gateway services without a provider or model dependency. It offers ten operations: project state, latest session handoff, ranked context discovery, bounded Context Pack creation and expansion, changed Git context, output compaction, context-size estimates, selection explanations, and a bounded repository map. Context Pack fingerprints are kept in a bounded in-process cache for expansion. The adapter reuses the existing index, relevance engine, source verification, ContextBuilder, Git reader, memory/handoff services, compactor, and best-effort secret redactor. It confines requests to one explicit `GatewayConfig` root and strips its own cache subtree from Git-facing responses.
+
+`middle_man.mcp.server` uses the optional official Python MCP SDK. `python -m middle_man mcp serve --repo ROOT` starts the local stdio server; stdout is reserved for protocol traffic. The SDK is imported lazily so Lab and Gateway commands still work without the `mcp` extra. Ten MCP tools have read-only annotations; local cache and metadata-log writes are the only side effects. Source edits, model calls, and network calls are not performed by Middle_Man. Context Pack source is verified against the index and redacted on export; stale or unsafe reads fail explicitly. Secret filtering is best effort, not a security guarantee.
+
+`MCPUsageLog` appends versioned JSONL records under `.middle_man_cache/mcp_usage.jsonl`. Records contain timestamps, tool names, success/error categories, input hashes, pack fingerprints/generation, and numeric metrics; they contain no plaintext task, source, diff, or compacted output. `mcp usage` aggregates local call counts, pack and expansion counts, index-cache reuse, and heuristic context-token totals. Those figures are not Codex usage, billing, or measured savings.
+
+## Phase 21: Codex Integration
+
+The root `AGENTS.md` recommends a lightweight orientation -> relevance -> bounded SAFE Context Pack -> targeted expansion flow, with native reads and tests retained for missing or exact context. `docs/CODEX_SETUP.md` documents local Codex registration, connection diagnostics, fallback, and accounting limits. The registered Codex MCP entry launches the repository-scoped stdio server with an absolute virtual-environment Python path. Protocol tests cover both an in-process SDK client and a real stdio subprocess. The agent itself controls whether and when to call a tool; Middle_Man does not replace native repository access.
+
 ## Current Boundary
 
-The Lab remains locked through Phase 10. The local Gateway is implemented through Phase 19. MCP, Codex and Claude connections, provider adapters, external AI/API calls, external LLM summarization, and Phase 20+ are not implemented.
+The Lab remains locked through Phase 10. The local Gateway is implemented through Phase 19; its optional local MCP and Codex integration are implemented through Phase 21. Claude integration, provider adapters, external AI/API calls, external LLM summarization, and Phase 22+ are not implemented.
