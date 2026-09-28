@@ -2,7 +2,7 @@
 
 Standing between the request and the model.
 
-Middle_Man Lab implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. The separate Agent Gateway foundation implements Phases 11-14: local repository indexing, incremental caching, and explainable relevance search. Neither subsystem requires a model, GPU, PyTorch, or provider API.
+Middle_Man Lab implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. The separate Agent Gateway implements Phases 11-17: local repository indexing, incremental caching, explainable relevance search, Context Packs, Git diff-aware context, and deterministic output compaction. Neither subsystem requires a model, GPU, PyTorch, or provider API.
 
 ## Quick Start
 
@@ -68,7 +68,7 @@ Plots are saved headlessly under `benchmark_results/` or `--output-dir`: an even
 
 ## Agent Gateway (Local)
 
-The Gateway answers which repository files and symbols are relevant to a task. It does not yet package source snippets or send context to an agent. Python is parsed with the standard-library AST; other recognized text languages are represented accurately without claiming deep syntax parsing. File imports, test-to-source edges, symbol locations, Git state, and path/name matches inform ranking.
+The Gateway answers which repository files and symbols are relevant to a task and can assemble local, source-verified Context Packs. It does not send context to an agent. Python is parsed with the standard-library AST; other recognized text languages are represented accurately without claiming deep syntax parsing. File imports, test-to-source edges, symbol locations, Git state, and path/name matches inform ranking.
 
 ```bash
 python -m middle_man index --repo .
@@ -86,6 +86,38 @@ Default exclusions include `.git`, virtual environments, dependency/build/cache 
 
 The search API returns ranked PRIMARY and RELATED files with explicit scoring reasons. It uses exact paths/symbols, normalized filename/symbol/import terms, one-hop import and test links, trace paths, and a modest changed-file boost only for already relevant files. It never calls an AI model or network API.
 
+## Context Packs
+
+```bash
+python -m middle_man context pack "KV preemption memory pressure" --repo . --mode safe --max-tokens 8000
+python -m middle_man context pack "SimulationEngine.run" --mode balanced --json benchmark_results/engine-pack.json
+python -m middle_man context pack "prefix cache reference counting" --mode aggressive --output benchmark_results/prefix-pack.md
+python -m middle_man context benchmark
+```
+
+`ContextBuilder` returns an immutable, structured `ContextPack`; formatting and JSON export are separate. SAFE (default) keeps more surrounding source, BALANCED narrows margins, and AGGRESSIVE keeps minimal margins and warns that context was reduced. Complete indexed Python symbols remain atomic when possible. Imports, parent class lines, referenced constants, related tests, and one-hop dependencies can accompany them. Small relevant files may be included whole. Ranges merge to avoid duplicate source. `builder.expand(pack, ExpansionRequest("full_file", "path.py"))` returns a new generation without modifying the old pack. File, symbol, related-import/test, next-candidate, and surrounding-line expansion are also available.
+
+Each source read is confined to the repository, respects indexing/size/ignore rules, and verifies the current SHA-256 against the index. A source change during selection triggers one fresh index/selection attempt; a second race raises a clear stale-source error. The deterministic pack fingerprint covers the task, selected content hashes and ranges, mode, budget, and generation, but not timestamps or unrelated changed paths.
+
+**Estimated context tokens** use `ceil(UTF-8 bytes / 4)` on source text, not rendered headings. The raw baseline is the complete current text of relevance candidates considered, not the entire repository. Metrics report candidate/selected bytes and estimated tokens, files/excerpts/lines, overlap avoided, and estimated reduction. Required exact context can exceed the budget with a warning; lower-priority context is omitted first. These estimates are **not provider billing tokens or Codex plan usage**.
+
+## Git Changes and Output
+
+```bash
+python -m middle_man diff --repo .
+python -m middle_man compact pytest tests-output.txt --max-tokens 1000
+python -m middle_man compact docker docker.log --json benchmark_results/docker-compact.json
+python -m middle_man compact git-diff --repo .
+# Pipe stdin when no file is given:
+python -m pytest -vv | python -m middle_man compact pytest
+```
+
+`GitDiffReader` combines staged and unstaged working-tree changes, records untracked paths, renames, deletions and binary changes, and maps changed Python hunk lines to their enclosing indexed symbols. Non-Git directories degrade gracefully. Diff paths boost only otherwise relevant files; unchanged dependencies and tests remain eligible.
+
+`OutputCompactor` supports pytest, generic logs, Docker/Compose logs, Git status, and structured Git diffs. It condenses passing pytest lines and consecutive exact duplicate lines, preserves failure traces and changed paths, and marks any low-priority omissions. A too-small budget reports that required output exceeds it. Result models contain compacted text, lengths, counts, estimated tokens, warnings, and a fingerprint, but no full raw log copy.
+
+Source excerpts and compacted output are sanitized before formatting or JSON export. The local redactor covers high-confidence assigned secrets, bearer tokens, credential URLs, and complete PEM private-key blocks; it reports categories without values. This is a best-effort safety layer, not a guarantee that every secret pattern is detected. The persistent index still contains no source copies. Local context-efficiency fixtures measure required file/symbol recall alongside estimated reduction; they make no claim about real agent usage.
+
 ## Scope
 
-Context Packs (Phase 15), MCP, Codex and Claude integrations, provider APIs, secret-value redaction, and real model execution are not implemented. The project makes no claim about provider token savings.
+Project memory (Phase 18), session handoff, MCP, Codex and Claude integrations, provider adapters, external AI calls, and real model execution are not implemented. The project makes no claim about provider token or plan-usage savings.

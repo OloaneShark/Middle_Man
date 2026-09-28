@@ -25,6 +25,16 @@ class PlainTextParser:
         return ParseResult()
 
 
+def _decorator_name(node: ast.expr) -> str:
+    while isinstance(node, ast.Call):
+        node = node.func
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        return _decorator_name(node.value) + "." + node.attr
+    return type(node).__name__
+
+
 class PythonParser:
     def parse(self, path: str, source: str) -> ParseResult:
         try:
@@ -40,7 +50,7 @@ class PythonParser:
                     qualified = f"{parent}.{node.name}" if parent else node.name
                     kind = "class" if isinstance(node, ast.ClassDef) else "method" if in_class else "function"
                     symbols.append(Symbol(path, node.name, qualified, kind, node.lineno, getattr(node, "end_lineno", None), parent,
-                                          tuple(ast.unparse(item) for item in node.decorator_list), isinstance(node, ast.AsyncFunctionDef)))
+                                          tuple(_decorator_name(item) for item in node.decorator_list), isinstance(node, ast.AsyncFunctionDef)))
                     visit(node.body, qualified, isinstance(node, ast.ClassDef))
                 elif isinstance(node, ast.Import):
                     imports.extend(ImportRecord(alias.name, line=node.lineno) for alias in node.names)

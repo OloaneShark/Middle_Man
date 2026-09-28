@@ -60,7 +60,7 @@ def main(argv: list[str] | None = None) -> None:
     if args.command == "benchmark":
         run_benchmark(args)
         return
-    if args.command in {"index", "inspect", "context", "cache"}:
+    if args.command in {"index", "inspect", "context", "cache", "diff", "compact"}:
         run_gateway(args)
         return
     parser.error(f"unknown command: {args.command}")

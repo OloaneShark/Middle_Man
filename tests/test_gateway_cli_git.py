@@ -52,4 +52,4 @@ def test_cache_contains_no_source_copy(tmp_path: Path) -> None:
     RepositoryIndexer(GatewayConfig(tmp_path)).index()
     data = (tmp_path / ".middle_man_cache" / "index.json").read_text(encoding="utf-8")
     assert marker not in data
-    assert json.loads(data)["schema_version"] == 1
+    assert json.loads(data)["schema_version"] == 2
