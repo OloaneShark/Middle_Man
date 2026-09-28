@@ -28,6 +28,7 @@ class KVBlockManager:
         self.tokens_per_block = tokens_per_block
         self._free_blocks: list[int] = list(range(total_blocks))
         self._request_blocks: dict[str, list[int]] = {}
+        self._request_shared: dict[str, list[int]] = {}
         self._ref_counts: dict[int, int] = {}
 
     @property
@@ -43,8 +44,17 @@ class KVBlockManager:
             return 0
         return ceil(tokens / self.tokens_per_block)
 
-    def request_blocks(self, request_id: str) -> tuple[int, ...]:
+    def private_blocks(self, request_id: str) -> tuple[int, ...]:
         return tuple(self._request_blocks.get(request_id, ()))
+
+    def shared_blocks(self, request_id: str) -> tuple[int, ...]:
+        return tuple(self._request_shared.get(request_id, ()))
+
+    def request_blocks(self, request_id: str) -> tuple[int, ...]:
+        return self.shared_blocks(request_id) + self.private_blocks(request_id)
+
+    def block_ref_count(self, block_id: int) -> int:
+        return self._ref_counts.get(block_id, 0)
 
     def snapshot(self) -> MemorySnapshot:
         return MemorySnapshot(self.used_block_count, self.total_blocks)
@@ -56,7 +66,7 @@ class KVBlockManager:
         return self.allocate_blocks(request_id, needed)
 
     def ensure_capacity_for_context(self, request_id: str, context_tokens: int) -> tuple[int, ...]:
-        owned = len(self._request_blocks.get(request_id, ()))
+        owned = len(self.request_blocks(request_id))
         required = self.blocks_for_tokens(context_tokens)
         missing = max(0, required - owned)
         if missing == 0:
@@ -76,16 +86,41 @@ class KVBlockManager:
             self._ref_counts[block_id] = 1
         return tuple(selected)
 
+    def retain_cache_blocks(self, blocks: tuple[int, ...]) -> None:
+        for block_id in blocks:
+            if self.block_ref_count(block_id) <= 0:
+                raise ValueError(f"unknown KV block {block_id}")
+        for block_id in blocks:
+            self._ref_counts[block_id] += 1
+
+    def attach_shared(self, request_id: str, blocks: tuple[int, ...]) -> None:
+        owned = self.request_blocks(request_id)
+        if len(set(blocks)) != len(blocks) or any(block in owned for block in blocks):
+            raise ValueError("duplicate shared KV block ownership")
+        for block_id in blocks:
+            if self.block_ref_count(block_id) <= 0:
+                raise ValueError(f"unknown KV block {block_id}")
+        self._request_shared.setdefault(request_id, []).extend(blocks)
+        for block_id in blocks:
+            self._ref_counts[block_id] += 1
+
+    def release_cache_blocks(self, blocks: tuple[int, ...]) -> int:
+        if any(self.block_ref_count(block_id) <= 0 for block_id in blocks):
+            raise ValueError("cache references an unowned KV block")
+        return sum(self._release_block_ref(block_id) for block_id in blocks)
+
     def release_request(self, request_id: str) -> int:
         released = 0
         for block_id in self._request_blocks.pop(request_id, []):
+            released += self._release_block_ref(block_id)
+        for block_id in self._request_shared.pop(request_id, []):
             released += self._release_block_ref(block_id)
         return released
 
     def _release_block_ref(self, block_id: int) -> int:
         count = self._ref_counts.get(block_id, 0)
         if count <= 0:
-            return 0
+            raise ValueError(f"KV block {block_id} has no owner")
         if count == 1:
             del self._ref_counts[block_id]
             self._free_blocks.append(block_id)

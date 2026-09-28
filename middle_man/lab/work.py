@@ -7,6 +7,7 @@ from enum import StrEnum
 class WorkKind(StrEnum):
     PREFILL = "prefill"
     DECODE = "decode"
+    RECOMPUTE = "recompute"
 
 
 @dataclass(frozen=True)

@@ -1,207 +1,61 @@
 # Middle_Man Architecture
 
-This document describes what exists in the repository after the Phase 1-4 implementation and hardening passes. Later roadmap items from the full Middle_Man specification are intentionally not implemented yet.
+This document describes the implemented Lab through Phase 8. The existing Phase 1-4 request, clock, scheduler, allocator, runner, and CLI remain the foundation.
 
-Implemented phases:
-
-- Phase 1: project skeleton, typed configuration, deterministic clock, request model
-- Phase 2: block-based KV allocator
-- Phase 3: scheduler policies, token budgeting, chunked prefill
-- Phase 4: simulation engine and simulated model runner
-
-Not implemented in this pass:
-
-- continuous batching as a claimed feature
-- metrics framework
-- preemption
-- prefix caching
-- benchmark suites
-- visualization
-- Agent Gateway
-- MCP tools
-- Codex or Claude integration
-
-## Package Layout
+## Components
 
 ```text
-middle_man/
-    __init__.py
-    __main__.py
-    cli/
-        main.py
-    lab/
-        clock.py
-        config.py
-        engine.py
-        memory.py
-        request.py
-        runner.py
-        scheduler.py
-        work.py
-tests/
-    test_phase_1_core.py
-    test_phase_2_memory.py
-    test_phase_3_scheduler.py
-    test_phase_4_engine_runner.py
+arrivals -> engine admission -> scheduler -> memory controller -> simulated runner
+               |                  |              |                  |
+               |              token budget   KV allocator         virtual clock
+               |                             prefix cache
+               |                             preemption policy
+               +------------------- structured events ---------------------+
+                                      metrics collector
 ```
 
-The current code is focused on Middle_Man Lab. Gateway directories are deliberately absent until their implementation phase begins.
+- `request.py` owns lifecycle and token invariants. Completed requests cannot resume work.
+- `scheduler.py` produces bounded `PREFILL`, `DECODE`, and `RECOMPUTE` work. It does not allocate KV blocks.
+- `memory.py` owns physical block IDs, free lists, per-request mappings, and reference counts.
+- `memory_control.py` reserves blocks for plans and resolves pressure.
+- `preemption.py` chooses victims through a replaceable policy.
+- `prefix_cache.py` owns key/length mappings and cache-held block references.
+- `runner.py` calculates deterministic simulated execution time.
+- `clock.py` owns virtual time.
+- `events.py` defines immutable trace records.
+- `metrics.py` converts actual request state, events, and KV samples into structured results.
+- `engine.py` coordinates these components and returns `EngineResult`.
 
-## Phase 1: Core Model
+## Phase 5: Continuous Batching
 
-### Configuration
+At each iteration the engine admits arrived requests while `max_active_sequences` permits. When a short request completes, its slot can be filled at the next iteration even if another request remains active. A request is never admitted before its arrival time. There are no fixed batch boundaries. `REQUEST_ADMITTED` and `REQUEST_COMPLETED` events make this ordering testable.
 
-`middle_man.lab.config` contains typed dataclass configuration:
+With prefix caching enabled, simultaneous compatible requests wait for the first active request to publish their shared prefix. The waiting request then joins with reused blocks. This small cache-specific admission gate avoids computing the same prefix twice in the first plan.
 
-- `LabConfig`
-- `RunnerCostConfig`
-- `SchedulerKind`
+## Phase 6: Metrics and Events
 
-Configuration validation rejects non-positive token budgets, sequence limits, KV block counts, and block sizes. Runner cost values must be non-negative. The reserved preemption and prefix-cache switches default to `False` because those features do not exist yet.
+`EngineResult.metrics` contains per-request metrics, aggregate metrics, and timestamped KV samples. The aggregate includes completed/failed counts, actual prompt/output/recompute work, simulated throughput, TTFT and E2E averages and P50/P95/P99, iteration count, preemptions, KV current/peak utilization, cache hits/misses/reuse, and peak cache occupancy. Per-request metrics include arrival, first-token and completion times, prompt/output counts, TTFT, E2E, preemption/recompute counts, cache status, and average inter-token latency when at least two output timestamps exist.
 
-### Clock
+TTFT is measured from arrival to the first generated output token; requests with no output have no TTFT. E2E is measured from arrival to completion. Percentiles use linear interpolation over observed values. Throughput divides executed token counts by the run's elapsed simulated seconds. Total work includes recomputation; prompt throughput includes only original prompt prefill executed by the runner. Zero elapsed time yields zero throughput, and empty populations have no latency percentile. KV samples record used, total, and cached block counts. These are simulator measurements, not GPU measurements.
 
-`middle_man.lab.clock` defines a `Clock` protocol and two implementations:
+Events record admissions, completed requests, executed prefill/decode/recompute work, KV allocation/release, preemptions, and prefix hits/misses. Events and metrics are scoped to each `run()` invocation. An injected clock continues forward across runs.
 
-- `VirtualClock`: deterministic simulated time used by the engine and tests
-- `WallClock`: optional real-time implementation
+## Phase 7: Preemption
 
-The engine uses the clock abstraction and does not call `time.time()` directly. An injected clock is allowed to continue forward across separate engine runs.
+`preemption_enabled` remains `False` by default. With it disabled, failed allocation raises `AllocationError`. When enabled, `LargestPrivateOwnerPolicy` chooses the active non-terminal request with the most private blocks, breaking ties by request ID. It never selects the requester. The memory controller releases that victim's private and shared request references, records the event and physical blocks freed, and retries the allocation.
 
-### Request Model
+Preemption never reduces `prompt_processed` or `output_generated`. It creates `recompute_pending_tokens` equal to the context that must be rebuilt. The scheduler executes budgeted `RECOMPUTE` work before the victim resumes prefill or decode; those executed tokens increment `recomputed_tokens` and incur simulated prefill-style cost. A victim waits until the request that caused pressure completes, preventing immediate eviction cycles. If a requested context cannot fit in physical memory, or no victim can make progress, the engine raises a deterministic allocation error. Failed runs release their own KV holdings during cleanup.
 
-`middle_man.lab.request` defines `InferenceRequest` and `RequestState`.
+## Phase 8: Prefix Caching
 
-A request tracks:
+`prefix_cache_enabled` remains `False` by default. A request opts in with `prefix_key` and `shared_prefix_tokens`. Cache entries are matched by key and declared prefix length. An incompatible length under the same key is treated as a miss and computed privately. The simulator trusts callers to use one key only for identical prefix content; it does not inspect token values.
 
-- request ID
-- arrival time
-- original prompt token count
-- processed prompt tokens
-- requested output tokens
-- generated output tokens
-- lifecycle state
-- allocated block IDs
-- first-token timestamp
-- completion timestamp
-- future-phase metadata such as preemption counters and prefix fields
+Only full prefix blocks are shareable. For 16-token blocks and a 20-token declared prefix, 16 tokens are reused; the remaining four are private prefill work. This prevents request-specific continuation from sharing the unused positions of a physical block.
 
-The request object enforces local token bounds and lifecycle invariants. It cannot decode before prefill is complete, cannot process more tokens than declared, and cannot resume work after completion.
+Once a request processes the reusable prefix, the cache retains references to its prefix block IDs. A later compatible request attaches the same physical IDs and increments each reference count. Request release decrements only its ownership; cache ownership keeps the entry valid. Preemption releases a victim's references without destroying cache-held or other requests' references. On resumption, a still-valid cache entry may satisfy part of the rebuild debt. Cache entries are released at the end of a run, including failed runs; successful workloads leave no KV blocks owned by the run.
 
-A request with no prompt enters decoding when admitted if it requests output. A request with no output completes as soon as prefill finishes. If both prompt and output counts are zero, admission completes it immediately. Completion uses the current simulation time supplied by the engine.
+## Verification Boundary
 
-## Phase 2: KV Block Allocator
+The suite retains all 36 hardened Phase 1-4 tests and adds Phase 5-8 unit and engine integration coverage for admission order, measurements, memory pressure, recomputation, deterministic traces, prefix reuse, partial blocks, reference counts, and prefix/preemption interaction.
 
-`middle_man.lab.memory.KVBlockManager` models KV memory as fixed-size physical blocks. It does not track only a scalar `memory_used` value.
-
-Example:
-
-```text
-request req-1 -> blocks 0, 1, 4
-request req-2 -> blocks 2, 3
-```
-
-The allocator supports:
-
-- calculating required blocks from token counts
-- allocating physical block IDs
-- non-contiguous allocation after releases
-- per-request block tables
-- allocation exhaustion errors
-- atomic failure when one allocation request cannot be satisfied
-- releasing all blocks for a completed request
-- reuse of released blocks
-- utilization snapshots
-
-Prefix sharing and preemption-aware release are future phases and are not implemented here.
-
-## Phase 3: Scheduling
-
-`middle_man.lab.work` defines scheduling work items:
-
-- `PREFILL`
-- `DECODE`
-
-A `SchedulePlan` validates that scheduled tokens do not exceed the configured budget.
-
-`middle_man.lab.scheduler` provides two policies:
-
-- `DecodePriorityScheduler`: schedules one decode token per decoding request first, then uses the remaining budget for prefill.
-- `BalancedScheduler`: gives decode work part of the budget while ensuring prefilling requests still make progress.
-
-Chunked prefill emerges from the token budget. A 20-token prompt with a 4-token budget requires five prefill iterations before decode can begin.
-
-Schedulers do not allocate memory and do not mutate request state. They only produce a plan.
-
-## Phase 4: Engine and Simulated Runner
-
-`middle_man.lab.runner.SimulatedModelRunner` computes deterministic elapsed time for a schedule. It does not load a model, sleep, require PyTorch, or require a GPU.
-
-Execution cost comes from:
-
-- configured prefill base cost
-- configured prefill per-token cost
-- configured decode base cost
-- configured decode per-token cost
-- current context length
-- a bounded batch discount
-
-`middle_man.lab.engine.SimulationEngine` coordinates the current Lab flow:
-
-```text
-requests
-   |
-   v
-admit arrived requests
-   |
-   v
-scheduler plan
-   |
-   v
-KV capacity check/allocation
-   |
-   v
-simulated runner
-   |
-   v
-advance virtual clock
-   |
-   v
-apply request progress
-   |
-   v
-release completed request blocks
-```
-
-The engine returns an `EngineResult` with request objects, iteration count, elapsed simulated time, processed prompt tokens, and generated output tokens. Counters in each result describe only that invocation of `run()`; the clock itself is not reset between invocations.
-
-## Current Invariants Covered by Tests
-
-The Phase 1-4 tests verify:
-
-- configuration validation and disabled future-feature defaults
-- deterministic clock advancement
-- normal and zero-token request lifecycle transitions
-- decode-before-prefill rejection
-- prompt and output token bounds
-- completed requests cannot resume work
-- block allocation, release, reuse, and mapping cleanup
-- atomic allocation exhaustion
-- used blocks never exceed total blocks
-- non-contiguous block allocation after release
-- capacity checks allocate only missing blocks
-- scheduler token-budget enforcement across prefill, decode, and mixed workloads
-- engine-level multi-iteration chunked prefill
-- decode-priority ordering
-- balanced scheduling behavior
-- deterministic runner costs
-- per-run counter isolation when an engine is reused
-- `max_active_sequences` admission limits
-- zero-output engine completion without idle loops
-- final KV block release
-- arrival-time advancement without sleeping
-- clean CLI help with no subcommand
-
-## Roadmap Boundary
-
-The full Middle_Man specification remains the roadmap, but this hardening pass still stops at Phase 4. Phase 5 must add continuous batching deliberately, with its own behavior, tests, and documentation, instead of treating incidental engine admission behavior as a finished feature.
+Phase 9 benchmarks and visualization are future work. Agent Gateway, repository indexing, MCP, Codex and Claude integrations, provider APIs, and real PyTorch execution are not implemented.

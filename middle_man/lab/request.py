@@ -31,8 +31,11 @@ class InferenceRequest:
     completion_time_ms: float | None = None
     preemption_count: int = 0
     recomputed_tokens: int = 0
+    recompute_pending_tokens: int = 0
+    recompute_rebuilt_tokens: int = 0
     prefix_cache_hit: bool = False
     prefix_reused_tokens: int = 0
+    output_token_times_ms: list[float] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.prompt_tokens < 0:
@@ -70,12 +73,31 @@ class InferenceRequest:
 
     def mark_admitted(self, now_ms: float) -> None:
         if self.state in {RequestState.QUEUED, RequestState.PREEMPTED}:
-            if not self.prefill_complete:
+            if self.recompute_pending_tokens:
+                self.state = RequestState.PREEMPTED
+            elif not self.prefill_complete:
                 self.state = RequestState.PREFILLING
             elif self.generation_complete:
                 self._complete(now_ms)
             else:
                 self.state = RequestState.DECODING
+
+    def reuse_prefix(self, tokens: int) -> None:
+        if tokens <= 0 or tokens > self.shared_prefix_tokens:
+            raise ValueError("invalid reusable prefix length")
+        if self.state == RequestState.PREEMPTED:
+            self.prompt_processed = max(self.prompt_processed, tokens)
+            reused = min(tokens, self.current_context_tokens)
+            self.recompute_rebuilt_tokens = reused
+            self.recompute_pending_tokens = self.current_context_tokens - reused
+        elif self.state == RequestState.QUEUED:
+            if self.prompt_processed:
+                raise ValueError("cannot reuse prefix after private prefill")
+            self.prompt_processed = tokens
+        else:
+            raise ValueError(f"cannot reuse prefix in state {self.state}")
+        self.prefix_cache_hit = True
+        self.prefix_reused_tokens += tokens
 
     def apply_prefill(self, tokens: int, now_ms: float) -> None:
         if tokens < 0:
@@ -104,20 +126,34 @@ class InferenceRequest:
         if tokens and self.first_token_time_ms is None:
             self.first_token_time_ms = now_ms
         self.output_generated += tokens
+        self.output_token_times_ms.extend([now_ms] * tokens)
         if self.generation_complete:
             self._complete(now_ms)
+
+    def mark_preempted(self) -> None:
+        if self.state in {RequestState.COMPLETED, RequestState.CANCELLED, RequestState.FAILED}:
+            raise ValueError("cannot preempt terminal request")
+        self.preemption_count += 1
+        self.recompute_pending_tokens = self.current_context_tokens
+        self.recompute_rebuilt_tokens = 0
+        self.state = RequestState.PREEMPTED
+        self.allocated_blocks.clear()
+        self.shared_blocks.clear()
+
+    def apply_recompute(self, tokens: int, now_ms: float) -> None:
+        if self.state != RequestState.PREEMPTED:
+            raise ValueError("request is not rebuilding KV context")
+        if tokens <= 0 or tokens > self.recompute_pending_tokens:
+            raise ValueError("recompute tokens exceed remaining context")
+        self.recompute_pending_tokens -= tokens
+        self.recompute_rebuilt_tokens += tokens
+        self.recomputed_tokens += tokens
+        if not self.recompute_pending_tokens:
+            self.mark_admitted(now_ms)
 
     def _complete(self, now_ms: float) -> None:
         self.state = RequestState.COMPLETED
         self.completion_time_ms = now_ms
-
-    def mark_preempted(self, lost_tokens: int) -> None:
-        self.preemption_count += 1
-        self.recomputed_tokens += max(0, lost_tokens)
-        self.prompt_processed = max(0, self.prompt_processed - max(0, lost_tokens))
-        self.state = RequestState.PREEMPTED
-        self.allocated_blocks.clear()
-        self.shared_blocks.clear()
 
     def cancel(self) -> None:
         self.state = RequestState.CANCELLED

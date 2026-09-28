@@ -13,6 +13,7 @@ class ExecutionResult:
     elapsed_ms: float
     prompt_tokens: int
     output_tokens: int
+    recompute_tokens: int = 0
 
 
 class ModelRunner(Protocol):
@@ -26,25 +27,33 @@ class SimulatedModelRunner:
     def execute(self, plan: SchedulePlan, requests: dict[str, InferenceRequest]) -> ExecutionResult:
         prefill_tokens = 0
         decode_tokens = 0
+        recompute_tokens = 0
         context_cost = 0.0
         for item in plan.items:
             request = requests[item.request_id]
             context_cost += request.current_context_tokens * self.costs.context_scale_ms
             if item.kind == WorkKind.PREFILL:
                 prefill_tokens += item.tokens
+            elif item.kind == WorkKind.RECOMPUTE:
+                recompute_tokens += item.tokens
             else:
                 decode_tokens += item.tokens
 
         elapsed = 0.0
-        if prefill_tokens:
-            elapsed += self.costs.prefill_base_ms + prefill_tokens * self.costs.prefill_token_ms
+        if prefill_tokens or recompute_tokens:
+            elapsed += self.costs.prefill_base_ms + (prefill_tokens + recompute_tokens) * self.costs.prefill_token_ms
         if decode_tokens:
             elapsed += self.costs.decode_base_ms + decode_tokens * self.costs.decode_token_ms
 
         batch_size = max(1, len(plan.items))
         discount = min(0.7, (batch_size - 1) * self.costs.batch_discount)
         elapsed = elapsed * (1 - discount) + context_cost
-        return ExecutionResult(elapsed_ms=max(0.0, elapsed), prompt_tokens=prefill_tokens, output_tokens=decode_tokens)
+        return ExecutionResult(
+            elapsed_ms=max(0.0, elapsed),
+            prompt_tokens=prefill_tokens,
+            output_tokens=decode_tokens,
+            recompute_tokens=recompute_tokens,
+        )
 
 
 class TorchModelRunner:

@@ -11,13 +11,19 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="middle-man", description="Middle_Man simulation tools")
     subparsers = parser.add_subparsers(dest="command")
 
-    simulate = subparsers.add_parser("simulate", help="run a deterministic Phase 1-4 serving simulation")
+    simulate = subparsers.add_parser("simulate", help="run a deterministic serving simulation")
     simulate.add_argument("--requests", type=int, default=8)
     simulate.add_argument("--prompt-tokens", type=int, default=32)
     simulate.add_argument("--output-tokens", type=int, default=8)
     simulate.add_argument("--token-budget", type=int, default=64)
     simulate.add_argument("--kv-blocks", type=int, default=128)
     simulate.add_argument("--tokens-per-block", type=int, default=16)
+    simulate.add_argument("--max-active-sequences", type=int, default=16)
+    simulate.add_argument("--arrival-gap-ms", type=float, default=0.0)
+    simulate.add_argument("--preemption", action="store_true")
+    simulate.add_argument("--prefix-cache", action="store_true")
+    simulate.add_argument("--prefix-key", default="shared-prefix")
+    simulate.add_argument("--shared-prefix-tokens", type=int, default=0)
     simulate.add_argument("--scheduler", choices=[item.value for item in SchedulerKind], default=SchedulerKind.DECODE_PRIORITY.value)
 
     return parser
@@ -40,24 +46,44 @@ def run_simulate(args: argparse.Namespace) -> None:
         token_budget=args.token_budget,
         kv_blocks=args.kv_blocks,
         tokens_per_block=args.tokens_per_block,
+        max_active_sequences=args.max_active_sequences,
         scheduler=SchedulerKind(args.scheduler),
+        preemption_enabled=args.preemption,
+        prefix_cache_enabled=args.prefix_cache,
     )
     requests = [
         InferenceRequest(
             request_id=f"req-{index + 1:03d}",
-            arrival_time_ms=0.0,
+            arrival_time_ms=index * args.arrival_gap_ms,
             prompt_tokens=args.prompt_tokens,
             max_output_tokens=args.output_tokens,
+            shared_prefix_tokens=args.shared_prefix_tokens,
+            prefix_key=args.prefix_key if args.shared_prefix_tokens else None,
         )
         for index in range(args.requests)
     ]
     result = SimulationEngine(config).run(requests)
+    metrics = result.metrics.aggregate
+
+    def duration(value: float | None) -> str:
+        return f"{value:.2f} ms" if value is not None else "n/a"
+
     print("MIDDLE_MAN SIMULATION")
-    print(f"Requests: {len(result.requests)}")
-    print(f"Iterations: {result.iterations}")
-    print(f"Elapsed: {result.elapsed_ms:.2f} ms")
-    print(f"Prompt tokens processed: {result.prompt_tokens_processed}")
-    print(f"Output tokens generated: {result.output_tokens_generated}")
+    print(f"Requests: {metrics.total_requests}  Completed: {metrics.completed_requests}")
+    print(f"Iterations: {metrics.scheduler_iterations}")
+    print(f"Elapsed simulated time: {metrics.elapsed_ms:.2f} ms")
+    print(f"Prompt tokens: {metrics.total_prompt_tokens_processed}")
+    print(f"Output tokens: {metrics.total_output_tokens_generated}")
+    print(f"Total throughput: {metrics.total_throughput_tokens_per_s:.2f} tokens/s")
+    print(f"TTFT P50/P95: {duration(metrics.p50_ttft_ms)} / {duration(metrics.p95_ttft_ms)}")
+    print(f"E2E P50/P95: {duration(metrics.p50_e2e_ms)} / {duration(metrics.p95_e2e_ms)}")
+    print(f"KV peak: {metrics.peak_kv_used_blocks}/{config.kv_blocks} blocks ({metrics.peak_kv_utilization:.1%})")
+    print(f"Preemptions: {metrics.preemption_count}  Recomputed tokens: {metrics.total_recomputed_tokens}")
+    print(
+        f"Prefix cache hits: {metrics.prefix_cache_hits}  "
+        f"Misses: {metrics.prefix_cache_misses}  "
+        f"Reused tokens: {metrics.prefix_reused_tokens}"
+    )
 
 
 if __name__ == "__main__":

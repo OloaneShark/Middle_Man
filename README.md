@@ -2,18 +2,7 @@
 
 Standing between the request and the model.
 
-Middle_Man is planned as an educational LLM serving simulator and coding-agent context optimization layer. This repository currently implements only Phases 1-4 of the roadmap:
-
-- project skeleton
-- typed configuration
-- deterministic clock
-- request lifecycle model
-- block-based KV allocator
-- scheduler policies with token budgeting and chunked prefill
-- simulation engine
-- simulated model runner
-
-Later roadmap items such as continuous batching, preemption, prefix caching, benchmarks, visualization, Agent Gateway, MCP tools, Codex integration, and Claude Code integration are not implemented yet. Configuration flags for preemption and prefix caching default to disabled.
+Middle_Man currently implements Phases 1-8 of the Lab roadmap: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, and prefix caching. Model execution and timing are simulated. No model, GPU, PyTorch, or provider API is required.
 
 ## Quick Start
 
@@ -21,44 +10,26 @@ Later roadmap items such as continuous batching, preemption, prefix caching, ben
 python -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
-pytest
+python -m pytest
 python -m middle_man simulate
 ```
 
 On macOS or Linux, activate with `source .venv/bin/activate`.
 
-## Current Lab Flow
-
-```text
-requests
-   |
-   v
-admission
-   |
-   v
-scheduler plan
-   |
-   v
-KV block allocation
-   |
-   v
-simulated runner
-   |
-   v
-virtual clock + request updates
-```
-
-The simulator uses virtual time. It does not load a model, sleep, require PyTorch, require CUDA, or call an external API.
-
-## CLI
+## Simulate
 
 ```bash
-python -m middle_man
-python -m middle_man simulate --requests 8 --token-budget 64 --kv-blocks 128
+python -m middle_man simulate --requests 2 --prompt-tokens 20 --output-tokens 1 --token-budget 4 --kv-blocks 16
+python -m middle_man simulate --requests 2 --prompt-tokens 2 --output-tokens 3 --token-budget 2 --kv-blocks 3 --tokens-per-block 2 --preemption
+python -m middle_man simulate --requests 2 --prompt-tokens 4 --output-tokens 1 --token-budget 4 --kv-blocks 8 --tokens-per-block 2 --prefix-cache --shared-prefix-tokens 4
 ```
 
-The bare command displays help. The `simulate` command prints actual values from the run: request count, scheduler iterations, elapsed simulated milliseconds, prompt tokens processed, and output tokens generated.
+The command prints measurements from the run, including throughput, latency percentiles, peak KV use, preemptions, and prefix reuse. `python -m middle_man` prints help. The installed `middle-man` command works when Python's Scripts directory is on `PATH`.
 
-## Honesty About Scope
+Requests with different arrival times can enter an active group as capacity opens. The engine schedules work up to a token budget each iteration. When preemption is enabled, allocation pressure can evict another request's KV state; that request later recomputes its context while retaining output already generated. The prefix cache is opt-in and reuses only complete KV blocks. Cached entries are released at the end of each run.
 
-This is an early implementation slice. Simulated timing is not real GPU performance. No context-token savings or provider usage reductions are claimed by the current code.
+Programmatic callers receive `EngineResult.metrics` and `EngineResult.events`, as well as the existing counters and request objects. See [the architecture document](docs/ARCHITECTURE.md) for exact accounting and ownership rules.
+
+## Scope
+
+Phase 9 benchmarks, visualization, Agent Gateway, repository indexing, MCP, Codex and Claude integrations, and real model execution are not implemented. Simulated throughput is not real GPU throughput. The project makes no claim about provider token savings.
