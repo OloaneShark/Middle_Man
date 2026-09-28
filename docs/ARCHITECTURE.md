@@ -1,6 +1,6 @@
 # Middle_Man Architecture
 
-This document describes the implemented Lab through Phase 10 and the separate local Agent Gateway foundation through Phase 14. Lab behavior remains unchanged.
+This document describes the implemented Lab through Phase 10 and the separate local Agent Gateway through Phase 19. Lab behavior remains unchanged.
 
 ## Components
 
@@ -133,6 +133,44 @@ Changed new-line ranges map to the innermost enclosing indexed Python symbol. A 
 
 Local quality fixtures measure required-file and required-symbol recall, irrelevant files included, and estimated token reduction against complete candidate files. A fixture succeeds only if required recall is 100% and selected estimated source tokens are lower than its raw candidate baseline. These are local context-efficiency measurements, not Codex or provider usage measurements.
 
+## Phase 18: Project Memory
+
+```text
+RepositoryIndexer + GitDiffReader
+              |
+              v
+      ProjectMemoryService -> immutable ProjectMemory -> formatter/CLI
+              |
+              v
+ AtomicJsonStore(.middle_man_cache/project_memory.json)
+```
+
+`PROJECT_MEMORY_SCHEMA_VERSION = 1` is independent of the index schema. `MemoryFact` records controlled provenance (`INDEX`, `GIT`, `DIFF`, `USER`, `HANDOFF`, `TOOL_RESULT`) with optional evidence path/hash and an explicit user-supplied flag. Current derived fields include language counts, conservative technology detections with evidence, branch/HEAD, important components/symbols, and compact working-tree changes with statuses and affected symbols. Detection uses indexed file types, recognized config/manifest files and imports, not repo-name guesses. Component ranking uses local import connectivity, public class/function symbols, and generic entry/configuration roles. `MemorySettings` bounds components (20) and symbols (40) by default. No full source or diff is copied.
+
+Decisions and known issues are explicit user notes. They are sanitized *before* being written; categories are retained but original secret values are not. Issues can be resolved, and replacement decisions can name a superseded ID. Refresh first validates the old record, recomputes all derived state, and preserves valid notes and resolution state. Malformed JSON, missing fields, schema/root mismatch or bad fingerprint stop refresh with a clear error so recoverable notes are not silently lost. The semantic fingerprint excludes timestamps. Serialized-byte and estimated-token counts are computed for the saved payload. `AtomicJsonStore` enforces in-root paths, rejects symlink destinations, writes a temporary JSON file and replaces atomically. `memory show/refresh/status/decision/issue` are presentation commands over the service.
+
+Project Memory is **not AI-generated long-term memory**. Code structure is evidence of structure, not proof of developer intent.
+
+## Phase 19: Session Handoff
+
+```text
+explicit task + current GitDiffReader + refreshed ProjectMemory
+        + optional Context Pack metadata + supplied CompactionResult
+                              |
+                              v
+                        HandoffService
+                              |
+                              v
+    immutable SessionHandoff -> local JSON + latest ID pointer
+                              |
+                              v
+                  HandoffView (current/stale reasons)
+```
+
+`HANDOFF_SCHEMA_VERSION = 1` is independent of both other schemas. A handoff requires caller task text. It captures current changed files/statuses/affected symbols, file hashes, current branch/HEAD, Project Memory fingerprint, explicit unresolved issues/next steps, optional Context Pack fingerprint/mode/query/selected paths/token estimate/warnings, and only actual supplied compacted test/tool outcomes. Context Pack excerpts and raw logs are not duplicated. No fabricated test status, intentions or next actions are recorded. All free-form input passes through `SecretRedactor` before persistence. `handoff create/latest/show/list` use local versioned records under `.middle_man_cache/handoffs/`; the latest pointer contains only a validated fingerprint ID, not an arbitrary path. Old records are never auto-deleted.
+
+On read, the service reindexes and refreshes Project Memory to report `HEAD_CHANGED`, `BRANCH_CHANGED`, `FILE_CHANGED`, `FILE_REMOVED`, and `PROJECT_MEMORY_CHANGED`. Old records remain available. Semantic fingerprints exclude creation time. The payload reports serialized bytes and `ceil(UTF-8 bytes / 4)` estimated tokens; a configurable soft limit warns without silent truncation. The documented reconstruction baseline is the full current text of deduplicated changed/referenced readable files, plus raw supplied tool output. The handoff payload is compared to that baseline; the difference may be negative. These are local context estimates, **not** Codex/Claude billing or plan usage. CLI reads stdin only with `--pytest-stdin`.
+
 ## Current Boundary
 
-The Lab remains locked through Phase 10. The local Gateway is implemented through Phase 17. Project memory, session handoff, MCP, Codex and Claude connections, provider adapters, external LLM summarization and Phase 18+ are not implemented.
+The Lab remains locked through Phase 10. The local Gateway is implemented through Phase 19. MCP, Codex and Claude connections, provider adapters, external AI/API calls, external LLM summarization, and Phase 20+ are not implemented.

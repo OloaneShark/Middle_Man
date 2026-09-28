@@ -2,7 +2,7 @@
 
 Standing between the request and the model.
 
-Middle_Man Lab implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. The separate Agent Gateway implements Phases 11-17: local repository indexing, incremental caching, explainable relevance search, Context Packs, Git diff-aware context, and deterministic output compaction. Neither subsystem requires a model, GPU, PyTorch, or provider API.
+Middle_Man Lab implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. The separate Agent Gateway implements Phases 11-19: local repository indexing, incremental caching, explainable relevance search, Context Packs, Git diff-aware context, deterministic output compaction, factual Project Memory, and Session Handoff. Neither subsystem requires a model, GPU, PyTorch, or provider API.
 
 ## Quick Start
 
@@ -118,6 +118,39 @@ python -m pytest -vv | python -m middle_man compact pytest
 
 Source excerpts and compacted output are sanitized before formatting or JSON export. The local redactor covers high-confidence assigned secrets, bearer tokens, credential URLs, and complete PEM private-key blocks; it reports categories without values. This is a best-effort safety layer, not a guarantee that every secret pattern is detected. The persistent index still contains no source copies. Local context-efficiency fixtures measure required file/symbol recall alongside estimated reduction; they make no claim about real agent usage.
 
+## Project Memory
+
+```bash
+python -m middle_man memory refresh --repo .
+python -m middle_man memory show --repo .
+python -m middle_man memory status --repo .
+python -m middle_man memory decision add "Keep Lab independent" --repo .
+python -m middle_man memory decision list --repo .
+python -m middle_man memory decision remove <id> --repo .
+python -m middle_man memory issue add "Known local issue" --repo .
+python -m middle_man memory issue list --repo .
+python -m middle_man memory issue resolve <id> --repo .
+```
+
+Project Memory is **not AI-generated long-term memory**. Its derived facts come from the current repository index and Git diff: language counts, technologies with evidence paths and hashes, bounded important components/symbols, branch/HEAD, and changed files/affected symbols. Technology detection uses manifests, known configuration files, and observed imports; it is conservative and may omit a technology when evidence is insufficient. Decisions and issues are explicitly user supplied and labeled as such, never inferred from code. Refresh recomputes derived facts, preserves valid user notes and resolved issue state, and changes the timestamp-free fingerprint when meaningful state changes. Invalid/corrupt memory fails clearly without overwriting potentially recoverable user notes.
+
+The versioned, atomic `.middle_man_cache/project_memory.json` stores compact metadata, not full source, diffs, Context Pack excerpts, or logs. User notes are sanitized with the existing best-effort `SecretRedactor` *before* persistence; redaction categories, not original values, are recorded. Default limits are 20 components and 40 symbols (configurable through `MemorySettings`). Size is reported in serialized bytes and heuristic estimated tokens.
+
+## Session Handoff
+
+```bash
+python -m middle_man handoff create --task "Investigate login" --pytest-output pytest-output.txt --next-step "Check expired state" --repo .
+python -m middle_man handoff create --task "Investigate login" --pytest-stdin --repo .
+python -m middle_man handoff create --task "Investigate login" --context-pack benchmark_results/login-pack.json --tool-output build.log --issue "Known failure" --repo .
+python -m middle_man handoff latest --repo .
+python -m middle_man handoff list --repo .
+python -m middle_man handoff show <fingerprint-or-unique-prefix> --json --repo .
+```
+
+A handoff requires an **explicit task**. It does not infer developer intent, test outcomes, unresolved bugs, or next steps from filenames. It records current Git changes and affected symbols, a refreshed Project Memory fingerprint, optional Context Pack metadata (never excerpts), actual supplied output compacted through Phase 17, explicit issues and next steps, and hashes of referenced files. Pytest stdin is read only with `--pytest-stdin`. Unresolved Project Memory issues may be carried into a handoff, but resolved issues are not. All free-form input is redacted before storage.
+
+Handoffs are immutable versioned JSON records under `.middle_man_cache/handoffs/`, with a safe latest-ID pointer. Old records are retained. Reading compares branch, HEAD, referenced file hashes/existence, and Project Memory fingerprint; stale records remain readable and show `BRANCH_CHANGED`, `HEAD_CHANGED`, `FILE_CHANGED`, `FILE_REMOVED`, and/or `PROJECT_MEMORY_CHANGED`. Handoff size and the local reconstruction estimate use `ceil(UTF-8 bytes / 4)`. The baseline is the full current text of deduplicated changed/selected readable files plus raw **supplied** tool output. This is a local estimated context comparison, not provider billing or plan usage; a negative difference means the handoff is larger than that baseline. A configurable soft limit warns without truncating facts.
+
 ## Scope
 
-Project memory (Phase 18), session handoff, MCP, Codex and Claude integrations, provider adapters, external AI calls, and real model execution are not implemented. The project makes no claim about provider token or plan-usage savings.
+MCP, Codex and Claude integrations, provider adapters, external AI/API calls, and real model execution are not implemented. Phase 20 has not begun. The project makes no claim about provider token or plan-usage savings.
