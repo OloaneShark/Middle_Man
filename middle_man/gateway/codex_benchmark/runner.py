@@ -20,6 +20,7 @@ from middle_man.gateway.codex_benchmark.infrastructure import WINDOWS_SANDBOX, p
 from middle_man.gateway.codex_benchmark.overlap import ContextDelivery, measure_delivery
 from middle_man.gateway.codex_benchmark.tasks import TASKS, TaskSpec, add_acceptance_tests, prepare_pair, source_fingerprint
 from middle_man.gateway.secrets import SecretRedactor
+from middle_man.mcp.usage import server_implementation_identity
 
 DEFAULT_MODEL = "gpt-6-sol"
 DEFAULT_EFFORT = "high"
@@ -63,6 +64,9 @@ class CodexBenchmarkRun:
     mcp_root_verified: bool = False
     primary_repo_usage_unchanged: bool = False
     preflight_passed: bool = False
+    task_version: int = 1
+    evaluator_version: int = 1
+    tool_profile: str = "none"
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,6 +78,7 @@ class CodexBenchmarkPair:
     optimized: CodexBenchmarkRun
     valid: bool
     quality_gate: str
+    task_version: int = 1
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,12 +105,19 @@ def _codex_version(command: str) -> str:
     return subprocess.run([command, "--version"], capture_output=True, text=True, check=True).stdout.strip()
 
 
+def _server_args(root: Path) -> list[str]:
+    source_root = Path(__file__).resolve().parents[3]
+    launcher = ("import sys;sys.path.insert(0,sys.argv.pop(1));"
+                "from middle_man.cli.main import main;main()")
+    return ["-I", "-c", launcher, str(source_root), "mcp", "serve", "--repo", str(root.resolve()),
+            "--tool-profile", "codex-core"]
+
+
 def _overrides(mode: str, root: Path) -> list[str]:
     settings = []
     if mode == "optimized":
-        args = ["-m", "middle_man", "mcp", "serve", "--repo", str(root.resolve())]
         settings = ["mcp_servers.middle-man.command=" + json.dumps(str(Path(sys.executable).resolve())),
-                    "mcp_servers.middle-man.args=" + json.dumps(args),
+                    "mcp_servers.middle-man.args=" + json.dumps(_server_args(root)),
                     "mcp_servers.middle-man.enabled=true", "mcp_servers.middle-man.required=true"]
     return [part for setting in settings for part in ("-c", setting)]
 
@@ -119,7 +131,10 @@ def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, mod
     return [command, "--no-daemon", "-a", "never", "exec", "--ignore-user-config", "--strict-config",
             "-c", f'windows.sandbox="{windows_sandbox}"', *_overrides(mode, root), "-C", str(root.resolve()),
             "-s", sandbox, "--ephemeral", "--json", "-m", model,
-            "-c", f'model_reasoning_effort="{effort}"', task.prompt + " Work only inside this benchmark working copy. Do not commit or push."]
+            "-c", f'model_reasoning_effort="{effort}"',
+            *(["--output-schema", str(Path(__file__).with_name("preemption_v2.schema.json").resolve())]
+              if task.schema_version == 2 else []),
+            task.prompt + " Work only inside this benchmark working copy. Do not commit or push."]
 
 
 def _mcp_preflight(command: str, mode: str, root: Path) -> None:
@@ -130,8 +145,10 @@ def _mcp_preflight(command: str, mode: str, root: Path) -> None:
     config = json.loads(result.stdout)
     if not config["enabled"]:
         raise RuntimeError("optimized Middle_Man MCP server is disabled")
-    if config["transport"]["args"][-1] != str(root.resolve()):
+    if config["transport"]["args"][config["transport"]["args"].index("--repo") + 1] != str(root.resolve()):
         raise RuntimeError("optimized MCP server is not scoped to its benchmark snapshot")
+    if config["transport"]["args"] != _server_args(root):
+        raise RuntimeError("optimized MCP arguments do not pin the current implementation and codex-core profile")
     if Path(config["transport"]["command"]).resolve() != Path(sys.executable).resolve():
         raise RuntimeError("optimized MCP command differs from the benchmark Python environment")
 
@@ -178,6 +195,28 @@ def _tests(root: Path) -> tuple[int, str]:
     return result.returncode, output
 
 
+_TASK_A_V2_EXPECTED = {
+    "victim_selection_symbol": "LargestPrivateOwnerPolicy",
+    "memory_control_symbol": "MemoryController",
+    "recomputation_symbol": "RECOMPUTE",
+    "output_preservation_symbol": "output_generated",
+    "test_file": "tests/test_phase_7_preemption.py",
+}
+
+
+def evaluate_preemption_v2(message: str) -> tuple[str, ...]:
+    try:
+        result = json.loads(message)
+    except (json.JSONDecodeError, TypeError):
+        return ("Task A v2 response is not a JSON object",)
+    if not isinstance(result, dict) or set(result) != set(_TASK_A_V2_EXPECTED) | {"explanation"}:
+        return ("Task A v2 response does not match the required fields",)
+    notes = [f"incorrect structured field: {key}" for key, expected in _TASK_A_V2_EXPECTED.items()
+             if not isinstance(result[key], str) or result[key].strip().replace("\\", "/") != expected]
+    if not isinstance(result["explanation"], str) or not result["explanation"].strip():
+        notes.append("Task A v2 explanation is empty")
+    return tuple(notes)
+
 def _evaluate(task: TaskSpec, root: Path, message: str, changed: tuple[str, ...],
               git_before: tuple[str, ...], git_after: tuple[str, ...], exit_code: int | None,
               file_change_events: int) -> tuple[bool, tuple[str, ...], int | None, str | None]:
@@ -187,6 +226,8 @@ def _evaluate(task: TaskSpec, root: Path, message: str, changed: tuple[str, ...]
     test_exit = None
     test_output = None
     if task.read_only:
+        if task.schema_version == 2:
+            notes.extend(evaluate_preemption_v2(message))
         for fact in task.required_facts:
             if fact.casefold() not in message.casefold():
                 notes.append(f"missing factual marker: {fact}")
@@ -243,6 +284,10 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
         warnings.append("primary repository MCP usage log changed during benchmark run")
     middleman_events = tuple((server, tool) for server, tool in trace.mcp_calls if server == "middle-man")
     warnings.extend(isolation_warnings(mode, entries, trace.mcp_calls))
+    if mode == "optimized" and any(
+        entry.get("server_implementation") != server_implementation_identity() for entry in entries
+    ):
+        warnings.append("optimized MCP implementation identity differs from current benchmark environment")
 
     if source_fingerprint(root) == fingerprint and not task.read_only:
         warnings.append("edit task made no source changes")
@@ -259,7 +304,7 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
     safe_event_path.write_text(json.dumps(trace.sanitized_events, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     valid = not (mode == "optimized" and not entries) and not any(
                     "contaminated" in item or "no Middle_Man" in item or "call counts differ" in item or
-                    "differs from configured" in item or "primary repository MCP usage log changed" in item
+                    "differs from configured" in item or "implementation identity differs" in item or "primary repository MCP usage log changed" in item
                     for item in warnings)
     return CodexBenchmarkRun(task.id, mode, order, codex_version, model, effort, verification, fingerprint,
                              start_head, timestamp, exit_code, elapsed, passed, notes, before, after, changed,
@@ -268,7 +313,10 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
                              trace.final_message, trace.event_count, tuple(warnings + list(trace.errors)), valid,
                              mcp_root_verified=mode == "optimized" and len(entries) == len(middleman_events) and
                              bool(entries) and primary_unchanged,
-                             primary_repo_usage_unchanged=primary_unchanged, preflight_passed=True, sandbox_mode=windows_sandbox)
+                             primary_repo_usage_unchanged=primary_unchanged, preflight_passed=True,
+                             sandbox_mode=windows_sandbox, task_version=task.schema_version,
+                             evaluator_version=task.schema_version,
+                             tool_profile="codex-core" if mode == "optimized" else "none")
 
 
 def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: int, command: str,
@@ -305,7 +353,8 @@ def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: i
         gate = "CORRECT_WITH_LESS_NATIVE_EXPLORATION"
     else:
         gate = "CORRECT_NO_MEASURED_EXPLORATION_GAIN"
-    return CodexBenchmarkPair(task.id, task.title, fingerprint, baseline_run, optimized_run, valid, gate)
+    return CodexBenchmarkPair(task.id, task.title, fingerprint, baseline_run, optimized_run, valid, gate,
+                              task.schema_version)
 
 
 def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base: Path,
@@ -314,6 +363,8 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
               snapshot_root: Path | None = None) -> CodexBenchmarkSuite:
     from middle_man.gateway.codex_benchmark.infrastructure import run_local_preflight
 
+    if {"preemption", "preemption-v2"}.issubset(task_ids):
+        raise ValueError("cannot run and aggregate Task A v1 and v2 in the same suite")
     command = _codex_executable()
     preflight = run_local_preflight(command, model=model, effort=effort, windows_sandbox=windows_sandbox,
                                     snapshot_root=snapshot_root, repository_root=repository_root)
@@ -364,6 +415,13 @@ def load_suite(repository_root: Path, run_id: str) -> dict[str, Any]:
 
 
 def aggregate_report(pairs: list[dict[str, Any]]) -> dict[str, Any]:
+    versions = {(pair.get("task_id", "legacy"), pair.get("task_version", 1)) for pair in pairs}
+    by_family: dict[str, set[int]] = {}
+    for task_id, task_version in versions:
+        family = "preemption" if task_id in {"preemption", "preemption-v2"} else task_id
+        by_family.setdefault(family, set()).add(task_version)
+    if any(len(items) > 1 for items in by_family.values()):
+        raise ValueError("cannot aggregate different versions of the same benchmark task")
     valid = [pair for pair in pairs if pair["valid"]]
 
     def summed(values: list[int]) -> int | None:
@@ -419,13 +477,13 @@ def format_report(data: dict[str, Any]) -> str:
     for pair in data["pairs"]:
         baseline, optimized = pair["baseline"], pair["optimized"]
         if not pair["valid"]:
-            lines.extend(["", f"{pair['title']} [{pair['quality_gate']}]",
+            lines.extend(["", f"{pair['title']} v{pair.get('task_version', 1)} [{pair['quality_gate']}]",
                           f"Invalid A/B pair; diagnostics only. baseline warnings={baseline['warnings']} "
                           f"optimized warnings={optimized['warnings']}",
                           f"Correctness notes: baseline={baseline['correctness_notes']} "
                           f"optimized={optimized['correctness_notes']}"])
             continue
-        lines.extend(["", f"{pair['title']} [{pair['quality_gate']}]",
+        lines.extend(["", f"{pair['title']} v{pair.get('task_version', 1)} [{pair['quality_gate']}]",
                       f"Correctness: baseline={baseline['correctness']} optimized={optimized['correctness']}",
                       f"Native reads: {baseline['native']['file_reads']} -> {optimized['native']['file_reads']}; "
                       f"unique files: {len(baseline['native']['unique_files'])} -> {len(optimized['native']['unique_files'])}; "

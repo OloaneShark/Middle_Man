@@ -33,5 +33,8 @@ middle-man = "middle_man.cli.main:main"
 testpaths = ["tests"]
 pythonpath = ["."]
 
+[tool.setuptools.package-data]
+"middle_man.gateway.codex_benchmark" = ["*.schema.json"]
+
 [tool.setuptools.packages.find]
 include = ["middle_man*"]

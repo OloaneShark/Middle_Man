@@ -1,0 +1,4 @@
+{"type":"item.completed","item":{"type":"command_execution","command":"\"C:\\\\WINDOWS\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\" -Command \"Get-Content -LiteralPath 'middle_man\\\\lab\\\\preemption.py'\""}}
+{"type":"item.completed","item":{"type":"command_execution","command":"\"C:\\\\WINDOWS\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\" -Command \"Get-Content -LiteralPath 'tests\\\\test_phase_7_preemption.py'\""}}
+{"type":"item.completed","item":{"type":"command_execution","command":"\"C:\\\\WINDOWS\\\\System32\\\\WindowsPowerShell\\\\v1.0\\\\powershell.exe\" -Command '$i=0; Get-Content -LiteralPath '\"'middle_man/lab/work.py' | ForEach-Object { $i++ }'"}}
+{"type":"item.completed","item":{"type":"command_execution","command":"rg 'preemption.py' middle_man"}}

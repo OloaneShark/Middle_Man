@@ -21,7 +21,7 @@ def add_codex_benchmark_commands(subparsers: argparse._SubParsersAction) -> None
     codex_commands = codex.add_subparsers(dest="codex_action", required=True)
     benchmark = codex_commands.add_parser("benchmark", help="isolated Codex A/B context benchmark")
     actions = benchmark.add_subparsers(dest="benchmark_action", required=True)
-    listing = actions.add_parser("list", help="list the three benchmark tasks")
+    listing = actions.add_parser("list", help="list versioned benchmark tasks")
     listing.add_argument("--json", action="store_true")
     preflight = actions.add_parser("preflight", help="check local Codex sandbox and MCP infrastructure without inference")
     preflight.add_argument("--repo", type=Path, default=Path("."))
@@ -52,7 +52,7 @@ def add_codex_benchmark_commands(subparsers: argparse._SubParsersAction) -> None
 def run_codex_benchmark(args: argparse.Namespace) -> None:
     action = args.benchmark_action
     if action == "list":
-        data = [{"id": task.id, "title": task.title, "read_only": task.read_only} for task in TASKS]
+        data = [{"id": task.id, "title": task.title, "read_only": task.read_only, "task_version": task.schema_version} for task in TASKS]
         print(json.dumps(data, indent=2) if args.json else "\n".join(
             f"{item['id']}: {item['title']} ({'read-only' if item['read_only'] else 'edit'})" for item in data))
         return
@@ -77,7 +77,7 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
                 f"{name}: overlap={item['overlap_ratio']} repeated_bytes={item['repeated_source_bytes']} "
                 f"unique_bytes={item['unique_source_bytes']}" for name, item in overlap.items()))
         return
-    tasks = TASKS if action == "run-all" else tuple(task for task in TASKS if task.id == args.task)
+    tasks = tuple(task for task in TASKS if task.id != "preemption") if action == "run-all" else tuple(task for task in TASKS if task.id == args.task)
     if args.timeout <= 0:
         raise SystemExit("--timeout must be positive")
     base = root / ".middle_man_cache" / "codex_benchmarks"

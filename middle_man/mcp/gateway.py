@@ -19,6 +19,7 @@ from middle_man.gateway.project_memory import ProjectMemoryService
 from middle_man.gateway.relevance import ContextQuery, RelevanceEngine
 from middle_man.gateway.secrets import SecretRedactor
 from middle_man.gateway.tokens import HeuristicTokenEstimator
+from middle_man.mcp.delivery import DeliveredRange, DeliveryLedger
 from middle_man.mcp.usage import MCPUsageLog
 
 MAX_CONTEXT_TOKENS = 12_000
@@ -40,6 +41,7 @@ class _Payload:
     metrics: dict[str, int]
     pack_fingerprint: str | None = None
     generation: int | None = None
+    delivery_excerpts: tuple[DeliveredRange, ...] | None = None
 
 
 class MCPGateway:
@@ -54,6 +56,7 @@ class MCPGateway:
         self.compactor = OutputCompactor()
         self.usage = MCPUsageLog(config)
         self._packs: OrderedDict[str, ContextPack] = OrderedDict()
+        self.delivery_ledger = DeliveryLedger()
 
     def _sanitize(self, value: Any, categories: set[str]) -> Any:
         if isinstance(value, str):
@@ -76,15 +79,21 @@ class MCPGateway:
                 data["redaction_categories"] = sorted(set(data.get("redaction_categories", ())) | categories)
             metrics = {**payload.metrics, "result_tokens": self.estimator.estimate(json.dumps(data, ensure_ascii=False))}
             delivery = None
-            if name in {"middleman_context_pack", "middleman_expand_context"}:
+            if name in {"middleman_context_pack", "middleman_context", "middleman_expand_context"}:
                 delivery = []
-                for excerpt in data["excerpts"]:
+                if payload.delivery_excerpts is None:
+                    excerpts = data["excerpts"]
+                else:
+                    excerpts = [self._sanitize(asdict(item), categories) for item in payload.delivery_excerpts]
+                for excerpt in excerpts:
                     lines = excerpt["text"].splitlines(keepends=True)
                     delivery.append({"path": excerpt["path"], "content_hash": excerpt["content_hash"],
                                      "start_line": excerpt["start_line"], "end_line": excerpt["end_line"],
                                      "line_bytes": [len(line.encode("utf-8")) for line in lines]})
             self.usage.record(name, inputs, metrics, pack_fingerprint=payload.pack_fingerprint,
                               generation=payload.generation, delivery=delivery)
+            if payload.pack_fingerprint is not None and delivery is not None:
+                self.delivery_ledger.commit(payload.pack_fingerprint, delivery)
             return data
         except Exception as exc:
             self.usage.record(name, inputs, {}, error=type(exc).__name__)
@@ -152,6 +161,45 @@ class MCPGateway:
                                "selected_tokens": metrics.estimated_selected_tokens,
                                "tokens_avoided": metrics.estimated_tokens_avoided},
                         pack.fingerprint, pack.generation)
+
+    def _core_payload(self, pack: ContextPack, *, parent: str | None = None,
+                      force_replay: bool = False) -> _Payload:
+        if pack.metrics.estimated_selected_tokens > MAX_CONTEXT_TOKENS:
+            raise ValueError("required source exceeds the MCP Context Pack limit; use a narrower query or native read")
+        already = self.delivery_ledger.already_delivered(pack.fingerprint)
+        delivered = self.delivery_ledger.select(pack.fingerprint, pack.excerpts, force_replay=force_replay)
+        excerpts = [{"path": item.path, "start_line": item.start_line, "end_line": item.end_line,
+                     "text": item.text, "symbol": item.symbols[0] if item.symbols else None,
+                     "reason": item.reasons[0] if item.reasons else None} for item in delivered]
+        metrics = pack.metrics
+        data = {"fingerprint": pack.fingerprint, "mode": pack.mode.value, "generation": pack.generation,
+                "excerpts": excerpts, "warnings": list(pack.warnings),
+                "metrics": {"selected_tokens": metrics.estimated_selected_tokens,
+                            "candidate_tokens": metrics.estimated_raw_candidate_tokens},
+                "already_delivered": already, "unchanged": already and not delivered,
+                "delta_only": parent is not None}
+        if parent is not None:
+            data["parent_fingerprint"] = parent
+        return _Payload(data, {**self._cache_stats(),
+                               "raw_candidate_tokens": metrics.estimated_raw_candidate_tokens,
+                               "selected_tokens": metrics.estimated_selected_tokens,
+                               "tokens_avoided": metrics.estimated_tokens_avoided},
+                        pack.fingerprint, pack.generation, delivered)
+
+    def context(self, task: str, *, mode: str = "balanced", max_context_tokens: int = 6000,
+                error_text: str = "", paths: list[str] | None = None,
+                symbols: list[str] | None = None, force_replay: bool = False) -> dict[str, Any]:
+        def produce() -> _Payload:
+            self._limits(None, max_context_tokens)
+            query = self._query(task, paths, symbols, error_text)
+            pack = self.builder.build(query, mode=mode, max_context_tokens=max_context_tokens)
+            payload = self._core_payload(pack, force_replay=force_replay)
+            self._remember(pack)
+            return payload
+        return self._execute("middleman_context", {"task": task, "mode": mode,
+                                                  "budget": max_context_tokens, "error_text": error_text,
+                                                  "paths": paths, "symbols": symbols,
+                                                  "force_replay": force_replay}, produce)
 
     def project_state(self) -> dict[str, Any]:
         def produce() -> _Payload:
@@ -223,7 +271,7 @@ class MCPGateway:
                                                        "symbols": symbols}, produce)
 
     def expand_context(self, fingerprint: str, kind: str, *, target: str | None = None,
-                       context_lines: int = 3, max_context_tokens: int | None = None) -> dict[str, Any]:
+                       context_lines: int = 3, max_context_tokens: int | None = None, core: bool = False) -> dict[str, Any]:
         def produce() -> _Payload:
             self._limits(None, max_context_tokens)
             pack = self._packs.get(fingerprint)
@@ -236,12 +284,12 @@ class MCPGateway:
             request = ExpansionRequest(kind, safe_target, context_lines)
             budget = min(MAX_CONTEXT_TOKENS, pack.max_context_tokens * 2) if max_context_tokens is None else max_context_tokens
             expanded = self.builder.expand(pack, request, max_context_tokens=budget)
-            payload = self._pack_payload(expanded)
+            payload = self._core_payload(expanded, parent=fingerprint) if core else self._pack_payload(expanded)
             self._remember(expanded)
             return payload
         return self._execute("middleman_expand_context", {"fingerprint": fingerprint, "kind": kind,
                                                          "target": target, "context_lines": context_lines,
-                                                         "budget": max_context_tokens}, produce)
+                                                         "budget": max_context_tokens, "core": core}, produce)
 
     def changed_context(self, path: str | None = None) -> dict[str, Any]:
         def produce() -> _Payload:

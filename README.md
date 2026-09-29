@@ -160,7 +160,7 @@ pip install -e ".[mcp]"
 python -m middle_man mcp serve --repo .
 ```
 
-The server exposes ten bounded, read-only Gateway tools for state, handoff, relevance, Context Packs, expansion, Git changes, output compaction, context estimates, selection explanations, and repository structure. This command speaks MCP on stdout; use it through an MCP client rather than as an interactive shell command. Codex registration, verification, fallback behavior, and usage accounting are in [docs/CODEX_SETUP.md](docs/CODEX_SETUP.md). The root [AGENTS.md](AGENTS.md) gives Codex short repository-specific guidance.
+The default `codex-core` server exposes five bounded, read-only tools. A fresh scoped task can call `middleman_context` once for redacted source; repeated packs suppress already delivered lines and expansion returns only new ranges. Use `--tool-profile full` for the original ten-tool diagnostic surface. This command speaks MCP on stdout; use it through an MCP client rather than as an interactive shell command. Codex registration, verification, fallback behavior, and usage accounting are in [docs/CODEX_SETUP.md](docs/CODEX_SETUP.md). The root [AGENTS.md](AGENTS.md) gives Codex short repository-specific guidance.
 
 ```bash
 python -m middle_man mcp usage --repo . --json
@@ -170,15 +170,15 @@ Local usage records contain only metadata, input hashes, and sanitized excerpt r
 
 ## Real Codex Benchmark
 
-Phase 22 adds an isolated, correctness-first three-task A/B harness. It uses a committed Middle_Man snapshot for read-only architecture understanding and deterministic fixture repositories for an OAuth bug fix and an upload feature. Live runs require an explicit external-service confirmation; normal tests and dry runs do not call Codex.
+Phase 22 adds an isolated, correctness-first A/B harness with versioned Task A and two edit fixtures. It uses a committed Middle_Man snapshot for read-only architecture understanding and deterministic fixture repositories for an OAuth bug fix and an upload feature. Live runs require an explicit external-service confirmation; normal tests and dry runs do not call Codex.
 
 ```bash
 python -m middle_man codex benchmark list
 python -m middle_man codex benchmark run-all --repo . --dry-run
-python -m middle_man codex benchmark run-all --repo . --confirm-external-service
+python scripts/measure_phase22_1.py  # local-only heuristic measurement
 ```
 
-The first real suite attempt was **infrastructure-invalid**: Codex's Windows sandbox rejected native commands/edits, and the Codex host did not honor the snapshot MCP root in that run. The remaining run was stopped to avoid wasting usage. No valid A/B savings or correctness-preservation conclusion is available yet. Methodology, metrics, results, and limitations are in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
+An early suite attempt was infrastructure-invalid. The first **infrastructure-valid** Task A v1 pair was **FAIL/FAIL**: optimized used fewer native calls/searches but **more file reads and far more Codex-reported input tokens** (391,753 vs 144,903). Phase 22.1 adds a versioned structured Task A gate, pinned current MCP server, a smaller core tool surface, slimmer responses, and metadata-only delivery deduplication. Local heuristic payload reductions are candidate optimizations; a new externally authorized Task A v2 pair is needed before any real token-saving or correctness claim. Methodology, metrics, results, and limitations are in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
 
 ## Scope
 

@@ -9,9 +9,8 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from middle_man.gateway.secrets import SecretRedactor
+from middle_man.gateway.codex_benchmark.native_reads import explicit_read_paths, has_explicit_read
 
-_FILE = re.compile(r"(?<![\w.])(?:[\w.-]+[/\\])*[\w.-]+\.(?:py|md|toml|json|yaml|yml|txt|css)(?!\w)", re.I)
-_READ = re.compile(r"(?i)\b(?:Get-Content|cat|type|sed|head|tail)\b")
 _LIST = re.compile(r"(?i)\b(?:Get-ChildItem|ls|dir)\b|\brg\s+--files\b")
 _SEARCH = re.compile(r"(?i)\b(?:rg|grep|Select-String|findstr)\b")
 _GIT = re.compile(r"(?i)\bgit\s+(?:status|diff|show|log|ls-files|grep)\b")
@@ -55,16 +54,6 @@ class ParsedEvents:
 
 def _count(value: Any) -> int | None:
     return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else None
-
-
-def _explicit_files(command: str, root: Path) -> tuple[str, ...]:
-    files: list[str] = []
-    for match in _FILE.finditer(command):
-        candidate = match.group(0).replace("\\", "/")
-        path = (root / candidate).resolve()
-        if path.is_relative_to(root.resolve()) and path.is_file():
-            files.append(path.relative_to(root.resolve()).as_posix())
-    return tuple(dict.fromkeys(files))
 
 
 def parse_codex_events(lines: Iterable[str], root: Path) -> ParsedEvents:
@@ -122,8 +111,8 @@ def parse_codex_events(lines: Iterable[str], root: Path) -> ParsedEvents:
                     command = " ".join(str(part) for part in command)
                 command = redactor.redact(str(command)).text[:2000]
                 native_commands.append(command)
-                paths = _explicit_files(command, root)
-                if _READ.search(command):
+                paths = explicit_read_paths(command, root)
+                if has_explicit_read(command):
                     read_count += len(paths) or 1
                     file_reads.extend(paths)
                 elif _LIST.search(command):
@@ -135,7 +124,7 @@ def parse_codex_events(lines: Iterable[str], root: Path) -> ParsedEvents:
                 else:
                     unclassified += 1
                 safe_events.append({"type": kind, "item_type": item_type, "command": command,
-                                    "explicit_read_paths": list(paths) if _READ.search(command) else []})
+                                    "explicit_read_paths": list(paths) if has_explicit_read(command) else []})
             elif item_type == "mcp_tool_call":
                 server = str(item.get("server", ""))
                 tool = str(item.get("tool", item.get("name", "")))

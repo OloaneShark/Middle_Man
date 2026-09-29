@@ -7,13 +7,28 @@ import json
 import os
 from collections import Counter
 from datetime import datetime, timezone
+from functools import lru_cache
+from importlib.metadata import version
 from pathlib import Path
 from typing import Any
 
 from middle_man.gateway.config import GatewayConfig
 from middle_man.gateway.state_store import StateStoreError
 
-MCP_USAGE_SCHEMA_VERSION = 1
+MCP_USAGE_SCHEMA_VERSION = 2
+
+
+@lru_cache(maxsize=1)
+def server_implementation_identity() -> dict[str, str | int]:
+    package = Path(__file__).resolve().parents[1]
+    names = ("mcp/server.py", "mcp/gateway.py", "mcp/usage.py", "mcp/delivery.py",
+             "gateway/context_builder.py", "gateway/context_models.py")
+    digest = hashlib.sha256()
+    for name in names:
+        digest.update(name.encode("utf-8") + b"\0" + (package / name).read_bytes() + b"\0")
+    return {"package_version": version("middle-man"),
+            "usage_schema_version": MCP_USAGE_SCHEMA_VERSION,
+            "fingerprint": digest.hexdigest()}
 _COUNTERS = ("raw_candidate_tokens", "selected_tokens", "tokens_avoided", "compaction_original_tokens",
              "compaction_result_tokens", "result_tokens", "index_cache_hits", "index_cache_misses")
 
@@ -37,6 +52,7 @@ class MCPUsageLog:
         query_hash = hashlib.sha256(json.dumps(inputs, sort_keys=True, default=str, ensure_ascii=False).encode("utf-8")).hexdigest()
         entry: dict[str, Any] = {
             "schema_version": MCP_USAGE_SCHEMA_VERSION,
+            "server_implementation": server_implementation_identity(),
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "tool": tool,
             "query_fingerprint": query_hash,
@@ -68,7 +84,7 @@ class MCPUsageLog:
                 with self.path.open("r", encoding="utf-8") as stream:
                     for line in stream:
                         entry = json.loads(line)
-                        if entry["schema_version"] != MCP_USAGE_SCHEMA_VERSION:
+                        if entry["schema_version"] not in {1, MCP_USAGE_SCHEMA_VERSION}:
                             raise ValueError("incompatible usage log schema")
                         calls[entry["tool"]] += 1
                         totals["errors"] += not entry["success"]
@@ -80,7 +96,7 @@ class MCPUsageLog:
             except (OSError, ValueError, KeyError, TypeError) as exc:
                 raise StateStoreError(f"invalid MCP usage log: {exc}") from exc
         return {"total_calls": sum(calls.values()), "calls_by_tool": dict(sorted(calls.items())),
-                "context_packs_built": completed["middleman_context_pack"],
+                "context_packs_built": completed["middleman_context_pack"] + completed["middleman_context"],
                 "expansions": completed["middleman_expand_context"], "errors": totals["errors"],
                 "estimated_context_tokens": {key: totals[key] for key in _COUNTERS},
                 "basis": "Middle_Man heuristic estimates; not Codex or provider usage"}

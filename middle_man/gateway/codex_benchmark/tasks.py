@@ -19,6 +19,7 @@ class TaskSpec:
     source: str
     required_facts: tuple[str, ...] = ()
     acceptance_test: str | None = None
+    schema_version: int = 1
 
 
 TASKS = (
@@ -104,6 +105,14 @@ TASKS = (
                         service.upload("a.txt", b"c")
                     self.assertEqual(service.count(), 1)
             '''),
+    ),
+    TaskSpec(
+        "preemption-v2", "KV preemption architecture (structured v2)",
+        "Explain how KV preemption works in Middle_Man. For victim selection, memory release/control, "
+        "recomputation, output preservation, and the proving test, name the concrete implementation "
+        "symbol, component, or test file used by this repository. Give a concise explanation. "
+        "Do not modify files.",
+        True, "committed-middle-man", schema_version=2,
     ),
 )
 

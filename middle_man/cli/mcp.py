@@ -16,6 +16,7 @@ def add_mcp_commands(subparsers: argparse._SubParsersAction) -> None:
     actions = mcp.add_subparsers(dest="mcp_action", required=True)
     serve = actions.add_parser("serve", help="serve one explicit repository over stdio")
     serve.add_argument("--repo", type=Path, required=True)
+    serve.add_argument("--tool-profile", choices=("codex-core", "full"), default="codex-core")
     usage = actions.add_parser("usage", help="show local MCP invocation counts and estimates")
     usage.add_argument("--repo", type=Path, required=True)
     usage.add_argument("--json", action="store_true")
@@ -39,4 +40,4 @@ def run_mcp(args: argparse.Namespace) -> None:
         raise SystemExit('MCP support is optional. Install it with: pip install -e ".[mcp]"')
     from middle_man.mcp.server import serve
 
-    serve(config)
+    serve(config, tool_profile=args.tool_profile)

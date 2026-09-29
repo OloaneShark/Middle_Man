@@ -28,7 +28,7 @@ class ContextDelivery:
 def measure_delivery(entries: Iterable[dict[str, Any]]) -> ContextDelivery:
     records = tuple(entries)
     pack_entries = tuple(item for item in records if item.get("success") and item.get("tool") in
-                         {"middleman_context_pack", "middleman_expand_context"})
+                         {"middleman_context_pack", "middleman_context", "middleman_expand_context"})
     selected = sum(int(item.get("metrics", {}).get("selected_tokens", 0)) for item in pack_entries)
     candidate = sum(int(item.get("metrics", {}).get("raw_candidate_tokens", 0)) for item in pack_entries)
     result = sum(int(item.get("metrics", {}).get("result_tokens", 0)) for item in pack_entries)
@@ -69,6 +69,6 @@ def measure_delivery(entries: Iterable[dict[str, Any]]) -> ContextDelivery:
         tuple(sorted(paths)), tuple(ranges), candidate, selected, result, all_result,
         unique, repeated, (unique + 3) // 4, (repeated + 3) // 4,
         repeated / total if available and total else None,
-        result - selected, ((unique + 3) // 4) / result if available and result else None,
+        result - ((total + 3) // 4 if available else selected), ((unique + 3) // 4) / result if available and result else None,
         available,
     )

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import json
 from contextlib import contextmanager
 
 import platform
@@ -76,8 +77,10 @@ def _probe(command: str, root: Path, permission: str, script: str,
 async def _snapshot_mcp_call(root: Path) -> bool:
     from mcp import Client, StdioServerParameters
 
+    from middle_man.gateway.codex_benchmark.runner import _server_args
+
     params = StdioServerParameters(command=str(Path(sys.executable).resolve()),
-                                   args=["-m", "middle_man", "mcp", "serve", "--repo", str(root)])
+                                   args=_server_args(root), cwd=root)
     async with Client(params, raise_exceptions=True, read_timeout_seconds=15) as client:
         response = await client.call_tool("middleman_project_state", {})
         return not response.is_error
@@ -133,7 +136,12 @@ def run_local_preflight(command: str, *, model: str, effort: str,
             response_ok = asyncio.run(_snapshot_mcp_call(root))
             snapshot_log = root / ".middle_man_cache" / "mcp_usage.jsonl"
             primary_unchanged = repository_root is not None and primary_before == primary_usage_signature(repository_root)
-            root_ok = response_ok and snapshot_log.is_file() and bool(snapshot_log.read_text(encoding="utf-8").strip()) and primary_unchanged
+            from middle_man.mcp.usage import server_implementation_identity
+
+            records = [json.loads(line) for line in snapshot_log.read_text(encoding="utf-8").splitlines()] if snapshot_log.is_file() else []
+            root_ok = (response_ok and bool(records) and primary_unchanged and
+                       all(item.get("server_implementation") == server_implementation_identity()
+                           for item in records))
             if not root_ok:
                 errors.append("snapshot MCP call did not produce an isolated snapshot-local usage record")
         except Exception as exc:

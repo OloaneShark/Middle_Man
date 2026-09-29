@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "victim_selection_symbol": {"type": "string"},
+    "memory_control_symbol": {"type": "string"},
+    "recomputation_symbol": {"type": "string"},
+    "output_preservation_symbol": {"type": "string"},
+    "test_file": {"type": "string"},
+    "explanation": {"type": "string"}
+  },
+  "required": ["victim_selection_symbol", "memory_control_symbol", "recomputation_symbol", "output_preservation_symbol", "test_file", "explanation"],
+  "additionalProperties": false
+}

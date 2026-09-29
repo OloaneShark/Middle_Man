@@ -15,19 +15,31 @@ from middle_man.gateway.state_store import StateStoreError
 from middle_man.mcp.gateway import MCPGateway
 
 SERVER_NAME = "middle-man"
-SERVER_INSTRUCTIONS = (
-    "Use Middle_Man before broad repository scans when repository context is needed. "
-    "Check the latest handoff or project state, find relevant paths, build a bounded SAFE or BALANCED "
-    "Context Pack, and expand only where needed. Compact large tool output. Native repository reads "
-    "remain available when context is insufficient, stale, or the exact full source is needed; correctness comes first."
+CORE_INSTRUCTIONS = (
+    "For a fresh scoped repository task, call middleman_context directly. "
+    "Use session_handoff for continuation, project_state only for broad orientation, "
+    "expand_context only when excerpts lack detail, and compact_output for large output. "
+    "Native search and reads remain available when exact or missing source is needed."
+)
+FULL_INSTRUCTIONS = (
+    "Full diagnostic Middle_Man profile: find_context ranks without source; context_pack "
+    "builds a rich bounded source pack; expand_context adds detail. Native reads and tests "
+    "remain available for exact or missing context."
 )
 
-
-def create_server(config: GatewayConfig) -> MCPServer:
+def create_server(config: GatewayConfig, tool_profile: str = "full") -> MCPServer:
+    if tool_profile not in {"full", "codex-core"}:
+        raise ValueError("tool_profile must be full or codex-core")
     gateway = MCPGateway(config)
-    server = MCPServer(SERVER_NAME, version=version("middle-man"), instructions=SERVER_INSTRUCTIONS,
+    server = MCPServer(SERVER_NAME, version=version("middle-man"), instructions=CORE_INSTRUCTIONS if tool_profile == "codex-core" else FULL_INSTRUCTIONS,
                        log_level="WARNING")
     annotation = ToolAnnotations(read_only_hint=True, open_world_hint=False, destructive_hint=False)
+
+    def full_only(func: Callable[..., dict[str, Any]]) -> Callable[..., dict[str, Any]]:
+        return server.tool(annotations=annotation)(func) if tool_profile == "full" else func
+
+    def core_only(func: Callable[..., dict[str, Any]]) -> Callable[..., dict[str, Any]]:
+        return server.tool(annotations=annotation)(func) if tool_profile == "codex-core" else func
 
     def invoke(operation: Callable[[], dict[str, Any]]) -> dict[str, Any]:
         try:
@@ -50,14 +62,14 @@ def create_server(config: GatewayConfig) -> MCPServer:
         """Latest factual task handoff and stale status; use when continuing work, not as inferred intent."""
         return invoke(gateway.session_handoff)
 
-    @server.tool(annotations=annotation)
+    @full_only
     def middleman_find_context(task: str, top_k: int | None = None, error_text: str = "",
                                paths: list[str] | None = None, symbols: list[str] | None = None) -> dict[str, Any]:
         """Rank relevant paths, symbols, and reasons without source; use to decide where to look, not to read code."""
         return invoke(lambda: gateway.find_context(task, top_k=top_k, error_text=error_text,
                                                    paths=paths, symbols=symbols))
 
-    @server.tool(annotations=annotation)
+    @full_only
     def middleman_context_pack(task: str, mode: str = "safe", max_context_tokens: int = 6000,
                                top_k: int | None = None, error_text: str = "", paths: list[str] | None = None,
                                symbols: list[str] | None = None) -> dict[str, Any]:
@@ -65,14 +77,23 @@ def create_server(config: GatewayConfig) -> MCPServer:
         return invoke(lambda: gateway.context_pack(task, mode=mode, max_context_tokens=max_context_tokens,
                                                    top_k=top_k, error_text=error_text, paths=paths, symbols=symbols))
 
+    @core_only
+    def middleman_context(task: str, mode: str = "balanced", max_context_tokens: int = 6000,
+                          error_text: str = "", paths: list[str] | None = None,
+                          symbols: list[str] | None = None, force_replay: bool = False) -> dict[str, Any]:
+        """Get bounded redacted source for a scoped repository task in one call; repeat only with force_replay."""
+        return invoke(lambda: gateway.context(task, mode=mode, max_context_tokens=max_context_tokens,
+                                              error_text=error_text, paths=paths, symbols=symbols,
+                                              force_replay=force_replay))
+
     @server.tool(annotations=annotation)
     def middleman_expand_context(fingerprint: str, kind: str, target: str | None = None,
                                  context_lines: int = 3, max_context_tokens: int | None = None) -> dict[str, Any]:
         """Expand a prior Context Pack by file, symbol, imports, tests, or lines; use only when initial excerpts lack detail."""
-        return invoke(lambda: gateway.expand_context(fingerprint, kind, target=target,
+        return invoke(lambda: gateway.expand_context(fingerprint, kind, target=target, core=tool_profile == "codex-core",
                                                      context_lines=context_lines, max_context_tokens=max_context_tokens))
 
-    @server.tool(annotations=annotation)
+    @full_only
     def middleman_changed_context(path: str | None = None) -> dict[str, Any]:
         """Current Git change paths, status, symbols, and hunk ranges; use for change awareness, not raw patch text."""
         return invoke(lambda: gateway.changed_context(path))
@@ -82,19 +103,19 @@ def create_server(config: GatewayConfig) -> MCPServer:
         """Redact and condense supplied pytest/log/Docker/Git-status text or current Git diff; use for large output, not tiny results."""
         return invoke(lambda: gateway.compact_output(output_type, text, max_tokens=max_tokens))
 
-    @server.tool(annotations=annotation)
+    @full_only
     def middleman_context_stats(fingerprint: str | None = None, task: str | None = None,
                                 mode: str = "safe", max_context_tokens: int = 6000) -> dict[str, Any]:
         """Estimated Context Pack sizes and reduction; use for local context accounting, not Codex billing or quota."""
         return invoke(lambda: gateway.context_stats(fingerprint=fingerprint, task=task, mode=mode,
                                                     max_context_tokens=max_context_tokens))
 
-    @server.tool(annotations=annotation)
+    @full_only
     def middleman_explain_selection(task: str, path: str | None = None, top_k: int = 10) -> dict[str, Any]:
         """Deterministic ranking reasons for a task/path; use to audit selection, not as proof of developer intent."""
         return invoke(lambda: gateway.explain_selection(task, path=path, top_k=top_k))
 
-    @server.tool(annotations=annotation)
+    @full_only
     def middleman_repo_map() -> dict[str, Any]:
         """Bounded language, component, symbol and relationship counts; use for structure, not complete file listings."""
         return invoke(gateway.repo_map)
@@ -102,5 +123,5 @@ def create_server(config: GatewayConfig) -> MCPServer:
     return server
 
 
-def serve(config: GatewayConfig) -> None:
-    create_server(config).run(transport="stdio")
+def serve(config: GatewayConfig, tool_profile: str = "codex-core") -> None:
+    create_server(config, tool_profile=tool_profile).run(transport="stdio")

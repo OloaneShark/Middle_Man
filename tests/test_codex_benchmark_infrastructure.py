@@ -24,7 +24,9 @@ def test_invocations_share_explicit_elevated_sandbox_and_preserve_path(tmp_path:
     assert not any("mcp_servers." in arg for arg in baseline)
     settings = {optimized[index + 1].split("=", 1)[0]: optimized[index + 1].split("=", 1)[1]
                 for index, arg in enumerate(optimized[:-1]) if arg == "-c" and "mcp_servers." in optimized[index + 1]}
-    assert json.loads(settings["mcp_servers.middle-man.args"])[-1] == str(root.resolve())
+    args = json.loads(settings["mcp_servers.middle-man.args"])
+    assert args[args.index("--repo") + 1] == str(root.resolve())
+    assert args[0] == "-I" and args[-1] == "codex-core"
     assert settings["mcp_servers.middle-man.required"] == "true"
 
 

@@ -69,7 +69,7 @@ def test_missing_delivery_is_unavailable_not_zero() -> None:
 
 
 def test_snapshot_isolation_and_fixture_preconditions(tmp_path: Path) -> None:
-    for task in TASKS[1:]:
+    for task in (task for task in TASKS if not task.read_only):
         pair = tmp_path / task.id
         baseline, optimized, fingerprint = prepare_pair(task, pair, "Use Middle_Man for broad context.\n")
         assert source_fingerprint(baseline) == source_fingerprint(optimized) == fingerprint
@@ -96,7 +96,9 @@ def test_invocation_isolation_and_windows_path() -> None:
     assert "--json" in baseline and "--ephemeral" in baseline
     assert 'model_reasoning_effort="high"' in baseline
     override = next(part for part in optimized if part.startswith("mcp_servers.middle-man.args="))
-    assert json.loads(override.split("=", 1)[1])[-1] == str(root.resolve())
+    args = json.loads(override.split("=", 1)[1])
+    assert args[args.index("--repo") + 1] == str(root.resolve())
+    assert args[-1] == "codex-core" and args[0] == "-I"
 
 
 def test_baseline_contamination_and_read_only_mutation_are_failures(tmp_path: Path) -> None:

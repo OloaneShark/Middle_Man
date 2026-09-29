@@ -68,6 +68,6 @@ def test_in_memory_protocol(repo: Path) -> None:
 def test_real_stdio_protocol(repo: Path) -> None:
     params = StdioServerParameters(
         command=sys.executable,
-        args=["-m", "middle_man", "mcp", "serve", "--repo", str(repo)],
+        args=["-m", "middle_man", "mcp", "serve", "--repo", str(repo), "--tool-profile", "full"],
     )
     asyncio.run(_exercise(Client(params, raise_exceptions=True, read_timeout_seconds=15)))
