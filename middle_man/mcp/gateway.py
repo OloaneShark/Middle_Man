@@ -75,8 +75,16 @@ class MCPGateway:
             if categories:
                 data["redaction_categories"] = sorted(set(data.get("redaction_categories", ())) | categories)
             metrics = {**payload.metrics, "result_tokens": self.estimator.estimate(json.dumps(data, ensure_ascii=False))}
+            delivery = None
+            if name in {"middleman_context_pack", "middleman_expand_context"}:
+                delivery = []
+                for excerpt in data["excerpts"]:
+                    lines = excerpt["text"].splitlines(keepends=True)
+                    delivery.append({"path": excerpt["path"], "content_hash": excerpt["content_hash"],
+                                     "start_line": excerpt["start_line"], "end_line": excerpt["end_line"],
+                                     "line_bytes": [len(line.encode("utf-8")) for line in lines]})
             self.usage.record(name, inputs, metrics, pack_fingerprint=payload.pack_fingerprint,
-                              generation=payload.generation)
+                              generation=payload.generation, delivery=delivery)
             return data
         except Exception as exc:
             self.usage.record(name, inputs, {}, error=type(exc).__name__)

@@ -35,6 +35,11 @@ The root [AGENTS.md](../AGENTS.md) tells Codex to use Middle_Man for repository-
 
 ## Local Usage Data
 
-`mcp usage` reports call counts, errors, Context Packs, expansions, index cache reuse, and heuristic context-token estimates. The JSONL log at `.middle_man_cache/mcp_usage.jsonl` stores only metadata and query hashes, not task text, source excerpts, compacted output, secrets, or raw diffs. It is local and Git-ignored. The token estimator is UTF-8 bytes divided by four, rounded up. These figures **cannot measure Codex plan usage, provider billing, or real token savings**. Compare equally scoped local context paths when evaluating efficiency, and verify answer quality separately.
+`mcp usage` reports call counts, errors, Context Packs, expansions, index cache reuse, and heuristic context-token estimates. The JSONL log at `.middle_man_cache/mcp_usage.jsonl` stores only metadata, query hashes, and sanitized excerpt path/hash/range/line-byte identity for overlap analysis, not task text, source excerpts, compacted output, secrets, or raw diffs. It is local and Git-ignored. The token estimator is UTF-8 bytes divided by four, rounded up. These figures **cannot measure Codex plan usage, provider billing, or real token savings**. Compare equally scoped local context paths when evaluating efficiency, and verify answer quality separately.
 
 For a quick local status check, run `codex --version`, `codex mcp get middle-man --json`, `.venv\Scripts\python.exe -c "import mcp"`, `Test-Path AGENTS.md`, and the protocol test above. These verify executable availability, registration, dependency, instructions, startup, and tool listing without sending repository context to Codex. If Codex cannot reach the MCP server, inspect those results and the registered executable path. Codex can still use native repository reads. Do not put secrets in tasks or logs on the assumption that pattern-based redaction will catch every form.
+
+
+## Real A/B Benchmark
+
+The separate [Phase 22 benchmark guide](CODEX_BENCHMARKS.md) covers snapshot isolation, explicit external-service confirmation, correctness gates, official Codex JSONL usage fields, and Middle_Man context-overlap estimates. The first real suite attempt was infrastructure-invalid because Codex's Windows sandbox rejected commands/edits and the host reused the global MCP root. Do not infer savings from that attempt; the revised isolated invocation remains unverified until the sandbox issue is resolved.

@@ -166,8 +166,20 @@ The server exposes ten bounded, read-only Gateway tools for state, handoff, rele
 python -m middle_man mcp usage --repo . --json
 ```
 
-Local usage records contain only metadata and input hashes. Reported token sizes are heuristic context estimates, not Codex plan usage or provider billing. Neither the server nor the Gateway sends repository content to an external service.
+Local usage records contain only metadata, input hashes, and sanitized excerpt range/size identity for benchmark overlap analysis, never source text. Reported token sizes are heuristic context estimates, not Codex plan usage or provider billing. Neither the server nor the Gateway sends repository content to an external service on its own.
+
+## Real Codex Benchmark
+
+Phase 22 adds an isolated, correctness-first three-task A/B harness. It uses a committed Middle_Man snapshot for read-only architecture understanding and deterministic fixture repositories for an OAuth bug fix and an upload feature. Live runs require an explicit external-service confirmation; normal tests and dry runs do not call Codex.
+
+```bash
+python -m middle_man codex benchmark list
+python -m middle_man codex benchmark run-all --repo . --dry-run
+python -m middle_man codex benchmark run-all --repo . --confirm-external-service
+```
+
+The first real suite attempt was **infrastructure-invalid**: Codex's Windows sandbox rejected native commands/edits, and the Codex host did not honor the snapshot MCP root in that run. The remaining run was stopped to avoid wasting usage. No valid A/B savings or correctness-preservation conclusion is available yet. Methodology, metrics, results, and limitations are in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
 
 ## Scope
 
-Claude integration, provider adapters, external AI/API calls, and real model execution are not implemented. Phase 22 has not begun. The project makes no claim about provider token or plan-usage savings.
+Claude integration and provider adapters are not implemented. The local server does not call a model or provider API; the explicit Phase 22 harness invokes the installed Codex CLI. No provider token, billing, or plan-usage savings are claimed.

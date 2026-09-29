@@ -29,7 +29,8 @@ class MCPUsageLog:
                 raise StateStoreError("unsafe MCP usage log path")
 
     def record(self, tool: str, inputs: object, metrics: dict[str, int], error: str | None = None,
-               pack_fingerprint: str | None = None, generation: int | None = None) -> None:
+               pack_fingerprint: str | None = None, generation: int | None = None,
+               delivery: list[dict[str, Any]] | None = None) -> None:
         self._check()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._check()
@@ -45,6 +46,8 @@ class MCPUsageLog:
             "error_type": error,
             "metrics": {key: int(value) for key, value in metrics.items() if key in _COUNTERS},
         }
+        if delivery is not None:
+            entry["delivery"] = delivery
         flags = os.O_WRONLY | os.O_CREAT | os.O_APPEND | getattr(os, "O_BINARY", 0)
         flags |= getattr(os, "O_NOFOLLOW", 0)
         descriptor = os.open(self.path, flags, 0o600)

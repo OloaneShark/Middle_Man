@@ -183,6 +183,16 @@ On read, the service reindexes and refreshes Project Memory to report `HEAD_CHAN
 
 The root `AGENTS.md` recommends a lightweight orientation -> relevance -> bounded SAFE Context Pack -> targeted expansion flow, with native reads and tests retained for missing or exact context. `docs/CODEX_SETUP.md` documents local Codex registration, connection diagnostics, fallback, and accounting limits. The registered Codex MCP entry launches the repository-scoped stdio server with an absolute virtual-environment Python path. Protocol tests cover both an in-process SDK client and a real stdio subprocess. The agent itself controls whether and when to call a tool; Middle_Man does not replace native repository access.
 
+## Phase 22: Real Codex A/B Context Benchmark
+
+`middle_man.gateway.codex_benchmark` is independent of Lab benchmarks and local quality fixtures. `tasks.py` defines a committed-HEAD read-only task and two deterministic edit fixtures; `runner.py` creates independent committed snapshots in system temp, runs Codex with `--json`, evaluates correctness, and writes sanitized JSON artifacts under `.middle_man_cache/codex_benchmarks/`. The CLI requires an explicit external-service confirmation for live runs; pytest never launches Codex.
+
+Baseline has no project `AGENTS.md` or configured Middle_Man server. Optimized has the root routing instructions and an explicitly snapshot-scoped MCP command. A pair is invalid if baseline calls any MCP server, optimized emits no snapshot usage log, MCP events and usage records disagree, or the snapshots differ. The suite stops after an infrastructure-invalid pair. Model and high reasoning effort are explicitly supplied, but not claimed event-verified unless the JSON stream reports them.
+
+`events.py` parses documented JSONL events conservatively for native command attempts, MCP calls, final response, and `turn.completed.usage`; it stores only sanitized event summaries. `overlap.py` computes unique/repeated source by `(path, content hash, line number)` from metadata-only sanitized line-byte lengths added to the MCP usage log. Candidate/selected/result sizes remain heuristic context estimates, separate from Codex-reported token fields. Read-only factual markers and Git state or deterministic visible/hidden tests gate correctness before any exploration improvement is credited.
+
+The first real suite attempt was infrastructure-invalid due to Windows Codex sandbox ACL failures and a Codex host that reused the global Middle_Man repository root despite a per-run override. A revised invocation uses `--ignore-user-config` plus an explicit per-snapshot MCP command, but has not been validated by a new real run. See `docs/CODEX_BENCHMARKS.md` for methodology and limits; there is no valid A/B savings conclusion yet.
+
 ## Current Boundary
 
-The Lab remains locked through Phase 10. The local Gateway is implemented through Phase 19; its optional local MCP and Codex integration are implemented through Phase 21. Claude integration, provider adapters, external AI/API calls, external LLM summarization, and Phase 22+ are not implemented.
+The Lab remains locked through Phase 10. The local Gateway is implemented through Phase 19; its optional local MCP and Codex integration are implemented through Phase 21. A separate Phase 22 Codex A/B benchmark harness exists, but its first real suite was infrastructure-invalid, so it establishes no comparative outcome. Claude integration, provider adapters, external API adapters, external LLM summarization, and Phase 23+ are not implemented.

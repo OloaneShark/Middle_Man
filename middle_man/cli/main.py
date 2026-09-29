@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 
 from middle_man.cli.benchmark import run_benchmark
+from middle_man.cli.codex_benchmark import add_codex_benchmark_commands, run_codex_benchmark
 from middle_man.cli.gateway import add_gateway_commands, run_gateway
 from middle_man.cli.state import add_state_commands, run_state
 from middle_man.cli.mcp import add_mcp_commands, run_mcp
@@ -48,6 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     add_gateway_commands(subparsers)
     add_state_commands(subparsers)
     add_mcp_commands(subparsers)
+    add_codex_benchmark_commands(subparsers)
 
     return parser
 
@@ -72,6 +74,9 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args.command == "mcp":
         run_mcp(args)
+        return
+    if args.command == "codex":
+        run_codex_benchmark(args)
         return
     parser.error(f"unknown command: {args.command}")
 

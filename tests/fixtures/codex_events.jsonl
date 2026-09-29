@@ -1,0 +1,11 @@
+{"type":"thread.started","thread_id":"fixture-thread"}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"1","type":"command_execution","command":"Get-Content app/state.py","status":"completed"}}
+{"type":"item.completed","item":{"id":"2","type":"command_execution","command":"Get-Content app/state.py","status":"completed"}}
+{"type":"item.completed","item":{"id":"3","type":"command_execution","command":"rg -n consume app tests","status":"completed"}}
+{"type":"item.completed","item":{"id":"4","type":"command_execution","command":"Get-ChildItem app","status":"completed"}}
+{"type":"item.completed","item":{"id":"5","type":"command_execution","command":"git status --short","status":"completed"}}
+{"type":"item.completed","item":{"id":"6","type":"mcp_tool_call","server":"middle-man","tool":"middleman_context_pack","status":"completed","result":{"fingerprint":"fixture"}}}
+{"type":"item.completed","item":{"id":"7","type":"file_change","status":"completed"}}
+{"type":"item.completed","item":{"id":"8","type":"agent_message","text":"Fixed state expiry and checked tests."}}
+{"type":"turn.completed","usage":{"input_tokens":1000,"cached_input_tokens":200,"output_tokens":300,"reasoning_output_tokens":50}}
