@@ -68,6 +68,8 @@ class CodexBenchmarkRun:
     task_version: int = 1
     evaluator_version: int = 1
     tool_profile: str = "none"
+    source_commit: str | None = None
+    source_tree_fingerprint: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,6 +82,8 @@ class CodexBenchmarkPair:
     valid: bool
     quality_gate: str
     task_version: int = 1
+    source_commit: str | None = None
+    source_tree_fingerprint: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,31 +110,38 @@ def _codex_version(command: str) -> str:
     return subprocess.run([command, "--version"], capture_output=True, text=True, check=True).stdout.strip()
 
 
-def _server_args(root: Path) -> list[str]:
+def _server_args(root: Path, *, run_id: str = "", task_id: str = "", mode: str = "") -> list[str]:
     source_root = Path(__file__).resolve().parents[3]
     launcher = ("import sys;sys.path.insert(0,sys.argv.pop(1));"
                 "from middle_man.cli.main import main;main()")
-    return ["-I", "-c", launcher, str(source_root), "mcp", "serve", "--repo", str(root.resolve()),
-            "--tool-profile", "codex-core"]
+    args = ["-I", "-c", launcher, str(source_root), "mcp", "serve", "--repo", str(root.resolve())]
+    if run_id and task_id and mode:
+        task = next(item for item in TASKS if item.id == task_id)
+        args.extend(["--benchmark-run-id", run_id, "--benchmark-task-id", task_id,
+                     "--benchmark-mode", mode, "--benchmark-source-commit", task.source_ref or "fixture"])
+    return [*args, "--tool-profile", "codex-core"]
 
 
-def _overrides(mode: str, root: Path) -> list[str]:
+def _overrides(mode: str, root: Path, *, run_id: str = "", task_id: str = "") -> list[str]:
     settings = []
     if mode == "optimized":
         settings = ["mcp_servers.middle-man.command=" + json.dumps(str(Path(sys.executable).resolve())),
-                    "mcp_servers.middle-man.args=" + json.dumps(_server_args(root)),
+                    "mcp_servers.middle-man.args=" + json.dumps(_server_args(
+                        root, run_id=run_id, task_id=task_id, mode=mode)),
                     "mcp_servers.middle-man.enabled=true", "mcp_servers.middle-man.required=true"]
     return [part for setting in settings for part in ("-c", setting)]
 
 def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, model: str,
-                     effort: str, windows_sandbox: str = WINDOWS_SANDBOX) -> list[str]:
+                     effort: str, windows_sandbox: str = WINDOWS_SANDBOX,
+                     run_id: str = "") -> list[str]:
     if mode not in {"baseline", "optimized"}:
         raise ValueError("unknown benchmark mode")
     if windows_sandbox not in {"elevated", "unelevated"}:
         raise ValueError("unsupported Windows sandbox implementation")
     sandbox = "read-only" if task.read_only else "workspace-write"
     return [command, "--no-daemon", "-a", "never", "exec", "--ignore-user-config", "--strict-config",
-            "-c", f'windows.sandbox="{windows_sandbox}"', *_overrides(mode, root), "-C", str(root.resolve()),
+            "-c", f'windows.sandbox="{windows_sandbox}"',
+            *_overrides(mode, root, run_id=run_id, task_id=task.id), "-C", str(root.resolve()),
             "-s", sandbox, "--ephemeral", "--json", "-m", model,
             "-c", f'model_reasoning_effort="{effort}"',
             *(["--output-schema", str(Path(__file__).with_name("preemption_v2.schema.json").resolve())]
@@ -138,17 +149,18 @@ def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, mod
             task.prompt + " Work only inside this benchmark working copy. Do not commit or push."]
 
 
-def _mcp_preflight(command: str, mode: str, root: Path) -> None:
+def _mcp_preflight(command: str, mode: str, root: Path, *, run_id: str = "", task_id: str = "") -> None:
     if mode == "baseline":
         return
-    result = subprocess.run([command, *_overrides(mode, root), "mcp", "get", "middle-man", "--json"],
+    result = subprocess.run([command, *_overrides(mode, root, run_id=run_id, task_id=task_id),
+                             "mcp", "get", "middle-man", "--json"],
                             capture_output=True, text=True, check=True)
     config = json.loads(result.stdout)
     if not config["enabled"]:
         raise RuntimeError("optimized Middle_Man MCP server is disabled")
     if config["transport"]["args"][config["transport"]["args"].index("--repo") + 1] != str(root.resolve()):
         raise RuntimeError("optimized MCP server is not scoped to its benchmark snapshot")
-    if config["transport"]["args"] != _server_args(root):
+    if config["transport"]["args"] != _server_args(root, run_id=run_id, task_id=task_id, mode=mode):
         raise RuntimeError("optimized MCP arguments do not pin the current implementation and codex-core profile")
     if Path(config["transport"]["command"]).resolve() != Path(sys.executable).resolve():
         raise RuntimeError("optimized MCP command differs from the benchmark Python environment")
@@ -257,13 +269,17 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
             artifact_root: Path, primary_repository_root: Path, windows_sandbox: str) -> CodexBenchmarkRun:
     if source_fingerprint(root) != fingerprint:
         raise RuntimeError("benchmark snapshot changed before Codex invocation")
-    _mcp_preflight(codex_command, mode, root)
-    primary_before = primary_usage_signature(primary_repository_root)
     before = _status(root)
     if before:
         raise RuntimeError("benchmark snapshot is not clean before Codex invocation")
+    run_id = artifact_root.name
+    _mcp_preflight(codex_command, mode, root, run_id=run_id, task_id=task.id)
+    primary_before = primary_usage_signature(primary_repository_root)
     start_head = _head(root)
-    command = build_invocation(codex_command, task, mode, root, model=model, effort=effort, windows_sandbox=windows_sandbox)
+    command = build_invocation(codex_command, task, mode, root, model=model, effort=effort,
+                               windows_sandbox=windows_sandbox, run_id=run_id)
+    if _status(root):
+        raise RuntimeError("benchmark snapshot is not clean immediately before Codex process creation")
     timestamp = datetime.now(timezone.utc).isoformat()
     started = time.perf_counter()
     warnings: list[str] = []
@@ -319,7 +335,8 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
                              primary_repo_usage_unchanged=primary_unchanged, preflight_passed=True,
                              sandbox_mode=windows_sandbox, task_version=task.schema_version,
                              evaluator_version=task.schema_version,
-                             tool_profile="codex-core" if mode == "optimized" else "none")
+                             tool_profile="codex-core" if mode == "optimized" else "none",
+                             source_commit=task.source_ref, source_tree_fingerprint=fingerprint)
 
 
 def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: int, command: str,
@@ -357,7 +374,7 @@ def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: i
     else:
         gate = "CORRECT_NO_MEASURED_EXPLORATION_GAIN"
     return CodexBenchmarkPair(task.id, task.title, fingerprint, baseline_run, optimized_run, valid, gate,
-                              task.schema_version)
+                              task.schema_version, task.source_ref, fingerprint)
 
 
 def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base: Path,
@@ -480,6 +497,7 @@ def format_report(data: dict[str, Any]) -> str:
              f"Codex: {data['codex_version']}  Model: {data['model']}  Effort: {data['effort']}"]
     for pair in data["pairs"]:
         baseline, optimized = pair["baseline"], pair["optimized"]
+        lines.append(f"Source commit: {pair.get('source_commit') or 'synthetic fixture'}; source fingerprint: {pair.get('source_tree_fingerprint') or pair.get('source_fingerprint', 'unknown')}")
         if not pair["valid"]:
             lines.extend(["", f"{pair['title']} v{pair.get('task_version', 1)} [{pair['quality_gate']}]",
                           f"Invalid A/B pair; diagnostics only. baseline warnings={baseline['warnings']} "

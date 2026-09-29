@@ -101,7 +101,7 @@ Each source read is confined to the repository, respects indexing/size/ignore ru
 
 **Estimated context tokens** use `ceil(UTF-8 bytes / 4)` on source text, not rendered headings. The raw baseline is the complete current text of relevance candidates considered, not the entire repository. Metrics report candidate/selected bytes and estimated tokens, files/excerpts/lines, overlap avoided, and estimated reduction. Required exact context can exceed the budget with a warning; lower-priority context is omitted first. These estimates are **not provider billing tokens or Codex plan usage**.
 
-Phase 22.2 (local only) adds frequency-aware terms, conservative lexical-family matches, and a two-pass coverage/cost allocator. It keeps complete source ranges under the requested budget and records candidate-level selection/omission diagnostics locally; verbose diagnostics are not sent by the five-tool Codex-core profile. A frozen BALANCED/6000 Task A fixture improved required-source recall from 2/7 files and 2/7 identifiers to 7/7 each. Authentication, queue, upload, and prior context-quality fixtures also pass. This does **not** establish a real Codex token saving or answer-quality improvement.
+Phase 22.2 adds frequency-aware terms, conservative lexical-family matches, and a two-pass coverage/cost allocator. Phase 22.3 pins Task A to immutable Lab commit `284c4451ad9213f4f27f6d534eac8be2484c2f9a`, enforces clean benchmark snapshots, and records benchmark-only source-free query/selection receipts. Local direct-builder, direct-gateway, and stdio MCP paths agree on the exact Task A prompt and deliver 7/7 required files and identifiers. Query wording remains important; these local results do **not** establish a real Codex token saving or answer-quality improvement.
 
 ## Git Changes and Output
 
@@ -172,7 +172,7 @@ Local usage records contain only metadata, input hashes, and sanitized excerpt r
 
 ## Real Codex Benchmark
 
-Phase 22 adds an isolated, correctness-first A/B harness with versioned Task A and two edit fixtures. It uses a committed Middle_Man snapshot for read-only architecture understanding and deterministic fixture repositories for an OAuth bug fix and an upload feature. Live runs require an explicit external-service confirmation; normal tests and dry runs do not call Codex.
+Phase 22 adds an isolated, correctness-first A/B harness with versioned Task A and two edit fixtures. Task A now uses a fixed pre-Gateway Lab commit rather than moving HEAD; the OAuth and upload fixtures remain separate. Live runs require an explicit external-service confirmation; normal tests and dry runs do not call Codex.
 
 ```bash
 python -m middle_man codex benchmark list
@@ -180,7 +180,7 @@ python -m middle_man codex benchmark run-all --repo . --dry-run
 python scripts/measure_phase22_1.py  # local-only heuristic measurement
 ```
 
-An early suite attempt was infrastructure-invalid. The first **infrastructure-valid** Task A v1 pair was **FAIL/FAIL**: optimized used fewer native calls/searches but **more file reads and far more Codex-reported input tokens** (391,753 vs 144,903). Phase 22.1 adds a versioned structured Task A gate, pinned current MCP server, a smaller core tool surface, slimmer responses, and metadata-only delivery deduplication. Local heuristic payload reductions are candidate optimizations; the completed Task A v2 pair was FAIL/FAIL with higher optimized input; Phase 22.2 is local-only. Methodology, metrics, results, and limitations are in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
+An early suite attempt was infrastructure-invalid. The first **infrastructure-valid** Task A v1 pair was **FAIL/FAIL**; the valid v2 pair was also **FAIL/FAIL** with higher optimized input. The authorized v3 pair is **diagnostic only / invalid** because the baseline snapshot began dirty (` D AGENTS.md`). Its optimized side passed the answer gate, but its pack held 0/7 required areas and Codex recovered through eight native reads. Historical artifacts are frozen and no A/B or token-saving conclusion follows. Methodology, metrics, results, and limitations are in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
 
 ## Scope
 

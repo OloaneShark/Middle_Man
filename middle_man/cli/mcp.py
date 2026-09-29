@@ -17,6 +17,10 @@ def add_mcp_commands(subparsers: argparse._SubParsersAction) -> None:
     serve = actions.add_parser("serve", help="serve one explicit repository over stdio")
     serve.add_argument("--repo", type=Path, required=True)
     serve.add_argument("--tool-profile", choices=("codex-core", "full"), default="codex-core")
+    serve.add_argument("--benchmark-run-id")
+    serve.add_argument("--benchmark-task-id")
+    serve.add_argument("--benchmark-mode", choices=("baseline", "optimized"))
+    serve.add_argument("--benchmark-source-commit")
     usage = actions.add_parser("usage", help="show local MCP invocation counts and estimates")
     usage.add_argument("--repo", type=Path, required=True)
     usage.add_argument("--json", action="store_true")
@@ -38,6 +42,12 @@ def run_mcp(args: argparse.Namespace) -> None:
         return
     if find_spec("mcp") is None:
         raise SystemExit('MCP support is optional. Install it with: pip install -e ".[mcp]"')
+    from middle_man.mcp.benchmark_receipts import BenchmarkIdentity
     from middle_man.mcp.server import serve
 
-    serve(config, tool_profile=args.tool_profile)
+    values = (args.benchmark_run_id, args.benchmark_task_id, args.benchmark_mode,
+              args.benchmark_source_commit)
+    if any(values) and not all(values):
+        raise SystemExit("benchmark identity requires run ID, task ID, mode, and source commit")
+    identity = BenchmarkIdentity(*values) if all(values) else None
+    serve(config, tool_profile=args.tool_profile, benchmark_identity=identity)

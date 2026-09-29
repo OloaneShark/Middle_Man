@@ -20,6 +20,7 @@ from middle_man.gateway.relevance import ContextQuery, RelevanceEngine
 from middle_man.gateway.secrets import SecretRedactor
 from middle_man.gateway.tokens import HeuristicTokenEstimator
 from middle_man.mcp.delivery import DeliveredRange, DeliveryLedger
+from middle_man.mcp.benchmark_receipts import BenchmarkIdentity, BenchmarkReceipts
 from middle_man.mcp.usage import MCPUsageLog
 
 MAX_CONTEXT_TOKENS = 12_000
@@ -45,7 +46,7 @@ class _Payload:
 
 
 class MCPGateway:
-    def __init__(self, config: GatewayConfig) -> None:
+    def __init__(self, config: GatewayConfig, benchmark_identity: BenchmarkIdentity | None = None) -> None:
         self.config = config
         self.estimator = HeuristicTokenEstimator()
         self.redactor = SecretRedactor()
@@ -57,6 +58,7 @@ class MCPGateway:
         self.usage = MCPUsageLog(config)
         self._packs: OrderedDict[str, ContextPack] = OrderedDict()
         self.delivery_ledger = DeliveryLedger()
+        self.benchmark_receipts = BenchmarkReceipts(config, benchmark_identity) if benchmark_identity else None
 
     def _sanitize(self, value: Any, categories: set[str]) -> Any:
         if isinstance(value, str):
@@ -190,17 +192,19 @@ class MCPGateway:
     def context(self, task: str, *, mode: str = "balanced", max_context_tokens: int = 6000,
                 error_text: str = "", paths: list[str] | None = None,
                 symbols: list[str] | None = None, force_replay: bool = False) -> dict[str, Any]:
+        inputs = {"task": task, "mode": mode, "budget": max_context_tokens, "error_text": error_text,
+                  "paths": paths, "symbols": symbols, "force_replay": force_replay}
+
         def produce() -> _Payload:
             self._limits(None, max_context_tokens)
             query = self._query(task, paths, symbols, error_text)
             pack = self.builder.build(query, mode=mode, max_context_tokens=max_context_tokens)
             payload = self._core_payload(pack, force_replay=force_replay)
+            if self.benchmark_receipts is not None:
+                self.benchmark_receipts.record(inputs, pack)
             self._remember(pack)
             return payload
-        return self._execute("middleman_context", {"task": task, "mode": mode,
-                                                  "budget": max_context_tokens, "error_text": error_text,
-                                                  "paths": paths, "symbols": symbols,
-                                                  "force_replay": force_replay}, produce)
+        return self._execute("middleman_context", inputs, produce)
 
     def project_state(self) -> dict[str, Any]:
         def produce() -> _Payload:

@@ -20,6 +20,10 @@ class TaskSpec:
     required_facts: tuple[str, ...] = ()
     acceptance_test: str | None = None
     schema_version: int = 1
+    source_ref: str | None = None
+
+
+TASK_A_SOURCE_COMMIT = '284c4451ad9213f4f27f6d534eac8be2484c2f9a'
 
 
 TASKS = (
@@ -27,8 +31,9 @@ TASKS = (
         "preemption", "KV preemption architecture",
         "Explain how KV preemption works in Middle_Man. Identify victim selection, memory release, "
         "recomputation, and the tests that prove already-generated output is retained. Do not modify files.",
-        True, "committed-middle-man",
+        True, "repository-commit",
         ("LargestPrivateOwnerPolicy", "MemoryController", "RECOMPUTE", "output_generated", "test_phase_7_preemption"),
+        source_ref=TASK_A_SOURCE_COMMIT,
     ),
     TaskSpec(
         "oauth-bug", "Expired OAuth state bug",
@@ -112,7 +117,7 @@ TASKS = (
         "recomputation, output preservation, and the proving test, name the concrete implementation "
         "symbol, component, or test file used by this repository. Give a concise explanation. "
         "Do not modify files.",
-        True, "committed-middle-man", schema_version=2,
+        True, "repository-commit", schema_version=2, source_ref=TASK_A_SOURCE_COMMIT,
     ),
     TaskSpec(
         "preemption-v3", "KV preemption architecture (structured v3)",
@@ -120,7 +125,7 @@ TASKS = (
         "recomputation, output preservation, and the proving test, name the concrete implementation "
         "symbol, component, or test file used by this repository. Give a concise explanation. "
         "Do not modify files.",
-        True, "committed-middle-man", schema_version=3,
+        True, "repository-commit", schema_version=3, source_ref=TASK_A_SOURCE_COMMIT,
     ),
 )
 
@@ -259,10 +264,16 @@ def _git(root: Path, *args: str) -> str:
     return subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True, text=True).stdout.strip()
 
 
-def _write_fixture(source: str, destination: Path) -> None:
-    if source == "committed-middle-man":
+def _write_fixture(task: TaskSpec, destination: Path) -> None:
+    if task.source == "repository-commit":
+        if not task.source_ref or len(task.source_ref) != 40 or any(ch not in "0123456789abcdef" for ch in task.source_ref):
+            raise ValueError("benchmark repository source requires an exact commit SHA")
         root = Path(__file__).resolve().parents[3]
-        names = subprocess.check_output(["git", "-C", str(root), "ls-tree", "-r", "-z", "--name-only", "HEAD"])
+        commit = subprocess.run(["git", "-C", str(root), "cat-file", "-t", task.source_ref],
+                                capture_output=True, text=True)
+        if commit.returncode or commit.stdout.strip() != "commit":
+            raise ValueError(f"benchmark source commit unavailable: {task.source_ref}")
+        names = subprocess.check_output(["git", "-C", str(root), "ls-tree", "-r", "-z", "--name-only", task.source_ref])
         for raw in names.split(b"\0"):
             if not raw:
                 continue
@@ -272,9 +283,9 @@ def _write_fixture(source: str, destination: Path) -> None:
                 raise ValueError(f"unsafe tracked snapshot path: {relative}")
             target = destination / path
             target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(subprocess.check_output(["git", "-C", str(root), "show", f"HEAD:{relative}"]))
+            target.write_bytes(subprocess.check_output(["git", "-C", str(root), "show", f"{task.source_ref}:{relative}"]))
     else:
-        for relative, text in _FIXTURES[source].items():
+        for relative, text in _FIXTURES[task.source].items():
             target = destination / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(text, encoding="utf-8")
@@ -295,11 +306,12 @@ def source_fingerprint(root: Path) -> str:
 def prepare_pair(task: TaskSpec, pair_root: Path, instructions: str) -> tuple[Path, Path, str]:
     source = pair_root / "source"
     source.mkdir(parents=True, exist_ok=False)
-    _write_fixture(task.source, source)
+    _write_fixture(task, source)
     baseline, optimized = pair_root / "baseline", pair_root / "optimized"
     shutil.copytree(source, baseline)
     shutil.copytree(source, optimized)
-    (baseline / "AGENTS.md").unlink(missing_ok=True)
+    if (baseline / "AGENTS.md").exists():
+        raise ValueError("source commit contains AGENTS.md; baseline cannot start clean without changing source")
     (optimized / "AGENTS.md").write_text(instructions, encoding="utf-8")
     baseline_hash = source_fingerprint(baseline)
     if baseline_hash != source_fingerprint(optimized):
@@ -309,6 +321,8 @@ def prepare_pair(task: TaskSpec, pair_root: Path, instructions: str) -> tuple[Pa
         _git(root, "add", ".")
         _git(root, "-c", "user.name=Middle_Man Benchmark", "-c", "user.email=benchmark@example.invalid",
              "commit", "-q", "-m", "frozen benchmark start")
+        if _git(root, "status", "--porcelain=v1", "--untracked-files=all"):
+            raise RuntimeError("prepared benchmark snapshot is not Git-clean")
     return baseline, optimized, baseline_hash
 
 

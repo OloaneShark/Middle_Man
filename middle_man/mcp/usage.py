@@ -22,6 +22,7 @@ MCP_USAGE_SCHEMA_VERSION = 2
 def server_implementation_identity() -> dict[str, str | int]:
     package = Path(__file__).resolve().parents[1]
     names = ("mcp/server.py", "mcp/gateway.py", "mcp/usage.py", "mcp/delivery.py",
+             "mcp/benchmark_receipts.py",
              "gateway/context_builder.py", "gateway/context_models.py")
     digest = hashlib.sha256()
     for name in names:

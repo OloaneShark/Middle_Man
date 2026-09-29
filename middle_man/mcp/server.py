@@ -13,10 +13,12 @@ from middle_man.gateway.config import GatewayConfig
 from middle_man.gateway.source import StaleSourceError, UnsafeSourceError
 from middle_man.gateway.state_store import StateStoreError
 from middle_man.mcp.gateway import MCPGateway
+from middle_man.mcp.benchmark_receipts import BenchmarkIdentity
 
 SERVER_NAME = "middle-man"
 CORE_INSTRUCTIONS = (
-    "For a fresh scoped repository task, call middleman_context directly. "
+    "For a fresh scoped repository task, call middleman_context directly with the concrete engineering request, "
+    "including behaviors or symbols being investigated; avoid generic repository-inspection queries. "
     "Use session_handoff for continuation, project_state only for broad orientation, "
     "expand_context only when excerpts lack detail, and compact_output for large output. "
     "Native search and reads remain available when exact or missing source is needed."
@@ -27,10 +29,11 @@ FULL_INSTRUCTIONS = (
     "remain available for exact or missing context."
 )
 
-def create_server(config: GatewayConfig, tool_profile: str = "full") -> MCPServer:
+def create_server(config: GatewayConfig, tool_profile: str = "full",
+                  benchmark_identity: BenchmarkIdentity | None = None) -> MCPServer:
     if tool_profile not in {"full", "codex-core"}:
         raise ValueError("tool_profile must be full or codex-core")
-    gateway = MCPGateway(config)
+    gateway = MCPGateway(config, benchmark_identity=benchmark_identity)
     server = MCPServer(SERVER_NAME, version=version("middle-man"), instructions=CORE_INSTRUCTIONS if tool_profile == "codex-core" else FULL_INSTRUCTIONS,
                        log_level="WARNING")
     annotation = ToolAnnotations(read_only_hint=True, open_world_hint=False, destructive_hint=False)
@@ -81,7 +84,7 @@ def create_server(config: GatewayConfig, tool_profile: str = "full") -> MCPServe
     def middleman_context(task: str, mode: str = "balanced", max_context_tokens: int = 6000,
                           error_text: str = "", paths: list[str] | None = None,
                           symbols: list[str] | None = None, force_replay: bool = False) -> dict[str, Any]:
-        """Get bounded redacted source for a scoped repository task in one call; repeat only with force_replay."""
+        """Pass the concrete engineering request with relevant behaviors/symbols; generic inspection queries lose precision. Returns bounded redacted source; repeat only with force_replay."""
         return invoke(lambda: gateway.context(task, mode=mode, max_context_tokens=max_context_tokens,
                                               error_text=error_text, paths=paths, symbols=symbols,
                                               force_replay=force_replay))
@@ -123,5 +126,6 @@ def create_server(config: GatewayConfig, tool_profile: str = "full") -> MCPServe
     return server
 
 
-def serve(config: GatewayConfig, tool_profile: str = "codex-core") -> None:
-    create_server(config, tool_profile=tool_profile).run(transport="stdio")
+def serve(config: GatewayConfig, tool_profile: str = "codex-core",
+          benchmark_identity: BenchmarkIdentity | None = None) -> None:
+    create_server(config, tool_profile=tool_profile, benchmark_identity=benchmark_identity).run(transport="stdio")

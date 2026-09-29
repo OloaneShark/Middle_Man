@@ -1,6 +1,6 @@
 # Middle_Man Architecture
 
-This document describes the Lab through Phase 10, local Agent Gateway through Phase 19, MCP/Codex integration through Phase 21, and the Phase 22 benchmark plus Phase 22.1/22.2 local optimization candidates. Lab behavior remains unchanged.
+This document describes the Lab through Phase 10, local Agent Gateway through Phase 19, MCP/Codex integration through Phase 21, and Phase 22 through its local 22.3 benchmark-stability work. Lab behavior remains unchanged.
 
 ## Components
 
@@ -199,7 +199,7 @@ Task A v1 remains a frozen literal-marker evaluator. Its first infrastructure-va
 
 ## Current Boundary
 
-The Lab remains locked through Phase 10 and Gateway through Phase 19. The MCP/Codex integration and Phase 22.1/22.2 local candidate optimizations exist; Task A v2 has a frozen valid FAIL/FAIL pair, and v3 has no real pair. Claude/provider adapters, external LLM summarization, and Phase 23+ are not implemented.
+The Lab remains locked through Phase 10 and Gateway through Phase 19. Task A v2 has a frozen valid FAIL/FAIL pair. The authorized v3 pair is invalid for A/B inference because its baseline began dirty; its optimized side is diagnostic only. Claude/provider adapters, external LLM summarization, and Phase 23+ are not implemented.
 
 ## Phase 22.2: Local Selection and Versioned Evaluation
 
@@ -209,4 +209,16 @@ The Lab remains locked through Phase 10 and Gateway through Phase 19. The MCP/Co
 
 Benchmark-only `preemption-v3` retains the v2 engineering prompt and JSON fields, but uses evaluator version 3. It compares complete identifier segments and normalized test-path segments rather than substring or v2 exact-string equality. V1/v2 artifacts are immutable and cannot be aggregated with v3. Benchmark-only required-source units measure file and identifier recall plus fixture-based required/non-required selected-source estimates; these do not influence production ranking. The local BALANCED/6000 Task A check reached 7/7 required files and identifiers on a frozen committed-source snapshot. Authentication callback, queue cancellation, upload validation, and prior Phase 15 quality fixtures remain green. This is local evidence only, not a new Codex A/B result.
 
-The historical Task A v2 pair was infrastructure-valid on both sides but **FAIL/FAIL** under its exact structured evaluator, which rejected qualified/composite identifiers. Baseline/optimized Codex input was **84,350 / 122,094** tokens: no real token savings. Optimized made one `middleman_context` call with zero repeated MCP source, but the pack omitted critical implementation source and six native fallback reads followed. V2 artifacts remain frozen; v3 is only a local candidate until separately authorized external validation.
+The historical Task A v2 pair was infrastructure-valid on both sides but **FAIL/FAIL** under its exact structured evaluator, which rejected qualified/composite identifiers. Baseline/optimized Codex input was **84,350 / 122,094** tokens: no real token savings. Optimized made one `middleman_context` call with zero repeated MCP source, but the pack omitted critical implementation source and six native fallback reads followed. V2 artifacts remain frozen.
+
+## Phase 22.3: Stable Corpus and Query Diagnostics
+
+Task A v1/v2/v3 task definitions now reference immutable Lab commit `284c4451ad9213f4f27f6d534eac8be2484c2f9a`. `tasks.py` verifies the exact object is a commit, materializes its tree with `git ls-tree`/`git show`, and never substitutes moving HEAD. This commit contains the seven evaluator-only preemption areas but predates Gateway, MCP, and benchmark machinery. Baseline and optimized source trees are byte-identical except optimized's added `AGENTS.md`; each is initialized and committed independently so both begin Git-clean. No primary checkout or branch change is involved.
+
+`run_one()` is the sole repository-owned real Codex launcher. It checks the source fingerprint and Git porcelain status before constructing the invocation and checks status again immediately before spawning. A dirty baseline or optimized snapshot raises an infrastructure error and never reaches the process launcher. The authorized v3 run bypassed `run_one()` through a one-off recorder: it copied a snapshot containing tracked `AGENTS.md`, deleted that file on baseline, and invoked Codex despite the resulting ` D AGENTS.md`. Both calls finished before that clean-start violation was recognized. The historical v3 artifacts remain untouched and **INVALID_PAIR / diagnostic only**.
+
+The optimized v3 answer passed its structured gate, but its Context Pack contained **0/7** benchmark-required areas; eight native source reads supplied the missing evidence. No context-quality or token-saving conclusion follows. Its historical usage entry has only query signature `2adb2f9fda5f05e1e4b5e4a641c283d24a24693911c16fb9dd3d0610a58dc05b`; the exact query text was not recorded and cannot be reconstructed. The moving-HEAD corpus and unobserved query reformulation were uncontrolled, plausible contributors, not individually proven historical causes.
+
+The snapshot-scoped current MCP server receives explicit benchmark identity via `mcp serve` arguments. Only those launches emit source-free query and selection receipts under the snapshot cache: normalized redacted terms/identifiers, explicit arguments, query signature, source commit/fingerprint, selector/server fingerprints, candidate scores, selected/omitted paths, ranges, costs, and pack fingerprint. Ordinary `mcp_usage.jsonl` stays metadata-only, with no raw prompts or source text. The production selector never consumes benchmark-required paths or identifiers. Codex-core tool guidance asks for a concrete engineering request; it does not force a verbatim prompt or alter ranking.
+
+On the pinned corpus, local direct `ContextBuilder`, direct `MCPGateway.context`, and fresh stdio `middleman_context` calls (default and explicit BALANCED/6000 arguments) produce identical fingerprints, selected paths/ranges/text, warnings, source fingerprints, and 7/7 file/identifier recall. The pinned-corpus Phase 22.1 selector yields 4/7 files and identifiers at 4,693 selected tokens; Phase 22.2 yields 7/7 at 5,891. These are local heuristic context estimates only. See [Codex benchmarks](CODEX_BENCHMARKS.md) for query sensitivity and current-HEAD contamination counts.

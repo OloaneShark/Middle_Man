@@ -12,7 +12,7 @@ from middle_man.gateway.codex_benchmark.preemption_v3 import (
 from middle_man.gateway.codex_benchmark.runner import (
     _evaluate, aggregate_report, evaluate_preemption_v2, run_suite,
 )
-from middle_man.gateway.codex_benchmark.tasks import TASKS
+from middle_man.gateway.codex_benchmark.tasks import TASKS, prepare_pair
 from middle_man.gateway.config import GatewayConfig
 from middle_man.gateway.context_builder import ContextBuilder
 from middle_man.gateway.coverage_quality import coverage_cases
@@ -87,9 +87,9 @@ def test_generic_lexical_family_is_bounded_and_exact_evidence_wins(tmp_path: Pat
     assert any("recomputation" in candidate.matched_terms for candidate in ranked)
 
 
-def test_task_a_v3_local_recall_and_diagnostics() -> None:
-    root = Path(__file__).resolve().parents[1]
+def test_task_a_v3_local_recall_and_diagnostics(tmp_path: Path) -> None:
     task = next(task for task in TASKS if task.id == "preemption-v3")
+    _, root, _ = prepare_pair(task, tmp_path / "task-a", "Use middleman_context.\n")
     pack = ContextBuilder(GatewayConfig(root)).build(task.prompt, mode="balanced", max_context_tokens=6000)
     recall = measure_required_source(pack)
     assert len(TASK_A_V3_UNITS) == 7
