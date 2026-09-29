@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from middle_man.gateway.models import RepositoryIdentity
 from middle_man.gateway.relevance import ContextQuery, RelevanceCandidate
+from middle_man.gateway.selection import SelectionDiagnostic
 
 if TYPE_CHECKING:
     from middle_man.gateway.compact import CompactionResult
@@ -76,6 +77,7 @@ class ContextPack:
     warnings: tuple[str, ...]
     redaction_categories: tuple[str, ...]
     tool_outputs: tuple[CompactionResult, ...] = ()
+    selection_diagnostics: tuple[SelectionDiagnostic, ...] = ()
 
     @property
     def selected_files(self) -> tuple[str, ...]:

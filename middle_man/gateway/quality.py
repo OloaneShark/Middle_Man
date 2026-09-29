@@ -60,9 +60,10 @@ def quality_cases() -> tuple[QualityCase, ...]:
 
 
 def run_context_benchmarks(*, mode: ContextMode | str = ContextMode.SAFE,
-                           max_context_tokens: int = 8000) -> tuple[QualityResult, ...]:
+                           max_context_tokens: int = 8000,
+                           cases: tuple[QualityCase, ...] | None = None) -> tuple[QualityResult, ...]:
     results = []
-    for case in quality_cases():
+    for case in quality_cases() if cases is None else cases:
         with TemporaryDirectory(prefix="middle-man-quality-") as temporary:
             root = Path(temporary)
             for path, source in case.files:

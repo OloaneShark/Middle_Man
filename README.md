@@ -101,6 +101,8 @@ Each source read is confined to the repository, respects indexing/size/ignore ru
 
 **Estimated context tokens** use `ceil(UTF-8 bytes / 4)` on source text, not rendered headings. The raw baseline is the complete current text of relevance candidates considered, not the entire repository. Metrics report candidate/selected bytes and estimated tokens, files/excerpts/lines, overlap avoided, and estimated reduction. Required exact context can exceed the budget with a warning; lower-priority context is omitted first. These estimates are **not provider billing tokens or Codex plan usage**.
 
+Phase 22.2 (local only) adds frequency-aware terms, conservative lexical-family matches, and a two-pass coverage/cost allocator. It keeps complete source ranges under the requested budget and records candidate-level selection/omission diagnostics locally; verbose diagnostics are not sent by the five-tool Codex-core profile. A frozen BALANCED/6000 Task A fixture improved required-source recall from 2/7 files and 2/7 identifiers to 7/7 each. Authentication, queue, upload, and prior context-quality fixtures also pass. This does **not** establish a real Codex token saving or answer-quality improvement.
+
 ## Git Changes and Output
 
 ```bash
@@ -178,8 +180,10 @@ python -m middle_man codex benchmark run-all --repo . --dry-run
 python scripts/measure_phase22_1.py  # local-only heuristic measurement
 ```
 
-An early suite attempt was infrastructure-invalid. The first **infrastructure-valid** Task A v1 pair was **FAIL/FAIL**: optimized used fewer native calls/searches but **more file reads and far more Codex-reported input tokens** (391,753 vs 144,903). Phase 22.1 adds a versioned structured Task A gate, pinned current MCP server, a smaller core tool surface, slimmer responses, and metadata-only delivery deduplication. Local heuristic payload reductions are candidate optimizations; a new externally authorized Task A v2 pair is needed before any real token-saving or correctness claim. Methodology, metrics, results, and limitations are in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
+An early suite attempt was infrastructure-invalid. The first **infrastructure-valid** Task A v1 pair was **FAIL/FAIL**: optimized used fewer native calls/searches but **more file reads and far more Codex-reported input tokens** (391,753 vs 144,903). Phase 22.1 adds a versioned structured Task A gate, pinned current MCP server, a smaller core tool surface, slimmer responses, and metadata-only delivery deduplication. Local heuristic payload reductions are candidate optimizations; the completed Task A v2 pair was FAIL/FAIL with higher optimized input; Phase 22.2 is local-only. Methodology, metrics, results, and limitations are in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
 
 ## Scope
 
 Claude integration and provider adapters are not implemented. The local server does not call a model or provider API; the explicit Phase 22 harness invokes the installed Codex CLI. No provider token, billing, or plan-usage savings are claimed.
+
+Historical Task A v2 is frozen: both sides were infrastructure-valid but **FAIL/FAIL** under the exact structured evaluator, which rejected qualified/composite identifiers. Baseline/optimized Codex input was **84,350 / 122,094** tokens, so there was **no real token saving**. Optimized used one `middleman_context` call and resent zero MCP source, but its pack omitted relevant implementation evidence and Codex made six native fallback reads. The old artifacts are not rescored; see [Codex benchmarks](docs/CODEX_BENCHMARKS.md).

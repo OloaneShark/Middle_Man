@@ -77,7 +77,7 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
                 f"{name}: overlap={item['overlap_ratio']} repeated_bytes={item['repeated_source_bytes']} "
                 f"unique_bytes={item['unique_source_bytes']}" for name, item in overlap.items()))
         return
-    tasks = tuple(task for task in TASKS if task.id != "preemption") if action == "run-all" else tuple(task for task in TASKS if task.id == args.task)
+    tasks = tuple(task for task in TASKS if task.id not in {"preemption", "preemption-v2"}) if action == "run-all" else tuple(task for task in TASKS if task.id == args.task)
     if args.timeout <= 0:
         raise SystemExit("--timeout must be positive")
     base = root / ".middle_man_cache" / "codex_benchmarks"

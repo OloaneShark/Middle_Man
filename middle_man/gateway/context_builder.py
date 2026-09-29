@@ -14,6 +14,7 @@ from middle_man.gateway.git_diff import GitDiff, GitDiffReader
 from middle_man.gateway.indexer import RepositoryIndexer
 from middle_man.gateway.models import IndexedFile, RepositoryIndex, Symbol
 from middle_man.gateway.relevance import ContextQuery, RelevanceCandidate, RelevanceEngine
+from middle_man.gateway.selection import SelectionEntry, allocate
 from middle_man.gateway.secrets import SecretRedactor
 from middle_man.gateway.source import SourceFile, SourceReader, StaleSourceError, UnsafeSourceError
 from middle_man.gateway.tokens import HeuristicTokenEstimator, TokenEstimator
@@ -112,8 +113,9 @@ class ContextBuilder:
             changed = tuple(item.path for item in diff.files if index.get_file(item.path))
             effective_query = ContextQuery(query.task, query.paths, query.symbols, query.error_text,
                                            query.changed_files or changed)
-            candidates = RelevanceEngine(index, self.config).find(effective_query, top_k=top_k)
             try:
+                candidates = RelevanceEngine(index, self.config).find(
+                    effective_query, top_k=top_k if top_k is not None else max(50, self.config.max_search_results))
                 return self._assemble(index, diff, effective_query, candidates, mode, budget, generation, previous, expansion, stale_during_build)
             except StaleSourceError:
                 stale_during_build = True
@@ -182,17 +184,67 @@ class ContextBuilder:
                 priority = score + (1000 if item.required else 0) + (30 if candidate and candidate.role == "PRIMARY" else 0)
                 planned.append((priority, path, item))
         planned.sort(key=lambda entry: (-entry[0], entry[1], entry[2].start))
+        strong = [candidate for candidate in candidates if any(
+            signal.kind in {"explicit_path", "trace_path", "exact_symbol", "filename_term"}
+            for signal in candidate.signals)]
+        tests_requested = bool(re.search(r"\b(test|tests|proof|prove|proving)\b", query.task, re.I))
+        anchors = {candidate.path for candidate in strong if any(
+            signal.kind in {"explicit_path", "trace_path", "exact_symbol"} for signal in candidate.signals)}
+        source_strong = [candidate for candidate in strong if not index.get_file(candidate.path).is_test]
+        if not anchors and source_strong:
+            anchors.add(source_strong[0].path)
+        if tests_requested:
+            best_test = next((candidate.path for candidate in strong
+                              if index.get_file(candidate.path).is_test), None)
+            if best_test:
+                anchors.add(best_test)
+        for candidate in source_strong:
+            if len(anchors) >= 3:
+                break
+            linked = any(candidate.path in set(index.imports_for(path)) | set(index.importers_of(path))
+                         for path in anchors)
+            if linked:
+                anchors.add(candidate.path)
+        if not anchors:
+            anchors = {candidate.path for candidate in candidates[:2]}
+        neighbors = set(anchors)
+        for path in anchors:
+            neighbors.update(index.imports_for(path))
+            neighbors.update(source for source in index.importers_of(path)
+                             if not index.get_file(source).is_test)
+            related = sorted((test for test in index.tests_for(path) if test in by_path),
+                             key=lambda test: (-by_path[test].score, test))
+            if related:
+                neighbors.add(related[0])
+        for candidate in candidates:
+            if (candidate.path in neighbors and candidate.role == "PRIMARY" and
+                    candidate.score >= 80 and not index.get_file(candidate.path).is_test):
+                neighbors.update(index.imports_for(candidate.path))
+                neighbors.update(source for source in index.importers_of(candidate.path)
+                                 if not index.get_file(source).is_test)
+        allocation_entries = tuple(SelectionEntry(
+            path, item.start, item.end, item.kind,
+            self.estimator.estimate(self.redactor.redact(_excerpt_text(sources[path], item.start, item.end)).text),
+            item.required, by_path.get(path),
+            path in neighbors,
+            path in anchors, index.get_file(path).is_test) for _, path, item in planned)
+        selected_indices, diagnostics = allocate(
+            allocation_entries, budget,
+            tests_requested=tests_requested)
+        omissions = [entry for entry in diagnostics if entry.omission_reason == "context_budget"]
+        for entry in omissions[:3]:
+            warnings.append(f"CONTEXT_BUDGET_OMISSION:{entry.candidate_path}:{entry.proposed_source_ranges[0][0]}-{entry.proposed_source_ranges[0][1]}")
+        if len(omissions) > 3:
+            warnings.append(f"CONTEXT_BUDGET_OMISSIONS_ADDITIONAL:{len(omissions) - 3}")
         excerpts: list[SourceExcerpt] = []
         redactions: list[str] = []
         used_tokens = 0
-        for _, path, item in planned:
+        for selected_index in selected_indices:
+            _, path, item = planned[selected_index]
             source = sources[path]
             raw_excerpt = _excerpt_text(source, item.start, item.end)
             sanitized = self.redactor.redact(raw_excerpt)
             cost = self.estimator.estimate(sanitized.text)
-            if used_tokens + cost > budget and not item.required:
-                warnings.append(f"CONTEXT_BUDGET_OMISSION:{path}:{item.start}-{item.end}")
-                continue
             if used_tokens + cost > budget:
                 warnings.append(f"BUDGET_EXCEEDED_FOR_REQUIRED_SYMBOL:{path}")
             used_tokens += cost
@@ -231,7 +283,8 @@ class ContextBuilder:
                             "source": [(item.path, item.content_hash, item.start_line, item.end_line, item.text) for item in excerpts]}
         fingerprint = hashlib.sha256(json.dumps(fingerprint_data, sort_keys=True).encode("utf-8")).hexdigest()
         return ContextPack(fingerprint, query, index.identity, mode, budget, generation, candidates, tuple(excerpts),
-                           related_tests, changed_context, metrics, tuple(dict.fromkeys(warnings)), tuple(redactions))
+                           related_tests, changed_context, metrics, tuple(dict.fromkeys(warnings)), tuple(redactions),
+                           selection_diagnostics=diagnostics)
 
     def _select_ranges(self, record: IndexedFile, source: SourceFile, candidate: RelevanceCandidate | None,
                        diff_file: object, mode: ContextMode) -> list[_Range]:

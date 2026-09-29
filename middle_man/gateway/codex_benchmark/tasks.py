@@ -114,6 +114,14 @@ TASKS = (
         "Do not modify files.",
         True, "committed-middle-man", schema_version=2,
     ),
+    TaskSpec(
+        "preemption-v3", "KV preemption architecture (structured v3)",
+        "Explain how KV preemption works in Middle_Man. For victim selection, memory release/control, "
+        "recomputation, output preservation, and the proving test, name the concrete implementation "
+        "symbol, component, or test file used by this repository. Give a concise explanation. "
+        "Do not modify files.",
+        True, "committed-middle-man", schema_version=3,
+    ),
 )
 
 
