@@ -127,6 +127,17 @@ TASKS = (
         "Do not modify files.",
         True, "repository-commit", schema_version=3, source_ref=TASK_A_SOURCE_COMMIT,
     ),
+    TaskSpec(
+        "preemption-v4", "KV preemption architecture (explicit abstractions v4)",
+        "Explain how KV preemption works in Middle_Man. For victim selection, memory release/control, "
+        "recomputation, output preservation, and the proving test, name the concrete implementation "
+        "symbol, component, or test file used by this repository. Give a concise explanation. "
+        "Do not modify files. Give the policy implementation class choosing victims, controller component "
+        "coordinating KV allocation and release, WorkKind enum member emitted by the scheduler for "
+        "preempted requests, InferenceRequest generated-output field preserved across preemption, and "
+        "proving test file. Explain their interaction and KV block release.",
+        True, "repository-commit", schema_version=4, source_ref=TASK_A_SOURCE_COMMIT,
+    ),
 )
 
 

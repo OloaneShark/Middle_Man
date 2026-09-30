@@ -19,6 +19,7 @@ from middle_man.gateway.codex_benchmark.events import CodexUsage, NativeExplorat
 from middle_man.gateway.codex_benchmark.infrastructure import WINDOWS_SANDBOX, primary_usage_signature
 from middle_man.gateway.codex_benchmark.overlap import ContextDelivery, measure_delivery
 from middle_man.gateway.codex_benchmark.preemption_v3 import evaluate_preemption_v3
+from middle_man.gateway.codex_benchmark.preemption_v4 import evaluate_preemption_v4
 from middle_man.gateway.codex_benchmark.tasks import TASKS, TaskSpec, add_acceptance_tests, prepare_pair, source_fingerprint
 from middle_man.gateway.secrets import SecretRedactor
 from middle_man.mcp.benchmark_receipts import BenchmarkPolicy
@@ -155,7 +156,8 @@ def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, mod
             *_overrides(mode, root, run_id=run_id, task_id=task.id), "-C", str(root.resolve()),
             "-s", sandbox, "--ephemeral", "--json", "-m", model,
             "-c", f'model_reasoning_effort="{effort}"',
-            *(["--output-schema", str(Path(__file__).with_name("preemption_v2.schema.json").resolve())]
+            *(["--output-schema", str(Path(__file__).with_name(
+                "preemption_v4.schema.json" if task.schema_version == 4 else "preemption_v2.schema.json").resolve())]
               if task.schema_version >= 2 else []),
             task.prompt + " Work only inside this benchmark working copy. Do not commit or push."]
 
@@ -302,6 +304,8 @@ def _evaluate(task: TaskSpec, root: Path, message: str, changed: tuple[str, ...]
             notes.extend(evaluate_preemption_v2(message))
         elif task.schema_version == 3:
             notes.extend(evaluate_preemption_v3(message))
+        elif task.schema_version == 4:
+            notes.extend(evaluate_preemption_v4(message))
         for fact in task.required_facts:
             if fact.casefold() not in message.casefold():
                 notes.append(f"missing factual marker: {fact}")
@@ -454,7 +458,7 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
     from middle_man.gateway.codex_benchmark.infrastructure import run_local_preflight
 
     if len({task_id for task_id in task_ids if task_id in
-            {"preemption", "preemption-v2", "preemption-v3"}}) > 1:
+            {"preemption", "preemption-v2", "preemption-v3", "preemption-v4"}}) > 1:
         raise ValueError("cannot run and aggregate different Task A versions in the same suite")
     command = _codex_executable()
     preflight = run_local_preflight(command, model=model, effort=effort, windows_sandbox=windows_sandbox,
@@ -510,7 +514,7 @@ def aggregate_report(pairs: list[dict[str, Any]]) -> dict[str, Any]:
     versions = {(pair.get("task_id", "legacy"), pair.get("task_version", 1)) for pair in pairs}
     by_family: dict[str, set[int]] = {}
     for task_id, task_version in versions:
-        family = "preemption" if task_id in {"preemption", "preemption-v2", "preemption-v3"} else task_id
+        family = "preemption" if task_id in {"preemption", "preemption-v2", "preemption-v3", "preemption-v4"} else task_id
         by_family.setdefault(family, set()).add(task_version)
     if any(len(items) > 1 for items in by_family.values()):
         raise ValueError("cannot aggregate different versions of the same benchmark task")

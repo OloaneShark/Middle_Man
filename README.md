@@ -186,6 +186,8 @@ The latest real frozen-corpus Task A v3 pair was also infrastructure-valid but *
 
 Phase 22.6 removes model-facing replay from Codex-core and rejects replay-enabled context usage in future optimized benchmarks. Local stdio tests confirm the five-tool surface and zero repeated delivery across two distinct pinned-corpus packs plus expansions. This is **not** a new real benchmark or token-saving result.
 
+The latest controlled Task A v3 pair was infrastructure-valid but failed both answers' recomputation and output-preservation fields despite the optimized 6,000-budget pack delivering 7/7 required files and identifiers. Baseline/optimized Codex input was 83,780/186,395, so no token-saving claim follows. Task A v4 is a separate local-only prompt/schema/evaluator contract that specifies the abstraction expected in each structured field; v3 stays frozen. `run-all` now selects v4 for Task A, but no v4 external pair has been run. Its pinned-corpus BALANCED/6000 check reaches 7/7 files and identifiers at 5,983 estimated selected-source tokens with direct/Gateway/stdio parity. See [Codex benchmarks](docs/CODEX_BENCHMARKS.md).
+
 ## Scope
 
 Claude integration and provider adapters are not implemented. The local server does not call a model or provider API; the explicit Phase 22 harness invokes the installed Codex CLI. No provider token, billing, or plan-usage savings are claimed.

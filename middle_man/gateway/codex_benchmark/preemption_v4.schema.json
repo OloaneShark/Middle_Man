@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "victim_selection_policy": {"type": "string", "description": "Concrete preemption policy implementation class used to choose a victim"},
+    "memory_control_component": {"type": "string", "description": "Controller component coordinating KV allocation, release, and preemption"},
+    "recomputation_work_kind": {"type": "string", "description": "WorkKind enum member scheduled to rebuild KV state after preemption"},
+    "output_progress_field": {"type": "string", "description": "InferenceRequest field tracking generated output tokens preserved across preemption"},
+    "proving_test_file": {"type": "string", "description": "Test file proving context recomputation and preservation of generated output"},
+    "explanation": {"type": "string", "description": "Brief explanation of how the policy, controller, work kind, output state, and test relate"}
+  },
+  "required": ["victim_selection_policy", "memory_control_component", "recomputation_work_kind", "output_progress_field", "proving_test_file", "explanation"],
+  "additionalProperties": false
+}
