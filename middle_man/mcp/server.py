@@ -20,7 +20,8 @@ CORE_INSTRUCTIONS = (
     "For a fresh scoped repository task, call middleman_context directly with the concrete engineering request, "
     "including behaviors or symbols being investigated; avoid generic repository-inspection queries. "
     "Use session_handoff for continuation, project_state only for broad orientation, "
-    "expand_context only when excerpts lack detail, and compact_output for large output. "
+    "For more of a partially supplied file, prefer expand_context before a whole-file reread; "
+    "use compact_output for large output. "
     "Native search and reads remain available when exact or missing source is needed."
 )
 FULL_INSTRUCTIONS = (
@@ -92,7 +93,7 @@ def create_server(config: GatewayConfig, tool_profile: str = "full",
     @server.tool(annotations=annotation)
     def middleman_expand_context(fingerprint: str, kind: str, target: str | None = None,
                                  context_lines: int = 3, max_context_tokens: int | None = None) -> dict[str, Any]:
-        """Expand a prior Context Pack by file, symbol, imports, tests, or lines; use only when initial excerpts lack detail."""
+        """Get missing source from a partial Context Pack; native reads remain valid for exact or stale source."""
         return invoke(lambda: gateway.expand_context(fingerprint, kind, target=target, core=tool_profile == "codex-core",
                                                      context_lines=context_lines, max_context_tokens=max_context_tokens))
 

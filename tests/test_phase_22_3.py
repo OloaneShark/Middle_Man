@@ -149,7 +149,7 @@ def test_direct_gateway_stdio_parity_and_privacy(pair: tuple[Path, Path, str]) -
                      (root / ".middle_man_cache/mcp_usage.jsonl").read_text(encoding="utf-8").splitlines()]
     assert [item["query"]["signature"] for item in receipts] == [
         item["query_fingerprint"] for item in usage_entries]
-    assert TASK.prompt not in json.dumps(receipts)
+    assert all(item["query"]["redacted_task"] == TASK.prompt for item in receipts)
     assert "text" not in receipts[0]["selection"]["ranges"][0]
     usage = (root / ".middle_man_cache/mcp_usage.jsonl").read_text(encoding="utf-8")
     assert TASK.prompt not in usage

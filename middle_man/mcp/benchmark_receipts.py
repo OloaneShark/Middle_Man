@@ -87,6 +87,7 @@ class BenchmarkReceipts:
             "selector_implementation_fingerprint": selector_implementation_fingerprint(),
             "query": {
                 "signature": query_signature,
+                "redacted_task": self._safe(str(inputs["task"]))[:4096],
                 "mode": pack.mode.value,
                 "budget": pack.max_context_tokens,
                 "top_k": inputs.get("top_k"),

@@ -70,6 +70,11 @@ class CodexBenchmarkRun:
     tool_profile: str = "none"
     source_commit: str | None = None
     source_tree_fingerprint: str | None = None
+    benchmark_run_id: str | None = None
+
+
+def _new_run_id() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
 
 
 @dataclass(frozen=True, slots=True)
@@ -266,13 +271,14 @@ def _evaluate(task: TaskSpec, root: Path, message: str, changed: tuple[str, ...]
 
 def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: int,
             codex_command: str, codex_version: str, model: str, effort: str, timeout: int,
-            artifact_root: Path, primary_repository_root: Path, windows_sandbox: str) -> CodexBenchmarkRun:
+            artifact_root: Path, primary_repository_root: Path, windows_sandbox: str,
+            run_id: str | None = None) -> CodexBenchmarkRun:
     if source_fingerprint(root) != fingerprint:
         raise RuntimeError("benchmark snapshot changed before Codex invocation")
     before = _status(root)
     if before:
         raise RuntimeError("benchmark snapshot is not clean before Codex invocation")
-    run_id = artifact_root.name
+    run_id = run_id or _new_run_id()
     _mcp_preflight(codex_command, mode, root, run_id=run_id, task_id=task.id)
     primary_before = primary_usage_signature(primary_repository_root)
     start_head = _head(root)
@@ -336,12 +342,13 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
                              sandbox_mode=windows_sandbox, task_version=task.schema_version,
                              evaluator_version=task.schema_version,
                              tool_profile="codex-core" if mode == "optimized" else "none",
-                             source_commit=task.source_ref, source_tree_fingerprint=fingerprint)
+                             source_commit=task.source_ref, source_tree_fingerprint=fingerprint,
+                             benchmark_run_id=run_id)
 
 
 def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: int, command: str,
           version: str, model: str, effort: str, timeout: int, artifacts: Path,
-          primary_repository_root: Path, windows_sandbox: str) -> CodexBenchmarkPair:
+          primary_repository_root: Path, windows_sandbox: str, run_id: str) -> CodexBenchmarkPair:
     baseline, optimized, fingerprint = prepare_pair(task, root, instructions)
     if task.id == "oauth-bug":
         for snapshot in (baseline, optimized):
@@ -354,10 +361,10 @@ def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: i
     first_root = baseline if first == "baseline" else optimized
     second_root = optimized if first == "baseline" else baseline
     first_run = run_one(task, first, first_root, fingerprint, order=order, codex_command=command,
-                        codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox)
+                        codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id)
     second_mode = "optimized" if first == "baseline" else "baseline"
     second_run = run_one(task, second_mode, second_root, fingerprint, order=order + 1, codex_command=command,
-                         codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox)
+                         codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id)
     baseline_run = first_run if first == "baseline" else second_run
     optimized_run = first_run if first == "optimized" else second_run
     valid = baseline_run.valid and optimized_run.valid and baseline_run.starting_fingerprint == optimized_run.starting_fingerprint
@@ -393,7 +400,7 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
         raise RuntimeError("Codex infrastructure preflight failed; no benchmark runs started: " +
                            "; ".join(preflight.errors))
     version = _codex_version(command)
-    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
+    run_id = _new_run_id()
     artifacts = artifact_base.resolve() / run_id
     if not artifacts.is_relative_to(repository_root.resolve()):
         raise ValueError("benchmark artifacts must stay inside the repository")
@@ -414,7 +421,8 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
         first = "optimized" if index % 2 else "baseline"
         pair = _pair(task, pair_root, instructions, first=first, order=index * 2 + 1,
                      command=command, version=version, model=model, effort=effort,
-                     timeout=timeout, artifacts=artifacts, primary_repository_root=repository_root, windows_sandbox=windows_sandbox)
+                     timeout=timeout, artifacts=artifacts, primary_repository_root=repository_root, windows_sandbox=windows_sandbox,
+                     run_id=run_id)
         pairs.append(pair)
         reason = f"stopped after infrastructure-invalid pair: {task.id}" if not pair.valid else None
         partial = CodexBenchmarkSuite(run_id, datetime.now(timezone.utc).isoformat(), version,

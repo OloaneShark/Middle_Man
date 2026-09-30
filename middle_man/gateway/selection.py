@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
+from pathlib import PurePosixPath
 
 from middle_man.gateway.relevance import RelevanceCandidate
 
@@ -36,6 +37,130 @@ class SelectionDiagnostic:
     omission_reason: str | None
     budget_before: int
     covered_signals: tuple[str, ...]
+    repair_candidate: bool = False
+    coverage_gain: float = 0.0
+    evicted_ranges: tuple[tuple[str, int, int], ...] = ()
+    evicted_cost: int = 0
+    added_cost: int = 0
+    coverage_before: tuple[str, ...] = ()
+    coverage_after: tuple[str, ...] = ()
+    repair_reason: str | None = None
+
+
+def _strengths(entry: SelectionEntry) -> dict[str, int]:
+    candidate = entry.candidate
+    if candidate is None:
+        return {}
+    result: dict[str, int] = {}
+    for signal in candidate.signals:
+        if not signal.term:
+            continue
+        if signal.kind in {"filename_term", "symbol_term"}:
+            strength = 3
+        elif signal.kind == "source_term" and signal.weight >= 10:
+            strength = 2
+        elif signal.kind == "family_term" and signal.weight >= 8:
+            strength = 1
+        else:
+            strength = 0
+        if strength:
+            result[signal.term] = max(result.get(signal.term, 0), strength)
+    return result
+
+
+def _repair(entries: tuple[SelectionEntry, ...], chosen: list[int], budget: int,
+            tests_requested: bool, coverage_selected: set[int]
+            ) -> tuple[list[int], dict[int, tuple[float, tuple[int, ...], tuple[str, ...], tuple[str, ...]]]]:
+    """Bounded one-way swaps for omitted evidence; never displace sole strong support."""
+    repairs: dict[int, tuple[float, tuple[int, ...], tuple[str, ...], tuple[str, ...]]] = {}
+    selected = set(chosen)
+    used = sum(entries[index].cost for index in selected)
+    strengths = [_strengths(entry) for entry in entries]
+    anchor_parents = Counter(str(PurePosixPath(entries[index].path).parent)
+                             for index in selected if entries[index].anchor)
+
+    def coverage(indices: set[int]) -> dict[str, int]:
+        result: dict[str, int] = {}
+        for index in indices:
+            for term, strength in strengths[index].items():
+                result[term] = max(result.get(term, 0), strength)
+        return result
+
+    # One accepted swap prevents an equivalent candidate from swapping back.
+    for _ in range(1):
+        before = coverage(selected)
+        options = []
+        for index, entry in enumerate(entries):
+            if index in selected or not entry.affinity or entry.candidate is None:
+                continue
+            if entry.cost > budget or entry.is_test and tests_requested and any(
+                    entries[number].is_test for number in selected):
+                continue
+            signals = strengths[index]
+            upgrades = {term: strength for term, strength in signals.items()
+                        if strength > before.get(term, 0)}
+            weak_support = {term for term, strength in signals.items()
+                            if strength == before.get(term, 0) == 1}
+            connected = any(signal.kind in {"import_neighbor", "reverse_import_neighbor", "tested_source"}
+                            for signal in entry.candidate.signals)
+            if not upgrades and not (connected and weak_support):
+                continue
+            parent = str(PurePosixPath(entry.path).parent)
+            if not upgrades and not anchor_parents[parent]:
+                continue
+            gain = sum(18.0 * (strength - before.get(term, 0)) for term, strength in upgrades.items())
+            gain += 8.0 * len(weak_support) if connected else 0.0
+            gain += min(6, 3 * anchor_parents[parent])
+            if gain < 8:
+                continue
+            options.append((-gain, -entry.candidate.score, entry.cost, entry.path, entry.start_line, index))
+        options.sort()
+        accepted = False
+        for _, _, _, _, _, incoming in options[:12]:
+            entry = entries[incoming]
+            deficit = max(0, used + entry.cost - budget)
+            eviction = []
+            freed = 0
+            # One or two inexpensive losses, chosen deterministically.
+            for outgoing in sorted(selected, key=lambda number: (
+                    entries[number].anchor, entries[number].required,
+                    -entries[number].cost,
+                    entries[number].candidate.score if entries[number].candidate else 0,
+                    entries[number].path, entries[number].start_line)) if deficit else ():
+                current = entries[outgoing]
+                if (outgoing in coverage_selected or current.required or current.anchor or
+                        current.is_test and tests_requested):
+                    continue
+                without = coverage(selected - {outgoing})
+                if any(strength >= 2 and without.get(term, 0) < strength
+                       for term, strength in strengths[outgoing].items()):
+                    continue
+                eviction.append(outgoing)
+                freed += current.cost
+                if freed >= deficit or len(eviction) == 2:
+                    break
+            if deficit and freed < deficit:
+                continue
+            after = coverage((selected - set(eviction)) | {incoming})
+            if any(after.get(term, 0) < strength for term, strength in before.items()):
+                continue
+            improvement = sum(18.0 * (after.get(term, 0) - before.get(term, 0))
+                              for term in strengths[incoming] if after.get(term, 0) > before.get(term, 0))
+            if not improvement and not any(
+                    strength == before.get(term, 0) == 1 for term, strength in strengths[incoming].items()):
+                continue
+            selected.difference_update(eviction)
+            selected.add(incoming)
+            used += entry.cost - freed
+            repairs[incoming] = (improvement or 8.0, tuple(eviction),
+                                 tuple(sorted(f"{term}:{strength}" for term, strength in before.items())),
+                                 tuple(sorted(f"{term}:{strength}" for term, strength in after.items())))
+            accepted = True
+            break
+        if not accepted:
+            break
+    return [index for index in chosen if index in selected] + sorted(
+        index for index in selected if index not in chosen), repairs
 
 
 def allocate(entries: tuple[SelectionEntry, ...], budget: int, *, tests_requested: bool = False
@@ -115,6 +240,7 @@ def allocate(entries: tuple[SelectionEntry, ...], budget: int, *, tests_requeste
         covered.update(keys)
         used += entries[index].cost
 
+    coverage_selected = set(chosen)
     # Depth pass uses the remaining budget for additional relevant atomic context.
     def depth_value(number: int) -> float:
         candidate = entries[number].candidate
@@ -133,6 +259,13 @@ def allocate(entries: tuple[SelectionEntry, ...], budget: int, *, tests_requeste
             used += entry.cost
         else:
             decisions[index] = (used, (), "context_budget" if entry.affinity else "outside_task_cluster")
+
+    original = set(chosen)
+    chosen, repairs = _repair(entries, chosen, budget, tests_requested, coverage_selected)
+    for index in original - set(chosen):
+        decisions[index] = (decisions[index][0], (), "context_budget")
+    for index in set(chosen) - original:
+        decisions[index] = (used, (), None)
 
     by_path: dict[str, list[int]] = {}
     for index, entry in enumerate(entries):
@@ -156,5 +289,15 @@ def allocate(entries: tuple[SelectionEntry, ...], budget: int, *, tests_requeste
                   for index in indices),
             sum(entries[index].cost for index in indices), chosen_any, omission,
             min(decisions[index][0] for index in indices),
-            tuple(sorted({key for index in indices for key in decisions[index][1]}))))
+            tuple(sorted({key for index in indices for key in decisions[index][1]})),
+            any(index in repairs for index in indices),
+            sum(repairs[index][0] for index in indices if index in repairs),
+            tuple((entries[evicted].path, entries[evicted].start_line, entries[evicted].end_line)
+                  for index in indices if index in repairs for evicted in repairs[index][1]),
+            sum(entries[evicted].cost for index in indices if index in repairs
+                for evicted in repairs[index][1]),
+            sum(entries[index].cost for index in indices if index in repairs),
+            next((repairs[index][2] for index in indices if index in repairs), ()),
+            next((repairs[index][3] for index in indices if index in repairs), ()),
+            "underrepresented_query_evidence" if any(index in repairs for index in indices) else None))
     return tuple(chosen), tuple(diagnostics)

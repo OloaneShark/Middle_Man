@@ -1,6 +1,6 @@
 # Real Codex A/B Context Benchmark
 
-Phase 22 measures whether Middle_Man changes Codex's repository exploration **without lowering correctness**. Phase 22.3 is local benchmark-stability and observability work. Task A v1/v2 were tested against real Codex; the authorized v3 pair is diagnostic-only because its baseline was infrastructure-invalid. It is separate from simulated Lab benchmarks and local Context Pack quality fixtures. It does not measure plan quota or billing.
+Phase 22 measures whether Middle_Man changes Codex's repository exploration **without lowering correctness**. Task A v1/v2 were tested against real Codex. The first v3 pair was infrastructure-invalid and diagnostic-only; a later frozen-corpus v3 pair was infrastructure-valid but failed correctness on both sides. Phase 22.4 is local-only. This benchmark is separate from simulated Lab benchmarks and local Context Pack quality fixtures; it does not measure plan quota or billing.
 
 ## Run It
 
@@ -134,4 +134,37 @@ Query wording is a material variable even on the pinned corpus (file/identifier 
 
 On **committed current HEAD** with the exact prompt, required recall is still 7/7, but its top 20 candidates include six Gateway files (two in `codex_benchmark/`), two MCP files, and zero Phase 22 test/docs files. Moving HEAD thus changes the candidate pool and includes self-benchmark machinery; it does not alone explain a 0/7 exact-prompt pack. The historical optimized v3 usage record contains only query fingerprint `2adb2f9fda5f05e1e4b5e4a641c283d24a24693911c16fb9dd3d0610a58dc05b`. Its exact query text and arguments were not retained, so we cannot establish which reformulation caused that specific pack. Corpus contamination and query reformulation were uncontrolled historical variables, not proven individual causes.
 
-Future explicitly identified benchmark MCP launches write **benchmark-only** source-free receipts in the snapshot's ignored cache. They contain run/task/mode, normalized redacted query terms and identifiers, explicit arguments, query signature, repository/source/selector/server fingerprints, candidate scores, selected/omitted paths and reasons, line ranges, cost estimates, and pack fingerprint. Receipts contain neither prompt text nor source text. Normal `mcp_usage.jsonl` remains metadata-only. Codex-core tool guidance now asks for the concrete engineering request; production ranking receives no evaluator-only paths, identifiers, or answer metadata. A low-specificity warning is not added yet because a generic-query heuristic has not been validated across unrelated repositories. No external Codex call occurred in Phase 22.3.
+Phase 22.3's explicitly identified benchmark MCP launches wrote **benchmark-only** source-free receipts in the snapshot's ignored cache. They contained run/task/mode, normalized redacted query terms and identifiers, explicit arguments, query signature, repository/source/selector/server fingerprints, candidate scores, selected/omitted paths and reasons, line ranges, cost estimates, and pack fingerprint. At that phase, receipts contained neither prompt text nor source text; Phase 22.4 adds a bounded redacted task field for future benchmark-only sessions. Normal `mcp_usage.jsonl` remains metadata-only. Codex-core guidance asks for the concrete engineering request; production ranking receives no evaluator-only paths, identifiers, or answer metadata. No external Codex call occurred in Phase 22.3.
+
+## Valid Frozen-Corpus Task A v3 Pair (Historical)
+
+The later Task A v3 pair on source commit `284c4451ad9213f4f27f6d534eac8be2484c2f9a` and source fingerprint `a548097a4294fd67b2d42a5ab616c19b8ab226d702a406fa36f588873d0a0c1b` was **infrastructure-valid on both sides**, unlike the earlier invalid v3 diagnostic pair. The quality gate is **TASK_FAILURE**: both structured answers failed. Baseline missed memory control, recomputation, and output preservation; optimized missed output preservation. The evaluator and artifacts are unchanged.
+
+| Metric | Baseline | Optimized |
+| --- | ---: | ---: |
+| Codex input / cached input tokens | 88,815 / 60,416 | 88,159 / 55,040 |
+| Output / reasoning-output tokens | 685 / 183 | 930 / 398 |
+| Elapsed seconds | 23.870 | 27.765 |
+| Native calls / explicit reads / unique files / rereads | 9 / 7 / 7 / 0 | 5 / 4 / 4 / 0 |
+| Search / listing calls | 1 / 1 | 1 / 0 |
+| Middle_Man MCP calls | 0 | `middleman_context` x1 |
+
+The optimized pack estimated 33,030 candidate, 5,960 selected-source, and 6,974 MCP-result tokens, with approximately 5,955 unique delivered source, zero repeated, and 1,019 non-source overhead. It covered **6/7 required files and 6/7 identifiers**: `middle_man/lab/scheduler.py` was omitted for the 6,000-token budget (estimated cost 549). Codex then read `scheduler.py`, `engine.py`, `tests/test_phase_7_preemption.py`, and `request.py` natively; the latter three had already been partially delivered. Input totals were nearly equal, and both answers failed correctness. **This is not a Middle_Man win or a real token-saving result.**
+
+## Phase 22.4 Local-Only Follow-up
+
+The raw optimized v3 query was not retained. The test suite labels its closest reconstruction from the receipt's normalized terms and identifiers as `RECEIPT_DERIVED_QUERY_FIXTURE`, not a historical exact query. With BALANCED/6000 on the same pinned corpus, the pre-repair selector gave 6/7 files and identifiers at 5,960 tokens, omitting `scheduler.py`. The final bounded repair pass now swaps out the 557-token `runner.py` range for the 549-token `scheduler.py` range, yielding 7/7 at 5,952. This is a local reproduction, not a re-run or rescore of the real pair.
+
+| Local query variant | Files | Identifiers | Selected-source estimate |
+| --- | ---: | ---: | ---: |
+| Exact Task A v3 prompt | 7/7 | 7/7 | 5,891 |
+| Short KV-preemption query | 5/7 | 3/7 | 3,521 |
+| Behavior-focused | 7/7 | 7/7 | 5,475 |
+| Receipt-derived fixture | 7/7 | 7/7 | 5,952 |
+| Reordered phrasing | 7/7 | 7/7 | 5,544 |
+| Agent-style phrasing | 7/7 | 7/7 | 5,693 |
+| Generic architecture query | 0/7 | 0/7 | 1,126 |
+
+The five behavior-preserving variants fit the 6,000-token budget and reach 7/7; the short query omits major behaviors, and the generic query remains intentionally weak. Repair swaps were: receipt-derived `runner.py` to `scheduler.py`; behavior `cli/main.py` to `preemption.py`; reordered `runner.py` to `work.py`; agent-style `cli/main.py` to `scheduler.py`. Exact, short, and generic made no swap. Three unrelated bounded auth, queue, and upload allocator fixtures each trigger a one-way repair; explicit-path and required-test negatives remain protected.
+
+Codex-core remains five tools (851 estimated definition tokens, versus the historical 835 before changed guidance). A 16-excerpt receipt-derived core JSON result measures 6,910 estimated tokens without and 6,996 with the `complete_file` hint (+86); selected source is unchanged. Repeated initial context sends no excerpts, and core full-file expansion after a partial excerpt returns only unseen lines. Explicit benchmark receipts can now store up to 4,096 characters of redacted task text; ordinary usage logs and normal sessions do not. Run IDs are unique or passed explicitly by the suite, not inferred from `artifacts`. **No external Codex call occurred in Phase 22.4, no historical artifact changed, and no new real token-saving claim is made.**

@@ -101,7 +101,7 @@ Each source read is confined to the repository, respects indexing/size/ignore ru
 
 **Estimated context tokens** use `ceil(UTF-8 bytes / 4)` on source text, not rendered headings. The raw baseline is the complete current text of relevance candidates considered, not the entire repository. Metrics report candidate/selected bytes and estimated tokens, files/excerpts/lines, overlap avoided, and estimated reduction. Required exact context can exceed the budget with a warning; lower-priority context is omitted first. These estimates are **not provider billing tokens or Codex plan usage**.
 
-Phase 22.2 adds frequency-aware terms, conservative lexical-family matches, and a two-pass coverage/cost allocator. Phase 22.3 pins Task A to immutable Lab commit `284c4451ad9213f4f27f6d534eac8be2484c2f9a`, enforces clean benchmark snapshots, and records benchmark-only source-free query/selection receipts. Local direct-builder, direct-gateway, and stdio MCP paths agree on the exact Task A prompt and deliver 7/7 required files and identifiers. Query wording remains important; these local results do **not** establish a real Codex token saving or answer-quality improvement.
+Phase 22.2 adds frequency-aware terms and a coverage/cost allocator. Phase 22.3 pins Task A to immutable Lab commit `284c4451ad9213f4f27f6d534eac8be2484c2f9a` and enforces clean snapshots. Phase 22.4 adds bounded coverage repair, a core `complete_file` hint, and benchmark-only redacted task receipts. Local exact-prompt and receipt-derived checks reach 7/7 required files and identifiers, but short and generic queries remain weaker. These local results do **not** establish a real Codex token saving or answer-quality improvement.
 
 ## Git Changes and Output
 
@@ -162,7 +162,7 @@ pip install -e ".[mcp]"
 python -m middle_man mcp serve --repo .
 ```
 
-The default `codex-core` server exposes five bounded, read-only tools. A fresh scoped task can call `middleman_context` once for redacted source; repeated packs suppress already delivered lines and expansion returns only new ranges. Use `--tool-profile full` for the original ten-tool diagnostic surface. This command speaks MCP on stdout; use it through an MCP client rather than as an interactive shell command. Codex registration, verification, fallback behavior, and usage accounting are in [docs/CODEX_SETUP.md](docs/CODEX_SETUP.md). The root [AGENTS.md](AGENTS.md) gives Codex short repository-specific guidance.
+The default `codex-core` server exposes five bounded, read-only tools. A fresh scoped task can call `middleman_context` once for redacted source; each excerpt marks whether it is a complete file. Repeated packs suppress already delivered lines, and `middleman_expand_context` can supply unseen parts of a partial file. Native reads remain valid for exact or stale source and editing. Use `--tool-profile full` for the original ten-tool diagnostic surface. This command speaks MCP on stdout; use it through an MCP client rather than as an interactive shell command. Codex registration, verification, fallback behavior, and usage accounting are in [docs/CODEX_SETUP.md](docs/CODEX_SETUP.md). The root [AGENTS.md](AGENTS.md) gives Codex short repository-specific guidance.
 
 ```bash
 python -m middle_man mcp usage --repo . --json
@@ -180,7 +180,7 @@ python -m middle_man codex benchmark run-all --repo . --dry-run
 python scripts/measure_phase22_1.py  # local-only heuristic measurement
 ```
 
-An early suite attempt was infrastructure-invalid. The first **infrastructure-valid** Task A v1 pair was **FAIL/FAIL**; the valid v2 pair was also **FAIL/FAIL** with higher optimized input. The authorized v3 pair is **diagnostic only / invalid** because the baseline snapshot began dirty (` D AGENTS.md`). Its optimized side passed the answer gate, but its pack held 0/7 required areas and Codex recovered through eight native reads. Historical artifacts are frozen and no A/B or token-saving conclusion follows. Methodology, metrics, results, and limitations are in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
+An early suite attempt was infrastructure-invalid. The first **infrastructure-valid** Task A v1 pair was **FAIL/FAIL**; the valid v2 pair was also **FAIL/FAIL** with higher optimized input. The first v3 pair is **diagnostic only / invalid** because baseline began dirty (` D AGENTS.md`). A later frozen-corpus v3 pair was infrastructure-valid but **FAIL/FAIL** (`TASK_FAILURE`): baseline/optimized input was 88,815/88,159, the optimized pack delivered 6/7 required areas, and four native fallback reads followed. The near-equal input counts and failed correctness do not establish a Middle_Man win. Historical artifacts remain frozen. Methodology is in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
 
 ## Scope
 

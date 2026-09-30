@@ -171,9 +171,13 @@ class MCPGateway:
             raise ValueError("required source exceeds the MCP Context Pack limit; use a narrower query or native read")
         already = self.delivery_ledger.already_delivered(pack.fingerprint)
         delivered = self.delivery_ledger.select(pack.fingerprint, pack.excerpts, force_replay=force_replay)
+        complete = {(item.path, item.content_hash, item.start_line, item.end_line)
+                    for item in pack.excerpts if item.complete_file}
         excerpts = [{"path": item.path, "start_line": item.start_line, "end_line": item.end_line,
                      "text": item.text, "symbol": item.symbols[0] if item.symbols else None,
-                     "reason": item.reasons[0] if item.reasons else None} for item in delivered]
+                     "reason": item.reasons[0] if item.reasons else None,
+                     "complete_file": (item.path, item.content_hash, item.start_line, item.end_line) in complete}
+                    for item in delivered]
         metrics = pack.metrics
         data = {"fingerprint": pack.fingerprint, "mode": pack.mode.value, "generation": pack.generation,
                 "excerpts": excerpts, "warnings": list(pack.warnings),
