@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import json
 from collections import OrderedDict
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from typing import Any, Callable
+from uuid import uuid4
 
 from middle_man.gateway.compact import OutputCompactor
 from middle_man.gateway.config import GatewayConfig
@@ -43,6 +44,7 @@ class _Payload:
     pack_fingerprint: str | None = None
     generation: int | None = None
     delivery_excerpts: tuple[DeliveredRange, ...] | None = None
+    budget_audit: dict[str, Any] | None = None
 
 
 class MCPGateway:
@@ -58,6 +60,9 @@ class MCPGateway:
         self.usage = MCPUsageLog(config)
         self._packs: OrderedDict[str, ContextPack] = OrderedDict()
         self.delivery_ledger = DeliveryLedger()
+        self.server_session_id = uuid4().hex
+        self._call_sequence = 0
+        self.benchmark_policy = benchmark_identity.policy if benchmark_identity else None
         self.benchmark_receipts = BenchmarkReceipts(config, benchmark_identity) if benchmark_identity else None
 
     def _sanitize(self, value: Any, categories: set[str]) -> Any:
@@ -72,6 +77,9 @@ class MCPGateway:
         return value
 
     def _execute(self, name: str, inputs: object, operation: Callable[[], _Payload]) -> dict[str, Any]:
+        self._call_sequence += 1
+        sequence = self._call_sequence
+        ledger_before = self.delivery_ledger.line_count
         self.indexer.last_index = None
         try:
             payload = operation()
@@ -92,13 +100,20 @@ class MCPGateway:
                     delivery.append({"path": excerpt["path"], "content_hash": excerpt["content_hash"],
                                      "start_line": excerpt["start_line"], "end_line": excerpt["end_line"],
                                      "line_bytes": [len(line.encode("utf-8")) for line in lines]})
+            ledger_after = self.delivery_ledger.projected_line_count(delivery) if delivery is not None else ledger_before
             self.usage.record(name, inputs, metrics, pack_fingerprint=payload.pack_fingerprint,
-                              generation=payload.generation, delivery=delivery)
+                              generation=payload.generation, delivery=delivery,
+                              server_session_id=self.server_session_id, call_sequence=sequence,
+                              ledger_lines_before=ledger_before, ledger_lines_after=ledger_after,
+                              budget=payload.budget_audit)
             if payload.pack_fingerprint is not None and delivery is not None:
                 self.delivery_ledger.commit(payload.pack_fingerprint, delivery)
             return data
         except Exception as exc:
-            self.usage.record(name, inputs, {}, error=type(exc).__name__)
+            self.usage.record(name, inputs, {}, error=type(exc).__name__,
+                              server_session_id=self.server_session_id, call_sequence=sequence,
+                              ledger_lines_before=ledger_before,
+                              ledger_lines_after=self.delivery_ledger.line_count)
             raise
 
     def _paths(self, paths: list[str] | None) -> tuple[str, ...]:
@@ -202,8 +217,17 @@ class MCPGateway:
         def produce() -> _Payload:
             self._limits(None, max_context_tokens)
             query = self._query(task, paths, symbols, error_text)
-            pack = self.builder.build(query, mode=mode, max_context_tokens=max_context_tokens)
+            cap = self.benchmark_policy.initial_context_budget if self.benchmark_policy else None
+            effective = min(max_context_tokens, cap) if cap is not None else max_context_tokens
+            pack = self.builder.build(query, mode=mode, max_context_tokens=effective)
             payload = self._core_payload(pack, force_replay=force_replay)
+            audit = {"requested_context_tokens": max_context_tokens,
+                     "effective_context_tokens": effective,
+                     "benchmark_context_cap": cap, "budget_capped": effective < max_context_tokens,
+                     "force_replay": force_replay}
+            payload = replace(payload, budget_audit=audit)
+            if cap is not None:
+                payload = replace(payload, data={**payload.data, "budget": audit})
             if self.benchmark_receipts is not None:
                 self.benchmark_receipts.record(inputs, pack)
             self._remember(pack)
@@ -291,9 +315,16 @@ class MCPGateway:
             else:
                 safe_target = target
             request = ExpansionRequest(kind, safe_target, context_lines)
-            budget = min(MAX_CONTEXT_TOKENS, pack.max_context_tokens * 2) if max_context_tokens is None else max_context_tokens
+            requested = min(MAX_CONTEXT_TOKENS, pack.max_context_tokens * 2) if max_context_tokens is None else max_context_tokens
+            ceiling = self.benchmark_policy.expansion_ceiling if self.benchmark_policy else None
+            budget = min(requested, ceiling) if ceiling is not None else requested
             expanded = self.builder.expand(pack, request, max_context_tokens=budget)
             payload = self._core_payload(expanded, parent=fingerprint) if core else self._pack_payload(expanded)
+            payload = replace(payload, budget_audit={
+                "requested_expansion_budget": max_context_tokens,
+                "effective_expansion_budget": budget,
+                "benchmark_expansion_ceiling": ceiling,
+                "budget_capped": budget < requested})
             self._remember(expanded)
             return payload
         return self._execute("middleman_expand_context", {"fingerprint": fingerprint, "kind": kind,

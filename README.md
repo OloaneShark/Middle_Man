@@ -162,13 +162,13 @@ pip install -e ".[mcp]"
 python -m middle_man mcp serve --repo .
 ```
 
-The default `codex-core` server exposes five bounded, read-only tools. A fresh scoped task can call `middleman_context` once for redacted source; each excerpt marks whether it is a complete file. Repeated packs suppress already delivered lines, and `middleman_expand_context` can supply unseen parts of a partial file. Native reads remain valid for exact or stale source and editing. Use `--tool-profile full` for the original ten-tool diagnostic surface. This command speaks MCP on stdout; use it through an MCP client rather than as an interactive shell command. Codex registration, verification, fallback behavior, and usage accounting are in [docs/CODEX_SETUP.md](docs/CODEX_SETUP.md). The root [AGENTS.md](AGENTS.md) gives Codex short repository-specific guidance.
+The default `codex-core` server exposes five bounded, read-only tools. A fresh scoped task can call `middleman_context` for redacted source; each excerpt marks whether it is a complete file. For missing detail on the same task, prefer `middleman_expand_context`; a materially new selection may need another context call. Repeated packs suppress already delivered lines unless `force_replay` explicitly requests resending them. Native reads remain valid for exact or stale source and editing. Use `--tool-profile full` for the original ten-tool diagnostic surface. This command speaks MCP on stdout; use it through an MCP client rather than as an interactive shell command. Codex registration, verification, fallback behavior, and usage accounting are in [docs/CODEX_SETUP.md](docs/CODEX_SETUP.md). The root [AGENTS.md](AGENTS.md) gives Codex short repository-specific guidance.
 
 ```bash
 python -m middle_man mcp usage --repo . --json
 ```
 
-Local usage records contain only metadata, input hashes, and sanitized excerpt range/size identity for benchmark overlap analysis, never source text. Reported token sizes are heuristic context estimates, not Codex plan usage or provider billing. Neither the server nor the Gateway sends repository content to an external service on its own.
+Local usage records contain only metadata, input hashes, and sanitized excerpt range/size identity for benchmark overlap analysis, never source text. They also record a per-Gateway session ID, call sequence, ledger line counts, and requested/effective budgets. Normal sessions retain the 12,000-token context maximum; explicitly identified benchmark sessions cap each initial `middleman_context` build at 6,000 while explicit expansion may grow to 12,000. Reported token sizes are heuristic context estimates, not Codex plan usage or provider billing. Neither the server nor the Gateway sends repository content to an external service on its own.
 
 ## Real Codex Benchmark
 
@@ -181,6 +181,8 @@ python scripts/measure_phase22_1.py  # local-only heuristic measurement
 ```
 
 An early suite attempt was infrastructure-invalid. The first **infrastructure-valid** Task A v1 pair was **FAIL/FAIL**; the valid v2 pair was also **FAIL/FAIL** with higher optimized input. The first v3 pair is **diagnostic only / invalid** because baseline began dirty (` D AGENTS.md`). A later frozen-corpus v3 pair was infrastructure-valid but **FAIL/FAIL** (`TASK_FAILURE`): baseline/optimized input was 88,815/88,159, the optimized pack delivered 6/7 required areas, and four native fallback reads followed. The near-equal input counts and failed correctness do not establish a Middle_Man win. Historical artifacts remain frozen. Methodology is in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
+
+The latest real frozen-corpus Task A v3 pair was also infrastructure-valid but **TASK_FAILURE** on both sides: recomputation and output preservation failed. Its optimized agent requested 9,000 then 11,000 initial-context tokens, so it did **not** execute the intended fixed-6,000 condition. The first larger pack covered 7/7 required files and identifiers without repair. Phase 22.5 now enforces the benchmark cap server-side and records session/delivery diagnostics, but has run **no new external pair**. Lower optimized input in that one failed, protocol-deviating pair is not a token-saving claim; details are in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
 
 ## Scope
 

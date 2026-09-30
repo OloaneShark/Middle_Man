@@ -21,6 +21,7 @@ from middle_man.gateway.codex_benchmark.overlap import ContextDelivery, measure_
 from middle_man.gateway.codex_benchmark.preemption_v3 import evaluate_preemption_v3
 from middle_man.gateway.codex_benchmark.tasks import TASKS, TaskSpec, add_acceptance_tests, prepare_pair, source_fingerprint
 from middle_man.gateway.secrets import SecretRedactor
+from middle_man.mcp.benchmark_receipts import BenchmarkPolicy
 from middle_man.mcp.usage import server_implementation_identity
 
 DEFAULT_MODEL = "gpt-6-sol"
@@ -71,6 +72,9 @@ class CodexBenchmarkRun:
     source_commit: str | None = None
     source_tree_fingerprint: str | None = None
     benchmark_run_id: str | None = None
+    server_session_ids: tuple[str, ...] = ()
+    mcp_session_trace: tuple[tuple[int | None, str, str | None], ...] = ()
+    native_read_mcp_coverage: tuple[tuple[str, str], ...] = ()
 
 
 def _new_run_id() -> str:
@@ -123,7 +127,9 @@ def _server_args(root: Path, *, run_id: str = "", task_id: str = "", mode: str =
     if run_id and task_id and mode:
         task = next(item for item in TASKS if item.id == task_id)
         args.extend(["--benchmark-run-id", run_id, "--benchmark-task-id", task_id,
-                     "--benchmark-mode", mode, "--benchmark-source-commit", task.source_ref or "fixture"])
+                     "--benchmark-mode", mode, "--benchmark-source-commit", task.source_ref or "fixture",
+                     "--benchmark-context-budget", str(BenchmarkPolicy().initial_context_budget),
+                     "--benchmark-expansion-budget", str(BenchmarkPolicy().expansion_ceiling)])
     return [*args, "--tool-profile", "codex-core"]
 
 
@@ -201,6 +207,42 @@ def isolation_warnings(mode: str, entries: tuple[dict[str, Any], ...],
     if len(entries) != middleman_calls:
         warnings.append("MCP event and usage-log call counts differ")
     return tuple(warnings)
+
+
+def validate_initial_context_budgets(entries: tuple[dict[str, Any], ...], cap: int) -> tuple[str, ...]:
+    warnings = []
+    for entry in entries:
+        if entry.get("tool") != "middleman_context" or not entry.get("success"):
+            continue
+        budget = entry.get("budget")
+        effective = budget.get("effective_context_tokens") if isinstance(budget, dict) else None
+        recorded_cap = budget.get("benchmark_context_cap") if isinstance(budget, dict) else None
+        if (type(effective) is not int or type(recorded_cap) is not int or
+                recorded_cap != cap or not 1 <= effective <= cap):
+            warnings.append("optimized initial context budget invalid or unverified")
+    return tuple(warnings)
+
+
+def classify_native_read_coverage(root: Path, paths: tuple[str, ...],
+                                  entries: tuple[dict[str, Any], ...]) -> tuple[tuple[str, str], ...]:
+    delivered: dict[str, set[int]] = {}
+    for entry in entries:
+        if not entry.get("success"):
+            continue
+        for excerpt in entry.get("delivery") or ():
+            delivered.setdefault(excerpt["path"], set()).update(
+                range(int(excerpt["start_line"]), int(excerpt["end_line"]) + 1))
+    result = []
+    for path in paths:
+        file = (root / path).resolve()
+        covered = delivered.get(path, set())
+        if not file.is_relative_to(root.resolve()) or not file.is_file() or not covered:
+            classification = "ABSENT_FROM_MCP"
+        else:
+            total = len(file.read_bytes().splitlines())
+            classification = "COMPLETE_IN_MCP" if all(line in covered for line in range(1, total + 1)) else "PARTIAL_IN_MCP"
+        result.append((path, classification))
+    return tuple(result)
 
 def _changed_paths(status: tuple[str, ...]) -> tuple[str, ...]:
     return tuple(sorted({line[3:].split(" -> ")[-1] for line in status if len(line) >= 4}))
@@ -309,6 +351,12 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
         warnings.append("primary repository MCP usage log changed during benchmark run")
     middleman_events = tuple((server, tool) for server, tool in trace.mcp_calls if server == "middle-man")
     warnings.extend(isolation_warnings(mode, entries, trace.mcp_calls))
+    if mode == "optimized":
+        warnings.extend(validate_initial_context_budgets(entries, BenchmarkPolicy().initial_context_budget))
+        sessions = {entry.get("server_session_id") for entry in entries
+                    if isinstance(entry.get("server_session_id"), str)}
+        if len(sessions) > 1:
+            warnings.append("optimized MCP calls spanned multiple server sessions")
     if mode == "optimized" and any(
         entry.get("server_implementation") != server_implementation_identity() for entry in entries
     ):
@@ -329,7 +377,8 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
     safe_event_path.write_text(json.dumps(trace.sanitized_events, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     valid = not (mode == "optimized" and not entries) and not any(
                     "contaminated" in item or "no Middle_Man" in item or "call counts differ" in item or
-                    "differs from configured" in item or "implementation identity differs" in item or "primary repository MCP usage log changed" in item
+                    "differs from configured" in item or "implementation identity differs" in item or
+                    "initial context budget invalid" in item or "primary repository MCP usage log changed" in item
                     for item in warnings)
     return CodexBenchmarkRun(task.id, mode, order, codex_version, model, effort, verification, fingerprint,
                              start_head, timestamp, exit_code, elapsed, passed, notes, before, after, changed,
@@ -343,7 +392,13 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
                              evaluator_version=task.schema_version,
                              tool_profile="codex-core" if mode == "optimized" else "none",
                              source_commit=task.source_ref, source_tree_fingerprint=fingerprint,
-                             benchmark_run_id=run_id)
+                             benchmark_run_id=run_id,
+                             server_session_ids=tuple(sorted({entry["server_session_id"] for entry in entries
+                                                               if isinstance(entry.get("server_session_id"), str)})),
+                             mcp_session_trace=tuple((entry.get("call_sequence"), entry.get("tool", "unknown"),
+                                                      entry.get("server_session_id")) for entry in entries),
+                             native_read_mcp_coverage=classify_native_read_coverage(
+                                 root, trace.native.unique_files, entries))
 
 
 def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: int, command: str,
@@ -510,6 +565,7 @@ def format_report(data: dict[str, Any]) -> str:
             lines.extend(["", f"{pair['title']} v{pair.get('task_version', 1)} [{pair['quality_gate']}]",
                           f"Invalid A/B pair; diagnostics only. baseline warnings={baseline['warnings']} "
                           f"optimized warnings={optimized['warnings']}",
+                          f"Optimized MCP session trace: {optimized.get('mcp_session_trace', [])}",
                           f"Correctness notes: baseline={baseline['correctness_notes']} "
                           f"optimized={optimized['correctness_notes']}"])
             continue
@@ -524,6 +580,8 @@ def format_report(data: dict[str, Any]) -> str:
                       f"delivered files: {len(optimized['context']['selected_paths'])}",
                       f"Middle_Man calls: {sum(count for _, count in optimized['mcp_calls_by_tool'])} "
                       f"{dict(optimized['mcp_calls_by_tool'])}",
+                      f"MCP session trace: {optimized.get('mcp_session_trace', [])}; "
+                      f"native read MCP coverage: {optimized.get('native_read_mcp_coverage', [])}",
                       f"Estimated candidate/selected/unique/repeated source tokens: "
                       f"{optimized['context']['candidate_tokens']}/{optimized['context']['selected_tokens']}/"
                       f"{optimized['context']['unique_source_tokens_estimate']}/"

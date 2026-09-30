@@ -19,11 +19,24 @@ from middle_man.gateway.state_store import StateStoreError
 
 
 @dataclass(frozen=True, slots=True)
+class BenchmarkPolicy:
+    initial_context_budget: int = 6000
+    expansion_ceiling: int = 12000
+
+    def __post_init__(self) -> None:
+        if (type(self.initial_context_budget) is not int or
+                type(self.expansion_ceiling) is not int or
+                not 1 <= self.initial_context_budget <= self.expansion_ceiling <= 12000):
+            raise ValueError("benchmark budgets must satisfy 1 <= initial <= expansion <= 12000")
+
+
+@dataclass(frozen=True, slots=True)
 class BenchmarkIdentity:
     run_id: str
     task_id: str
     mode: str
     source_commit: str
+    policy: BenchmarkPolicy = BenchmarkPolicy()
 
     def __post_init__(self) -> None:
         for value in (self.run_id, self.task_id, self.mode, self.source_commit):
@@ -76,7 +89,7 @@ class BenchmarkReceipts:
         identifiers = re.findall(r"[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*", task)
         safe = lambda values: [self._safe(str(value)) for value in values]
         self._write({
-            "schema_version": 1,
+            "schema_version": 2,
             "run_id": self.identity.run_id,
             "task_id": self.identity.task_id,
             "benchmark_mode": self.identity.mode,
@@ -90,6 +103,10 @@ class BenchmarkReceipts:
                 "redacted_task": self._safe(str(inputs["task"]))[:4096],
                 "mode": pack.mode.value,
                 "budget": pack.max_context_tokens,
+                "requested_budget": inputs["budget"],
+                "effective_budget": pack.max_context_tokens,
+                "benchmark_cap": self.identity.policy.initial_context_budget,
+                "budget_capped": inputs["budget"] > pack.max_context_tokens,
                 "top_k": inputs.get("top_k"),
                 "terms": sorted(terms(task))[:80],
                 "identifiers": sorted(set(identifiers))[:80],

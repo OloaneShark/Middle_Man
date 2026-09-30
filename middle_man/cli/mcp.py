@@ -21,6 +21,8 @@ def add_mcp_commands(subparsers: argparse._SubParsersAction) -> None:
     serve.add_argument("--benchmark-task-id")
     serve.add_argument("--benchmark-mode", choices=("baseline", "optimized"))
     serve.add_argument("--benchmark-source-commit")
+    serve.add_argument("--benchmark-context-budget", type=int)
+    serve.add_argument("--benchmark-expansion-budget", type=int)
     usage = actions.add_parser("usage", help="show local MCP invocation counts and estimates")
     usage.add_argument("--repo", type=Path, required=True)
     usage.add_argument("--json", action="store_true")
@@ -42,12 +44,20 @@ def run_mcp(args: argparse.Namespace) -> None:
         return
     if find_spec("mcp") is None:
         raise SystemExit('MCP support is optional. Install it with: pip install -e ".[mcp]"')
-    from middle_man.mcp.benchmark_receipts import BenchmarkIdentity
+    from middle_man.mcp.benchmark_receipts import BenchmarkIdentity, BenchmarkPolicy
     from middle_man.mcp.server import serve
 
     values = (args.benchmark_run_id, args.benchmark_task_id, args.benchmark_mode,
               args.benchmark_source_commit)
     if any(values) and not all(values):
         raise SystemExit("benchmark identity requires run ID, task ID, mode, and source commit")
-    identity = BenchmarkIdentity(*values) if all(values) else None
+    if not all(values) and (args.benchmark_context_budget is not None or args.benchmark_expansion_budget is not None):
+        raise SystemExit("benchmark budgets require a complete benchmark identity")
+    try:
+        policy = BenchmarkPolicy(
+            initial_context_budget=6000 if args.benchmark_context_budget is None else args.benchmark_context_budget,
+            expansion_ceiling=12000 if args.benchmark_expansion_budget is None else args.benchmark_expansion_budget)
+        identity = BenchmarkIdentity(*values, policy=policy) if all(values) else None
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     serve(config, tool_profile=args.tool_profile, benchmark_identity=identity)

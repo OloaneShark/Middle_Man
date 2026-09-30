@@ -17,12 +17,12 @@ from middle_man.mcp.benchmark_receipts import BenchmarkIdentity
 
 SERVER_NAME = "middle-man"
 CORE_INSTRUCTIONS = (
-    "For a fresh scoped repository task, call middleman_context directly with the concrete engineering request, "
-    "including behaviors or symbols being investigated; avoid generic repository-inspection queries. "
-    "Use session_handoff for continuation, project_state only for broad orientation, "
-    "For more of a partially supplied file, prefer expand_context before a whole-file reread; "
-    "use compact_output for large output. "
-    "Native search and reads remain available when exact or missing source is needed."
+    "For a fresh scoped repository task, call middleman_context with the concrete engineering request, "
+    "including relevant behaviors or symbols. For missing detail on the same task, prefer "
+    "middleman_expand_context on the existing fingerprint. Call middleman_context again when intent "
+    "materially changes or a new selection is needed. Use middleman_session_handoff for continuation, "
+    "middleman_project_state for broad orientation, and middleman_compact_output for large output. "
+    "Native search and reads remain valid for exact, missing, or stale source."
 )
 FULL_INSTRUCTIONS = (
     "Full diagnostic Middle_Man profile: find_context ranks without source; context_pack "
@@ -85,7 +85,7 @@ def create_server(config: GatewayConfig, tool_profile: str = "full",
     def middleman_context(task: str, mode: str = "balanced", max_context_tokens: int = 6000,
                           error_text: str = "", paths: list[str] | None = None,
                           symbols: list[str] | None = None, force_replay: bool = False) -> dict[str, Any]:
-        """Pass the concrete engineering request with relevant behaviors/symbols; generic inspection queries lose precision. Returns bounded redacted source; repeat only with force_replay."""
+        """Initial scoped source selection for a concrete task; expand an existing fingerprint for missing detail. A new task may need a new context call; force_replay resends prior source."""
         return invoke(lambda: gateway.context(task, mode=mode, max_context_tokens=max_context_tokens,
                                               error_text=error_text, paths=paths, symbols=symbols,
                                               force_replay=force_replay))

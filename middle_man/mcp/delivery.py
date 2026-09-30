@@ -60,6 +60,12 @@ class DeliveryLedger:
                 self._lines.add((str(excerpt["path"]), str(excerpt["content_hash"]), number))
         self._fingerprints.add(fingerprint)
 
+    def projected_line_count(self, delivery: list[dict[str, object]]) -> int:
+        additional = {(str(item["path"]), str(item["content_hash"]), number)
+                      for item in delivery
+                      for number in range(int(item["start_line"]), int(item["end_line"]) + 1)}
+        return len(self._lines | additional)
+
     def already_delivered(self, fingerprint: str) -> bool:
         return fingerprint in self._fingerprints
 

@@ -15,14 +15,14 @@ from typing import Any
 from middle_man.gateway.config import GatewayConfig
 from middle_man.gateway.state_store import StateStoreError
 
-MCP_USAGE_SCHEMA_VERSION = 2
+MCP_USAGE_SCHEMA_VERSION = 3
 
 
 @lru_cache(maxsize=1)
 def server_implementation_identity() -> dict[str, str | int]:
     package = Path(__file__).resolve().parents[1]
     names = ("mcp/server.py", "mcp/gateway.py", "mcp/usage.py", "mcp/delivery.py",
-             "mcp/benchmark_receipts.py",
+             "mcp/benchmark_receipts.py", "cli/mcp.py",
              "gateway/context_builder.py", "gateway/context_models.py")
     digest = hashlib.sha256()
     for name in names:
@@ -46,7 +46,10 @@ class MCPUsageLog:
 
     def record(self, tool: str, inputs: object, metrics: dict[str, int], error: str | None = None,
                pack_fingerprint: str | None = None, generation: int | None = None,
-               delivery: list[dict[str, Any]] | None = None) -> None:
+               delivery: list[dict[str, Any]] | None = None, *,
+               server_session_id: str | None = None, call_sequence: int | None = None,
+               ledger_lines_before: int | None = None, ledger_lines_after: int | None = None,
+               budget: dict[str, Any] | None = None) -> None:
         self._check()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._check()
@@ -59,12 +62,20 @@ class MCPUsageLog:
             "query_fingerprint": query_hash,
             "pack_fingerprint": pack_fingerprint,
             "generation": generation,
+            "server_session_id": server_session_id,
+            "call_sequence": call_sequence,
             "success": error is None,
             "error_type": error,
             "metrics": {key: int(value) for key, value in metrics.items() if key in _COUNTERS},
         }
         if delivery is not None:
             entry["delivery"] = delivery
+        if ledger_lines_before is not None and ledger_lines_after is not None:
+            entry["ledger_lines_before"] = ledger_lines_before
+            entry["ledger_lines_after"] = ledger_lines_after
+            entry["new_lines_delivered"] = ledger_lines_after - ledger_lines_before
+        if budget is not None:
+            entry["budget"] = budget
         flags = os.O_WRONLY | os.O_CREAT | os.O_APPEND | getattr(os, "O_BINARY", 0)
         flags |= getattr(os, "O_NOFOLLOW", 0)
         descriptor = os.open(self.path, flags, 0o600)
@@ -85,7 +96,7 @@ class MCPUsageLog:
                 with self.path.open("r", encoding="utf-8") as stream:
                     for line in stream:
                         entry = json.loads(line)
-                        if entry["schema_version"] not in {1, MCP_USAGE_SCHEMA_VERSION}:
+                        if entry["schema_version"] not in {1, 2, MCP_USAGE_SCHEMA_VERSION}:
                             raise ValueError("incompatible usage log schema")
                         calls[entry["tool"]] += 1
                         totals["errors"] += not entry["success"]
