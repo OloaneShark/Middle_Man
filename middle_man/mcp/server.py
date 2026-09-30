@@ -84,11 +84,10 @@ def create_server(config: GatewayConfig, tool_profile: str = "full",
     @core_only
     def middleman_context(task: str, mode: str = "balanced", max_context_tokens: int = 6000,
                           error_text: str = "", paths: list[str] | None = None,
-                          symbols: list[str] | None = None, force_replay: bool = False) -> dict[str, Any]:
-        """Initial scoped source selection for a concrete task; expand an existing fingerprint for missing detail. A new task may need a new context call; force_replay resends prior source."""
+                          symbols: list[str] | None = None) -> dict[str, Any]:
+        """Initial scoped source selection for a concrete task; expand an existing fingerprint for missing detail. A new task may need a new context call."""
         return invoke(lambda: gateway.context(task, mode=mode, max_context_tokens=max_context_tokens,
-                                              error_text=error_text, paths=paths, symbols=symbols,
-                                              force_replay=force_replay))
+                                              error_text=error_text, paths=paths, symbols=symbols))
 
     @server.tool(annotations=annotation)
     def middleman_expand_context(fingerprint: str, kind: str, target: str | None = None,

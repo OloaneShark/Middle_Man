@@ -220,7 +220,19 @@ def validate_initial_context_budgets(entries: tuple[dict[str, Any], ...], cap: i
         if (type(effective) is not int or type(recorded_cap) is not int or
                 recorded_cap != cap or not 1 <= effective <= cap):
             warnings.append("optimized initial context budget invalid or unverified")
+        if isinstance(budget, dict) and budget.get("force_replay") is True:
+            warnings.append("optimized model-facing context replay violates benchmark policy")
     return tuple(warnings)
+
+
+def _infrastructure_valid(mode: str, entries: tuple[dict[str, Any], ...],
+                          warnings: tuple[str, ...] | list[str]) -> bool:
+    return not (mode == "optimized" and not entries) and not any(
+        "contaminated" in item or "no Middle_Man" in item or "call counts differ" in item or
+        "differs from configured" in item or "implementation identity differs" in item or
+        "initial context budget invalid" in item or "model-facing context replay" in item or
+        "primary repository MCP usage log changed" in item
+        for item in warnings)
 
 
 def classify_native_read_coverage(root: Path, paths: tuple[str, ...],
@@ -375,11 +387,7 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
     verification = "event-verified" if trace.reported_model == model and trace.reported_effort == effort else "explicit CLI configuration; not event-verified"
     safe_event_path = artifact_root / f"{task.id}-{mode}-events.json"
     safe_event_path.write_text(json.dumps(trace.sanitized_events, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    valid = not (mode == "optimized" and not entries) and not any(
-                    "contaminated" in item or "no Middle_Man" in item or "call counts differ" in item or
-                    "differs from configured" in item or "implementation identity differs" in item or
-                    "initial context budget invalid" in item or "primary repository MCP usage log changed" in item
-                    for item in warnings)
+    valid = _infrastructure_valid(mode, entries, warnings)
     return CodexBenchmarkRun(task.id, mode, order, codex_version, model, effort, verification, fingerprint,
                              start_head, timestamp, exit_code, elapsed, passed, notes, before, after, changed,
                              test_exit, test_output, trace.native, tuple(sorted(counts.items())),
