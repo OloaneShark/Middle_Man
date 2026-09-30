@@ -3,6 +3,7 @@ from __future__ import annotations
 import dataclasses
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -49,11 +50,46 @@ def test_local_probe_uses_argv_and_elevated_config(monkeypatch: pytest.MonkeyPat
         return subprocess.CompletedProcess(argv, 0, "original", "")
 
     monkeypatch.setattr(infrastructure.subprocess, "run", fake_run)
-    infrastructure._probe("codex", tmp_path / "Dennis O'Loane", ":read-only", "Get-Content marker.txt")
+    root = tmp_path / "Dennis O'Loane"
+    root.mkdir()
+    read_script, readonly_script, write_script = infrastructure._marker_scripts(root)
+    infrastructure._probe("codex", root, ":read-only", read_script)
     argv, kwargs = observed[0]
     assert argv[1:3] == ["-c", 'windows.sandbox="elevated"']
-    assert argv[argv.index("-C") + 1] == str(tmp_path / "Dennis O'Loane")
-    assert kwargs["cwd"] == tmp_path / "Dennis O'Loane"
+    assert argv[argv.index("-C") + 1] == str(root)
+    assert kwargs["cwd"] == root
+    literal = "'" + str((root / "marker.txt").resolve()).replace("'", "''") + "'"
+    assert argv[-1] == f"Get-Content -LiteralPath {literal}"
+    assert literal in readonly_script and literal in write_script
+    assert "-LiteralPath marker.txt" not in " ".join((read_script, readonly_script, write_script))
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="PowerShell Windows cwd regression")
+def test_marker_read_is_independent_of_powershell_cwd(tmp_path: Path) -> None:
+    root = tmp_path / "probe O'Loane"
+    root.mkdir()
+    (root / "marker.txt").write_text("original\n", encoding="utf-8")
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    read_script, _, _ = infrastructure._marker_scripts(root)
+    result = subprocess.run(["powershell.exe", "-NoProfile", "-Command", read_script], cwd=elsewhere,
+                            capture_output=True, text=True, check=True)
+    assert result.stdout.strip() == "original"
+
+
+def test_marker_script_rejects_resolved_path_outside_root(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = tmp_path / "disposable root"
+    root.mkdir()
+    outside = tmp_path / "outside.txt"
+    original_resolve = Path.resolve
+
+    def displaced_marker(path: Path, *args: object, **kwargs: object) -> Path:
+        return outside if path.name == "marker.txt" else original_resolve(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "resolve", displaced_marker)
+    with pytest.raises(ValueError, match="must stay inside"):
+        infrastructure._marker_scripts(root)
 
 
 def test_failed_preflight_prevents_artifact_and_codex_run(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

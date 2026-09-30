@@ -74,6 +74,17 @@ def _probe(command: str, root: Path, permission: str, script: str,
     )
 
 
+def _marker_scripts(root: Path) -> tuple[str, str, str]:
+    resolved_root = root.resolve()
+    marker = (resolved_root / "marker.txt").resolve()
+    if not marker.is_relative_to(resolved_root):
+        raise ValueError("preflight marker must stay inside the disposable root")
+    literal = "'" + str(marker).replace("'", "''") + "'"
+    return (f"Get-Content -LiteralPath {literal}",
+            f"Set-Content -LiteralPath {literal} -Value 'forbidden' -ErrorAction Stop",
+            f"Set-Content -LiteralPath {literal} -Value 'written' -ErrorAction Stop")
+
+
 async def _snapshot_mcp_call(root: Path) -> bool:
     from mcp import Client, StdioServerParameters
 
@@ -120,6 +131,7 @@ def run_local_preflight(command: str, *, model: str, effort: str,
         root = root.resolve()
         path_ok = " " in str(root) and "'" in str(root)
         marker = root / "marker.txt"
+        read_script, readonly_script, write_script = _marker_scripts(root)
         marker.write_text("original\n", encoding="utf-8")
         subprocess.run(["git", "init", "-q", str(root)], capture_output=True, check=True)
         baseline = build_invocation(command, TASKS[0], "baseline", root, model=model, effort=effort, windows_sandbox=windows_sandbox)
@@ -147,16 +159,16 @@ def run_local_preflight(command: str, *, model: str, effort: str,
         except Exception as exc:
             errors.append(f"optimized MCP override check failed: {type(exc).__name__}: {exc}")
         try:
-            read = _probe(command, root, ":read-only", "Get-Content -LiteralPath marker.txt", windows_sandbox)
+            read = _probe(command, root, ":read-only", read_script, windows_sandbox)
             read_exit = read.returncode
             read_ok = read.returncode == 0 and "original" in read.stdout and marker.read_text(encoding="utf-8") == "original\n"
             if not read_ok:
                 errors.append("sandbox read failed: " + SecretRedactor().redact(read.stderr[-500:]).text)
-            readonly = _probe(command, root, ":read-only", "Set-Content -LiteralPath 'marker.txt' -Value 'forbidden' -ErrorAction Stop", windows_sandbox)
+            readonly = _probe(command, root, ":read-only", readonly_script, windows_sandbox)
             readonly_blocked = read_ok and readonly.returncode != 0 and marker.read_text(encoding="utf-8") == "original\n"
             if not readonly_blocked:
                 errors.append("read-only sandbox did not prove mutation was blocked")
-            write = _probe(command, root, ":workspace", "Set-Content -LiteralPath 'marker.txt' -Value 'written' -ErrorAction Stop", windows_sandbox)
+            write = _probe(command, root, ":workspace", write_script, windows_sandbox)
             write_exit = write.returncode
             write_ok = write.returncode == 0 and marker.read_text(encoding="utf-8").strip() == "written"
             if not write_ok:
