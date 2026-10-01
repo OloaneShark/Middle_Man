@@ -99,13 +99,16 @@ async def _snapshot_mcp_call(root: Path) -> bool:
 def run_local_preflight(command: str, *, model: str, effort: str,
                         windows_sandbox: str = WINDOWS_SANDBOX,
                         snapshot_root: Path | None = None,
-                        repository_root: Path | None = None) -> CodexInfrastructurePreflight:
+                        repository_root: Path | None = None,
+                        optimized_mode: str = "mcp") -> CodexInfrastructurePreflight:
     from middle_man.gateway.codex_benchmark.runner import _codex_version, _mcp_preflight, build_invocation
     from middle_man.gateway.codex_benchmark.tasks import TASKS
 
     errors: list[str] = []
     if windows_sandbox not in {"elevated", "unelevated"}:
         raise ValueError("unsupported Windows sandbox implementation")
+    if optimized_mode not in {"mcp", "offline-locator"}:
+        raise ValueError("unsupported optimized benchmark mode")
     version = None
     read_exit = write_exit = None
     read_ok = readonly_blocked = write_ok = root_ok = baseline_ok = False
@@ -134,30 +137,41 @@ def run_local_preflight(command: str, *, model: str, effort: str,
         read_script, readonly_script, write_script = _marker_scripts(root)
         marker.write_text("original\n", encoding="utf-8")
         subprocess.run(["git", "init", "-q", str(root)], capture_output=True, check=True)
-        baseline = build_invocation(command, TASKS[0], "baseline", root, model=model, effort=effort, windows_sandbox=windows_sandbox)
-        optimized = build_invocation(command, TASKS[0], "optimized", root, model=model, effort=effort, windows_sandbox=windows_sandbox)
+        probe_task = next(item for item in TASKS if item.id == "preemption-v4") if optimized_mode == "offline-locator" else TASKS[0]
+        baseline = build_invocation(command, probe_task, "baseline", root, model=model, effort=effort,
+                                    windows_sandbox=windows_sandbox, optimized_mode=optimized_mode)
+        optimized = build_invocation(command, probe_task, "optimized", root, model=model, effort=effort,
+                                     windows_sandbox=windows_sandbox, optimized_mode=optimized_mode,
+                                     locator_text="- marker.txt:1-1" if optimized_mode == "offline-locator" else None)
         baseline_ok = ("--ignore-user-config" in baseline and "--ignore-user-config" in optimized and
                        not any("mcp_servers." in part for part in baseline) and
                        f'windows.sandbox="{windows_sandbox}"' in baseline and
                        f'windows.sandbox="{windows_sandbox}"' in optimized and
                        "danger-full-access" not in baseline and "danger-full-access" not in optimized)
+        if optimized_mode == "offline-locator":
+            baseline_ok = baseline_ok and not any("mcp_servers." in part for part in optimized)
         if not baseline_ok:
             errors.append("baseline invocation is not isolated or sandboxed")
-        try:
-            _mcp_preflight(command, "optimized", root)
-            response_ok = asyncio.run(_snapshot_mcp_call(root))
-            snapshot_log = root / ".middle_man_cache" / "mcp_usage.jsonl"
-            primary_unchanged = repository_root is not None and primary_before == primary_usage_signature(repository_root)
-            from middle_man.mcp.usage import server_implementation_identity
+        if optimized_mode == "mcp":
+            try:
+                _mcp_preflight(command, "optimized", root)
+                response_ok = asyncio.run(_snapshot_mcp_call(root))
+                snapshot_log = root / ".middle_man_cache" / "mcp_usage.jsonl"
+                primary_unchanged = repository_root is not None and primary_before == primary_usage_signature(repository_root)
+                from middle_man.mcp.usage import server_implementation_identity
 
-            records = [json.loads(line) for line in snapshot_log.read_text(encoding="utf-8").splitlines()] if snapshot_log.is_file() else []
-            root_ok = (response_ok and bool(records) and primary_unchanged and
-                       all(item.get("server_implementation") == server_implementation_identity()
-                           for item in records))
-            if not root_ok:
-                errors.append("snapshot MCP call did not produce an isolated snapshot-local usage record")
-        except Exception as exc:
-            errors.append(f"optimized MCP override check failed: {type(exc).__name__}: {exc}")
+                records = [json.loads(line) for line in snapshot_log.read_text(encoding="utf-8").splitlines()] if snapshot_log.is_file() else []
+                root_ok = (response_ok and bool(records) and primary_unchanged and
+                           all(item.get("server_implementation") == server_implementation_identity()
+                               for item in records))
+                if not root_ok:
+                    errors.append("snapshot MCP call did not produce an isolated snapshot-local usage record")
+            except Exception as exc:
+                errors.append(f"optimized MCP override check failed: {type(exc).__name__}: {exc}")
+        else:
+            primary_unchanged = repository_root is not None and primary_before == primary_usage_signature(repository_root)
+            if not primary_unchanged or (root / ".middle_man_cache" / "mcp_usage.jsonl").exists():
+                errors.append("offline preflight observed an MCP usage log change")
         try:
             read = _probe(command, root, ":read-only", read_script, windows_sandbox)
             read_exit = read.returncode
@@ -175,7 +189,9 @@ def run_local_preflight(command: str, *, model: str, effort: str,
                 errors.append("workspace-write sandbox failed: " + SecretRedactor().redact(write.stderr[-500:]).text)
         except (OSError, subprocess.TimeoutExpired, RuntimeError) as exc:
             errors.append(f"sandbox probe failed: {type(exc).__name__}: {exc}")
-        passed = bool(version and path_ok and baseline_ok and root_ok and read_ok and readonly_blocked and write_ok)
+        passed = bool(version and path_ok and baseline_ok and
+                      (root_ok if optimized_mode == "mcp" else primary_unchanged and not errors) and
+                      read_ok and readonly_blocked and write_ok)
         return CodexInfrastructurePreflight(version, "native-windows", windows_sandbox, kind,
                                             path_ok, baseline_ok, root_ok, read_exit, read_ok, readonly_blocked,
                                             write_exit, write_ok, False, passed, tuple(errors), primary_unchanged)

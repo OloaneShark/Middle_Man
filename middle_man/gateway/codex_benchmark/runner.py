@@ -17,11 +17,15 @@ from uuid import uuid4
 
 from middle_man.gateway.codex_benchmark.events import CodexUsage, NativeExploration, parse_codex_events
 from middle_man.gateway.codex_benchmark.infrastructure import WINDOWS_SANDBOX, primary_usage_signature
+from middle_man.gateway.codex_benchmark.offline_locator import append_offline_locator, build_offline_locator
 from middle_man.gateway.codex_benchmark.overlap import ContextDelivery, measure_delivery
 from middle_man.gateway.codex_benchmark.preemption_v3 import evaluate_preemption_v3
 from middle_man.gateway.codex_benchmark.preemption_v4 import evaluate_preemption_v4
 from middle_man.gateway.codex_benchmark.tasks import TASKS, TaskSpec, add_acceptance_tests, prepare_pair, source_fingerprint
+from middle_man.gateway.config import GatewayConfig
+from middle_man.gateway.relevance import ContextQuery
 from middle_man.gateway.secrets import SecretRedactor
+from middle_man.gateway.tokens import HeuristicTokenEstimator
 from middle_man.mcp.benchmark_receipts import BenchmarkPolicy
 from middle_man.mcp.usage import server_implementation_identity
 
@@ -76,6 +80,7 @@ class CodexBenchmarkRun:
     server_session_ids: tuple[str, ...] = ()
     mcp_session_trace: tuple[tuple[int | None, str, str | None], ...] = ()
     native_read_mcp_coverage: tuple[tuple[str, str], ...] = ()
+    offline_locator_audit: dict[str, Any] | None = None
 
 
 def _new_run_id() -> str:
@@ -108,6 +113,7 @@ class CodexBenchmarkSuite:
     planned_task_ids: tuple[str, ...]
     aborted_reason: str | None = None
     benchmark_policy: BenchmarkPolicy = BenchmarkPolicy()
+    optimized_mode: str = "mcp"
 
 
 def _codex_executable() -> str:
@@ -141,9 +147,9 @@ def _server_args(root: Path, *, run_id: str = "", task_id: str = "", mode: str =
 
 
 def _overrides(mode: str, root: Path, *, run_id: str = "", task_id: str = "",
-               policy: BenchmarkPolicy = BenchmarkPolicy()) -> list[str]:
+               policy: BenchmarkPolicy = BenchmarkPolicy(), optimized_mode: str = "mcp") -> list[str]:
     settings = []
-    if mode == "optimized":
+    if mode == "optimized" and optimized_mode == "mcp":
         settings = ["mcp_servers.middle-man.command=" + json.dumps(str(Path(sys.executable).resolve())),
                     "mcp_servers.middle-man.args=" + json.dumps(_server_args(
                         root, run_id=run_id, task_id=task_id, mode=mode, policy=policy)),
@@ -152,21 +158,32 @@ def _overrides(mode: str, root: Path, *, run_id: str = "", task_id: str = "",
 
 def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, model: str,
                      effort: str, windows_sandbox: str = WINDOWS_SANDBOX,
-                     run_id: str = "", policy: BenchmarkPolicy = BenchmarkPolicy()) -> list[str]:
+                     run_id: str = "", policy: BenchmarkPolicy = BenchmarkPolicy(),
+                     optimized_mode: str = "mcp", locator_text: str | None = None) -> list[str]:
     if mode not in {"baseline", "optimized"}:
         raise ValueError("unknown benchmark mode")
     if windows_sandbox not in {"elevated", "unelevated"}:
         raise ValueError("unsupported Windows sandbox implementation")
+    if optimized_mode not in {"mcp", "offline-locator"}:
+        raise ValueError("unsupported optimized benchmark mode")
+    if optimized_mode == "offline-locator" and task.id != "preemption-v4":
+        raise ValueError("offline-locator is limited to preemption-v4")
+    if (mode == "optimized" and optimized_mode == "offline-locator") != (locator_text is not None):
+        raise ValueError("offline optimized invocation requires only its precomputed locator")
     sandbox = "read-only" if task.read_only else "workspace-write"
+    prompt = task.prompt + " Work only inside this benchmark working copy. Do not commit or push."
+    if locator_text is not None:
+        prompt = append_offline_locator(prompt, locator_text)
     return [command, "--no-daemon", "-a", "never", "exec", "--ignore-user-config", "--strict-config",
             "-c", f'windows.sandbox="{windows_sandbox}"',
-            *_overrides(mode, root, run_id=run_id, task_id=task.id, policy=policy), "-C", str(root.resolve()),
+            *_overrides(mode, root, run_id=run_id, task_id=task.id, policy=policy,
+                        optimized_mode=optimized_mode), "-C", str(root.resolve()),
             "-s", sandbox, "--ephemeral", "--json", "-m", model,
             "-c", f'model_reasoning_effort="{effort}"',
             *(["--output-schema", str(Path(__file__).with_name(
                 "preemption_v4.schema.json" if task.schema_version == 4 else "preemption_v2.schema.json").resolve())]
               if task.schema_version >= 2 else []),
-            task.prompt + " Work only inside this benchmark working copy. Do not commit or push."]
+            prompt]
 
 
 def _mcp_preflight(command: str, mode: str, root: Path, *, run_id: str = "", task_id: str = "",
@@ -205,14 +222,17 @@ def _usage_entries(root: Path) -> tuple[dict[str, Any], ...]:
 
 
 def isolation_warnings(mode: str, entries: tuple[dict[str, Any], ...],
-                       mcp_calls: tuple[tuple[str, str], ...]) -> tuple[str, ...]:
+                       mcp_calls: tuple[tuple[str, str], ...], *,
+                       optimized_mode: str = "mcp") -> tuple[str, ...]:
     middleman_calls = sum(server == "middle-man" for server, _ in mcp_calls)
     warnings = []
     if mode == "baseline" and (entries or mcp_calls):
         warnings.append("baseline contaminated by an MCP call")
-    if mode == "optimized" and not entries:
+    if mode == "optimized" and optimized_mode == "offline-locator" and (entries or mcp_calls):
+        warnings.append("offline locator contaminated by an MCP call")
+    if mode == "optimized" and optimized_mode == "mcp" and not entries:
         warnings.append("optimized run made no snapshot-scoped Middle_Man MCP calls")
-    if mode == "optimized" and middleman_calls and not entries:
+    if mode == "optimized" and optimized_mode == "mcp" and middleman_calls and not entries:
         warnings.append("Middle_Man calls lacked snapshot usage records; server may target another repository")
     if len(entries) != middleman_calls:
         warnings.append("MCP event and usage-log call counts differ")
@@ -272,8 +292,9 @@ def validate_initial_context_budgets(entries: tuple[dict[str, Any], ...],
 
 
 def _infrastructure_valid(mode: str, entries: tuple[dict[str, Any], ...],
-                          warnings: tuple[str, ...] | list[str]) -> bool:
-    return not (mode == "optimized" and not entries) and not any(
+                          warnings: tuple[str, ...] | list[str], *,
+                          optimized_mode: str = "mcp") -> bool:
+    return not (mode == "optimized" and (not entries if optimized_mode == "mcp" else bool(entries))) and not any(
         "contaminated" in item or "no Middle_Man" in item or "call counts differ" in item or
         "differs from configured" in item or "implementation identity differs" in item or
         "initial context budget invalid" in item or "model-facing context replay" in item or
@@ -375,20 +396,47 @@ def _evaluate(task: TaskSpec, root: Path, message: str, changed: tuple[str, ...]
 def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: int,
             codex_command: str, codex_version: str, model: str, effort: str, timeout: int,
             artifact_root: Path, primary_repository_root: Path, windows_sandbox: str,
-            run_id: str | None = None, policy: BenchmarkPolicy = BenchmarkPolicy()) -> CodexBenchmarkRun:
+            run_id: str | None = None, policy: BenchmarkPolicy = BenchmarkPolicy(),
+            optimized_mode: str = "mcp") -> CodexBenchmarkRun:
     if source_fingerprint(root) != fingerprint:
         raise RuntimeError("benchmark snapshot changed before Codex invocation")
     before = _status(root)
     if before:
         raise RuntimeError("benchmark snapshot is not clean before Codex invocation")
     run_id = run_id or _new_run_id()
-    _mcp_preflight(codex_command, mode, root, run_id=run_id, task_id=task.id, policy=policy)
+    locator = None
+    locator_audit = None
+    if mode == "optimized" and optimized_mode == "offline-locator":
+        if task.id != "preemption-v4" or policy != BenchmarkPolicy():
+            raise ValueError("offline-locator requires preemption-v4 and canonical BALANCED/6000 policy")
+        if (root / "AGENTS.md").exists():
+            raise RuntimeError("offline-locator snapshot must not contain AGENTS.md")
+        if _usage_entries(root):
+            raise RuntimeError("offline-locator snapshot must not contain MCP usage records")
+        locator = build_offline_locator(GatewayConfig(root), ContextQuery(task.prompt))
+        if source_fingerprint(root) != fingerprint or _status(root):
+            raise RuntimeError("offline locator preprocessing changed the benchmark snapshot")
+        locator_audit = {
+            "pack_fingerprint": locator.pack_fingerprint,
+            "selector_implementation_fingerprint": locator.selector_fingerprint,
+            "locator_sha256": locator.sha256,
+            "locator_estimated_tokens": locator.estimated_tokens,
+            "prompt_append_estimated_tokens": HeuristicTokenEstimator().estimate(
+                append_offline_locator("", locator.text)),
+            "canonical_selected_source_tokens": locator.selected_source_tokens,
+            "selected_paths": locator.selected_paths,
+            "selected_ranges": locator.selected_ranges,
+        }
+    elif mode == "optimized":
+        _mcp_preflight(codex_command, mode, root, run_id=run_id, task_id=task.id, policy=policy)
     primary_before = primary_usage_signature(primary_repository_root)
     start_head = _head(root)
     command = build_invocation(codex_command, task, mode, root, model=model, effort=effort,
-                               windows_sandbox=windows_sandbox, run_id=run_id, policy=policy)
-    if _status(root):
-        raise RuntimeError("benchmark snapshot is not clean immediately before Codex process creation")
+                               windows_sandbox=windows_sandbox, run_id=run_id, policy=policy,
+                               optimized_mode=optimized_mode,
+                               locator_text=locator.text if locator is not None else None)
+    if source_fingerprint(root) != fingerprint or _status(root):
+        raise RuntimeError("benchmark snapshot changed immediately before Codex process creation")
     timestamp = datetime.now(timezone.utc).isoformat()
     started = time.perf_counter()
     warnings: list[str] = []
@@ -411,14 +459,14 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
     if not primary_unchanged:
         warnings.append("primary repository MCP usage log changed during benchmark run")
     middleman_events = tuple((server, tool) for server, tool in trace.mcp_calls if server == "middle-man")
-    warnings.extend(isolation_warnings(mode, entries, trace.mcp_calls))
-    if mode == "optimized":
+    warnings.extend(isolation_warnings(mode, entries, trace.mcp_calls, optimized_mode=optimized_mode))
+    if mode == "optimized" and optimized_mode == "mcp":
         warnings.extend(validate_initial_context_budgets(entries, policy))
         sessions = {entry.get("server_session_id") for entry in entries
                     if isinstance(entry.get("server_session_id"), str)}
         if len(sessions) > 1:
             warnings.append("optimized MCP calls spanned multiple server sessions")
-    if mode == "optimized" and any(
+    if mode == "optimized" and optimized_mode == "mcp" and any(
         entry.get("server_implementation") != server_implementation_identity() for entry in entries
     ):
         warnings.append("optimized MCP implementation identity differs from current benchmark environment")
@@ -436,18 +484,19 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
     verification = "event-verified" if trace.reported_model == model and trace.reported_effort == effort else "explicit CLI configuration; not event-verified"
     safe_event_path = artifact_root / f"{task.id}-{mode}-events.json"
     safe_event_path.write_text(json.dumps(trace.sanitized_events, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    valid = _infrastructure_valid(mode, entries, warnings)
+    valid = _infrastructure_valid(mode, entries, warnings, optimized_mode=optimized_mode)
     return CodexBenchmarkRun(task.id, mode, order, codex_version, model, effort, verification, fingerprint,
                              start_head, timestamp, exit_code, elapsed, passed, notes, before, after, changed,
                              test_exit, test_output, trace.native, tuple(sorted(counts.items())),
                              len(middleman_events), delivery, trace.usage, trace.thread_id,
                              trace.final_message, trace.event_count, tuple(warnings + list(trace.errors)), valid,
-                             mcp_root_verified=mode == "optimized" and len(entries) == len(middleman_events) and
+                             mcp_root_verified=mode == "optimized" and optimized_mode == "mcp" and
+                             len(entries) == len(middleman_events) and
                              bool(entries) and primary_unchanged,
                              primary_repo_usage_unchanged=primary_unchanged, preflight_passed=True,
                              sandbox_mode=windows_sandbox, task_version=task.schema_version,
                              evaluator_version=task.schema_version,
-                             tool_profile="codex-core" if mode == "optimized" else "none",
+                             tool_profile="codex-core" if mode == "optimized" and optimized_mode == "mcp" else "none",
                              source_commit=task.source_ref, source_tree_fingerprint=fingerprint,
                              benchmark_run_id=run_id,
                              server_session_ids=tuple(sorted({entry["server_session_id"] for entry in entries
@@ -455,14 +504,18 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
                              mcp_session_trace=tuple((entry.get("call_sequence"), entry.get("tool", "unknown"),
                                                       entry.get("server_session_id")) for entry in entries),
                              native_read_mcp_coverage=classify_native_read_coverage(
-                                 root, trace.native.unique_files, entries))
+                                 root, trace.native.unique_files, entries),
+                             offline_locator_audit=locator_audit)
 
 
-def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: int, command: str,
+def _pair(task: TaskSpec, root: Path, instructions: str | None, *, first: str, order: int, command: str,
           version: str, model: str, effort: str, timeout: int, artifacts: Path,
           primary_repository_root: Path, windows_sandbox: str, run_id: str,
-          policy: BenchmarkPolicy = BenchmarkPolicy()) -> CodexBenchmarkPair:
-    baseline, optimized, fingerprint = prepare_pair(task, root, instructions)
+          policy: BenchmarkPolicy = BenchmarkPolicy(), optimized_mode: str = "mcp") -> CodexBenchmarkPair:
+    if optimized_mode == "offline-locator" and task.id != "preemption-v4":
+        raise ValueError("offline-locator is limited to preemption-v4")
+    baseline, optimized, fingerprint = prepare_pair(task, root,
+                                                    None if optimized_mode == "offline-locator" else instructions)
     if task.id == "oauth-bug":
         for snapshot in (baseline, optimized):
             if _tests(snapshot)[0] == 0:
@@ -474,10 +527,10 @@ def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: i
     first_root = baseline if first == "baseline" else optimized
     second_root = optimized if first == "baseline" else baseline
     first_run = run_one(task, first, first_root, fingerprint, order=order, codex_command=command,
-                        codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id, policy=policy)
+                        codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id, policy=policy, optimized_mode=optimized_mode)
     second_mode = "optimized" if first == "baseline" else "baseline"
     second_run = run_one(task, second_mode, second_root, fingerprint, order=order + 1, codex_command=command,
-                         codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id, policy=policy)
+                         codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id, policy=policy, optimized_mode=optimized_mode)
     baseline_run = first_run if first == "baseline" else second_run
     optimized_run = first_run if first == "optimized" else second_run
     valid = baseline_run.valid and optimized_run.valid and baseline_run.starting_fingerprint == optimized_run.starting_fingerprint
@@ -501,15 +554,19 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
               model: str = DEFAULT_MODEL, effort: str = DEFAULT_EFFORT,
               timeout: int = DEFAULT_TIMEOUT, windows_sandbox: str = WINDOWS_SANDBOX,
               snapshot_root: Path | None = None,
-              policy: BenchmarkPolicy = BenchmarkPolicy()) -> CodexBenchmarkSuite:
+              policy: BenchmarkPolicy = BenchmarkPolicy(), optimized_mode: str = "mcp") -> CodexBenchmarkSuite:
     from middle_man.gateway.codex_benchmark.infrastructure import run_local_preflight
 
     if len({task_id for task_id in task_ids if task_id in
             {"preemption", "preemption-v2", "preemption-v3", "preemption-v4"}}) > 1:
         raise ValueError("cannot run and aggregate different Task A versions in the same suite")
+    if optimized_mode not in {"mcp", "offline-locator"} or (optimized_mode == "offline-locator" and
+            (task_ids != ("preemption-v4",) or policy != BenchmarkPolicy())):
+        raise ValueError("offline-locator requires only preemption-v4 with the canonical benchmark policy")
     command = _codex_executable()
     preflight = run_local_preflight(command, model=model, effort=effort, windows_sandbox=windows_sandbox,
-                                    snapshot_root=snapshot_root, repository_root=repository_root)
+                                    snapshot_root=snapshot_root, repository_root=repository_root,
+                                    optimized_mode=optimized_mode)
     if not preflight.passed:
         raise RuntimeError("Codex infrastructure preflight failed; no benchmark runs started: " +
                            "; ".join(preflight.errors))
@@ -524,7 +581,8 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
     if any((ancestor / "AGENTS.md").exists() for ancestor in snapshots.parents):
         raise RuntimeError("benchmark snapshot ancestors contain AGENTS.md and would contaminate the baseline")
     snapshots.mkdir(parents=True, exist_ok=False)
-    instructions = (repository_root / "AGENTS.md").read_text(encoding="utf-8")
+    instructions = ((repository_root / "AGENTS.md").read_text(encoding="utf-8")
+                    if optimized_mode == "mcp" else None)
     wanted = [task for task in TASKS if task.id in task_ids]
     if len(wanted) != len(set(task_ids)):
         raise ValueError("unknown or duplicate task ID")
@@ -536,11 +594,12 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
         pair = _pair(task, pair_root, instructions, first=first, order=index * 2 + 1,
                      command=command, version=version, model=model, effort=effort,
                      timeout=timeout, artifacts=artifacts, primary_repository_root=repository_root, windows_sandbox=windows_sandbox,
-                     run_id=run_id, policy=policy)
+                     run_id=run_id, policy=policy, optimized_mode=optimized_mode)
         pairs.append(pair)
         reason = f"stopped after infrastructure-invalid pair: {task.id}" if not pair.valid else None
         partial = CodexBenchmarkSuite(run_id, datetime.now(timezone.utc).isoformat(), version,
-                                      model, effort, tuple(pairs), str(artifacts), task_ids, reason, policy)
+                                      model, effort, tuple(pairs), str(artifacts), task_ids, reason, policy,
+                                      optimized_mode)
         result = asdict(partial)
         result["aggregate"] = aggregate_report(result["pairs"])
         (artifacts / "result.json").write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n",
@@ -662,13 +721,17 @@ def aggregate_report(pairs: list[dict[str, Any]]) -> dict[str, Any]:
 def format_report(data: dict[str, Any]) -> str:
     lines = ["MIDDLE_MAN CODEX A/B BENCHMARK", f"Run: {data['run_id']}",
              f"Codex: {data['codex_version']}  Model: {data['model']}  Effort: {data['effort']}"]
+    optimized_mode = data.get("optimized_mode", "mcp")
     policy = data.get("benchmark_policy") or asdict(BenchmarkPolicy())
     delivery = policy.get("initial_source_delivery_budget")
     mode = "locator-only" if policy.get("delivery_policy") == "locator_only" else "progressive" if delivery is not None else "one-shot"
-    lines.append(f"Delivery policy: {mode}; "
-                 f"canonical selection: {policy['initial_context_budget']}; "
-                 f"initial source delivery: {0 if mode == 'locator-only' else delivery if delivery is not None else 'full selected source'}; "
-                 f"expansion ceiling: {policy['expansion_ceiling']}")
+    if optimized_mode == "offline-locator":
+        lines.append("Optimized mode: offline-locator; BALANCED/6000 canonical selection; no MCP or AGENTS guidance")
+    else:
+        lines.append(f"Delivery policy: {mode}; "
+                     f"canonical selection: {policy['initial_context_budget']}; "
+                     f"initial source delivery: {0 if mode == 'locator-only' else delivery if delivery is not None else 'full selected source'}; "
+                     f"expansion ceiling: {policy['expansion_ceiling']}")
     for pair in data["pairs"]:
         baseline, optimized = pair["baseline"], pair["optimized"]
         lines.append(f"Source commit: {pair.get('source_commit') or 'synthetic fixture'}; source fingerprint: {pair.get('source_tree_fingerprint') or pair.get('source_fingerprint', 'unknown')}")
@@ -711,6 +774,11 @@ def format_report(data: dict[str, Any]) -> str:
                       f"{optimized['codex_reported_usage']['input_tokens']}/"
                       f"{optimized['codex_reported_usage']['output_tokens']}",
                       f"Modified files: baseline={baseline['modified_files']} optimized={optimized['modified_files']}"])
+        if optimized.get("offline_locator_audit"):
+            audit = optimized["offline_locator_audit"]
+            lines.append(f"Offline locator: {audit['locator_estimated_tokens']} heuristic tokens; "
+                         f"canonical selected source: {audit['canonical_selected_source_tokens']}; "
+                         f"hash: {audit['locator_sha256']}; MCP calls: 0")
         diagnostics = pair_input_diagnostics(pair)
         if diagnostics is not None:
             lines.append(f"Codex input diagnostics (not billing or quota): "

@@ -314,7 +314,7 @@ def source_fingerprint(root: Path) -> str:
         digest.update(relative.as_posix().encode("utf-8") + b"\0" + path.read_bytes() + b"\0")
     return digest.hexdigest()
 
-def prepare_pair(task: TaskSpec, pair_root: Path, instructions: str) -> tuple[Path, Path, str]:
+def prepare_pair(task: TaskSpec, pair_root: Path, instructions: str | None) -> tuple[Path, Path, str]:
     source = pair_root / "source"
     source.mkdir(parents=True, exist_ok=False)
     _write_fixture(task, source)
@@ -323,7 +323,8 @@ def prepare_pair(task: TaskSpec, pair_root: Path, instructions: str) -> tuple[Pa
     shutil.copytree(source, optimized)
     if (baseline / "AGENTS.md").exists():
         raise ValueError("source commit contains AGENTS.md; baseline cannot start clean without changing source")
-    (optimized / "AGENTS.md").write_text(instructions, encoding="utf-8")
+    if instructions is not None:
+        (optimized / "AGENTS.md").write_text(instructions, encoding="utf-8")
     baseline_hash = source_fingerprint(baseline)
     if baseline_hash != source_fingerprint(optimized):
         raise ValueError("baseline and optimized source snapshots differ")

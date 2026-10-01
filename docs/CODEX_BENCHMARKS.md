@@ -343,3 +343,49 @@ Unrelated auth/expiry, queue/cancellation, and upload/validation fixtures each r
 Fixed-overhead audit (local UTF-8-bytes/4 heuristic): root `AGENTS.md` **169**, Codex-core server instructions **136**, five official SDK tool definitions/schemas **834**, combined **1,139**. For the actual query, result-only sizes are locator **819**, progressive **5,687**, one-shot **6,931**; adding the fixed total yields **1,958**, **6,826**, and **8,070**. These simple sums separate fixed session surface from response payload; they do not equal Codex-reported input. No tool schemas were optimized in this phase.
 
 The runner carries locator policy into optimized MCP registration and preflight, and validates source-free usage evidence: `delivery_policy=locator_only`, effective 6,000, fixed selection, zero initial source lines/tokens, matching locator result estimate, `force_replay=false`, empty delivery, and unchanged ledger. It rejects a source-bearing initial result as infrastructure-invalid. Baseline remains MCP-free. Future evaluation would require a fresh baseline v4 versus locator-only optimized v4 pair and separate authorization. **No external inference, Task B/C run, new A/B pair, or real token-saving claim occurred in Phase 22.11.**
+
+## Offline-Locator Preprocessor: Local-Only
+
+The latest valid real progressive pair remains `20261001T135609Z-65fcdc63`, PASS/PASS. It reduced native calls **14 to 7**, reads **9 to 4**, and observed interactions **14 to 8**, but Codex input rose **97,833 to 152,900** (+55,067) and cached input **70,016 to 116,352**. The input-minus-cached diagnostic was **27,817 to 36,548**. The new local experiment asks whether retaining Middle_Man's navigation hints while removing its persistent MCP surface is a better integration shape; these historical differences are not causal attribution or billing measures.
+
+`--optimized-mode offline-locator` is benchmark-only and currently restricted to `preemption-v4`. It creates independent clean pinned-source snapshots without `AGENTS.md`, runs the existing BALANCED/6000 `ContextBuilder` locally on the optimized snapshot, then appends a tiny source-free locator to the original optimized task prompt. Baseline keeps the original task prompt. Both use native reads/search, `gpt-6-sol`, high effort, the explicit Windows sandbox, read-only mode, and the same v4 schema/evaluator. Neither invocation registers MCP. The preprocessor is outside Codex, so expected Middle_Man MCP calls and Codex-observed Middle_Man tool interactions are both **zero**. The normal one-shot/progressive/MCP-locator modes are unchanged.
+
+Local dry-run only:
+
+```powershell
+.venv\Scripts\python.exe -m middle_man codex benchmark run preemption-v4 --repo . --dry-run --optimized-mode offline-locator --windows-sandbox unelevated
+```
+
+The dry-run builds a disposable local source-identical preview, prints both command lines and the locator, and deletes the preview. It makes no Codex inference call or persistent benchmark artifact. No `mcp_servers.middle-man` setting or Middle_Man `AGENTS.md` guidance appears in either command/snapshot. The future real runner fails before launch if preprocessing changes source/Git state, an `AGENTS.md` appears, or MCP usage records already exist; a completed offline run with any MCP event/record is infrastructure-invalid. The result audit stores the canonical pack and selector fingerprints, locator hash and estimate, canonical selected-source estimate, and selected paths/ranges, but **none of those bookkeeping values enter the model prompt**.
+
+| Pinned query / fixture | Canonical source estimate | Offline locator text estimate | Canonical paths / ranges | Required coverage |
+| --- | ---: | ---: | ---: | ---: |
+| Recorded actual v4 query | 5,845 | 195 | 13 / 16 | 6/7 paths, 6/7 identifiers |
+| Exact committed v4 prompt | 5,983 | 159 | 12 / 13 | 7/7, 7/7 |
+| Historical-exact strong variant | 5,891 | 179 | 13 / 16 | 7/7, 7/7 |
+| Behavior-focused strong variant | 5,475 | 232 | 14 / 20 | 7/7, 7/7 |
+| Reordered strong variant | 5,544 | 173 | 12 / 15 | 7/7, 7/7 |
+| Agent-style strong variant | 5,693 | 210 | 14 / 18 | 7/7, 7/7 |
+| Auth/expiry fixture | - | 43 | - | 4/4 paths and symbols by selected range |
+| Queue/cancellation fixture | - | 35 | - | 4/4 paths and symbols by selected range |
+| Upload/validation fixture | - | 39 | - | 4/4 paths and symbols by selected range |
+
+The actual recorded-query locator, including every canonical selected path and range, is:
+
+```text
+- middle_man/lab/request.py:1-159 (InferenceRequest)
+- middle_man/lab/work.py:4-22 (WorkItem)
+- middle_man/lab/engine.py:34-34 (SimulationEngine)
+- tests/test_phase_7_preemption.py:1-65 (test_disabled_preemption_keeps_clear_allocation_failure)
+- tests/test_phase_4_engine_runner.py:30-39 (RecordingScheduler)
+- middle_man/lab/scheduler.py:1-76 (BalancedScheduler)
+- middle_man/lab/memory_control.py:1-96 (MemoryController)
+- middle_man/lab/preemption.py:1-36 (LargestPrivateOwnerPolicy)
+- middle_man/lab/trace.py:1-69 (WORK_EVENTS)
+- middle_man/lab/metrics.py:9-9; 20-44 (KVSample); 89-89 (MetricsCollector); 158-177 (MetricsCollector._request_metrics)
+- middle_man/lab/prefix_cache.py:17-17 (PrefixCache)
+- middle_man/lab/workloads.py:7-7
+- middle_man/lab/serialization.py:4-12
+```
+
+This is navigation metadata only, not source text or a proof of the answer. In particular, the actual canonical pack still omits `middle_man/lab/memory.py`, so native search may be required for its release implementation. The offline text is **624 heuristic tokens smaller** than the same-pack **819-token MCP-locator JSON result**; the comparable progressive and one-shot results are **5,687** and **6,931**. The exact prompt is **159** versus MCP locator **717**, progressive **5,359**, and one-shot **6,913**. Historical fixed local estimates of root AGENTS **169**, MCP instructions **136**, and five tool definitions **834** are absent in offline mode, along with the MCP tool-result wrapper. Summing or subtracting these heuristic sizes does **not** predict Codex input, caching, billing, or quota. No external Codex call, Task B/C run, real offline A/B, or real token-saving claim occurred.

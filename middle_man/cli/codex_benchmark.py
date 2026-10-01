@@ -13,6 +13,10 @@ from middle_man.gateway.codex_benchmark.runner import (
     DEFAULT_EFFORT, DEFAULT_MODEL, DEFAULT_TIMEOUT, build_invocation, format_report, load_suite, run_suite,
 )
 from middle_man.gateway.codex_benchmark.tasks import TASKS
+from middle_man.gateway.codex_benchmark.offline_locator import build_offline_locator
+from middle_man.gateway.codex_benchmark.tasks import prepare_pair
+from middle_man.gateway.config import GatewayConfig
+from middle_man.gateway.relevance import ContextQuery
 from middle_man.gateway.codex_benchmark.infrastructure import run_local_preflight
 from middle_man.mcp.benchmark_receipts import BenchmarkPolicy
 
@@ -31,6 +35,7 @@ def add_codex_benchmark_commands(subparsers: argparse._SubParsersAction) -> None
     preflight.add_argument("--windows-sandbox", choices=("elevated", "unelevated"), default="elevated")
     preflight.add_argument("--snapshot-root", type=Path)
     preflight.add_argument("--json", action="store_true")
+    preflight.add_argument("--optimized-mode", choices=("mcp", "offline-locator"), default="mcp")
     for name in ("run", "run-all"):
         action = actions.add_parser(name, help="run one pair" if name == "run" else "run all three pairs")
         if name == "run":
@@ -43,6 +48,7 @@ def add_codex_benchmark_commands(subparsers: argparse._SubParsersAction) -> None
         action.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
         action.add_argument("--benchmark-source-delivery-budget", type=int)
         action.add_argument("--benchmark-delivery-policy", choices=("locator-only",))
+        action.add_argument("--optimized-mode", choices=("mcp", "offline-locator"), default="mcp")
         action.add_argument("--dry-run", action="store_true")
         action.add_argument("--confirm-external-service", action="store_true")
     for name in ("report", "overlap"):
@@ -63,7 +69,7 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
     if action == "preflight":
         result = run_local_preflight("codex", model=args.model, effort=args.effort,
                                      windows_sandbox=args.windows_sandbox, snapshot_root=args.snapshot_root,
-                                     repository_root=root)
+                                     repository_root=root, optimized_mode=args.optimized_mode)
         data = asdict(result)
         print(json.dumps(data, indent=2) if args.json else "\n".join(
             f"{key}: {value}" for key, value in data.items()))
@@ -90,26 +96,42 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
                                  delivery_policy="locator_only" if args.benchmark_delivery_policy == "locator-only" else None)
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
+    if args.optimized_mode == "offline-locator" and (len(tasks) != 1 or tasks[0].id != "preemption-v4" or
+            policy != BenchmarkPolicy()):
+        raise SystemExit("offline-locator requires only preemption-v4 without MCP delivery-policy flags")
     base = root / ".middle_man_cache" / "codex_benchmarks"
     if args.dry_run:
-        print("DRY RUN: no Codex call or snapshot write")
+        print("DRY RUN: no Codex call or persistent snapshot write")
         print("Real runs disclose repository-derived context to the external Codex service.")
         print(f"Model: {args.model}  reasoning effort: {args.effort} (explicit CLI configuration)")
         print(f"Windows sandbox: {args.windows_sandbox} (explicit; no automatic fallback)")
-        print(f"Delivery policy: {policy.delivery_mode.replace('_', '-')}; "
-              f"canonical selection: {policy.initial_context_budget}; "
-              f"initial source delivery: {policy.initial_source_delivery_budget}; "
-              f"expansion ceiling: {policy.expansion_ceiling}")
+        if args.optimized_mode == "offline-locator":
+            print("Delivery policy: offline-locator prompt metadata; canonical selection: BALANCED/6000; "
+                  "initial MCP source delivery: none")
+        else:
+            print(f"Delivery policy: {policy.delivery_mode.replace('_', '-')}; "
+                  f"canonical selection: {policy.initial_context_budget}; "
+                  f"initial source delivery: {policy.initial_source_delivery_budget}; "
+                  f"expansion ceiling: {policy.expansion_ceiling}")
+        print(f"Optimized mode: {args.optimized_mode}")
         print(f"Artifact root: {base / '<run-id>'}")
         snapshot_base = (args.snapshot_root.resolve() if args.snapshot_root else Path(tempfile.gettempdir())) / "middle-man-codex-<run-id>"
         print(f"Independent working-copy root: {snapshot_base}")
+        offline_locator = None
+        if args.optimized_mode == "offline-locator":
+            with tempfile.TemporaryDirectory(prefix="middle-man-offline-preview-") as temporary:
+                _, preview_root, _ = prepare_pair(tasks[0], Path(temporary) / "pair", None)
+                offline_locator = build_offline_locator(GatewayConfig(preview_root), ContextQuery(tasks[0].prompt))
+            print(f"Offline locator: {offline_locator.estimated_tokens} heuristic tokens; "
+                  f"canonical source: {offline_locator.selected_source_tokens}; hash: {offline_locator.sha256}")
+            print(offline_locator.text)
         for index, task in enumerate(tasks):
             first = "optimized" if index % 2 else "baseline"
             print(f"Task: {task.id}  source: {task.source}  order: {first}, {'baseline' if first == 'optimized' else 'optimized'}")
             for mode in ("baseline", "optimized"):
                 snapshot = snapshot_base / task.id / mode
                 print(f"  {mode} snapshot: {snapshot}")
-                if mode == "optimized":
+                if mode == "optimized" and args.optimized_mode == "mcp":
                     server_budgets = (f"--benchmark-context-budget {policy.initial_context_budget} "
                                       + (f"--benchmark-source-delivery-budget {policy.initial_source_delivery_budget} "
                                          if policy.initial_source_delivery_budget is not None else "")
@@ -119,8 +141,13 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
                 print("  " + subprocess.list2cmdline(build_invocation("codex", task, mode, snapshot,
                                                             model=args.model, effort=args.effort,
                                                             windows_sandbox=args.windows_sandbox,
-                                                            run_id="dry-run", policy=policy)))
-        print("Both runs ignore user config; baseline has no AGENTS.md or Middle_Man registration; optimized configures snapshot-scoped MCP.")
+                                                            run_id="dry-run", policy=policy,
+                                                            optimized_mode=args.optimized_mode,
+                                                            locator_text=offline_locator.text if mode == "optimized" and offline_locator else None)))
+        if args.optimized_mode == "offline-locator":
+            print("Both runs ignore user config and have no AGENTS.md or MCP registration; preprocessing is outside Codex.")
+        else:
+            print("Both runs ignore user config; baseline has no AGENTS.md or Middle_Man registration; optimized configures snapshot-scoped MCP.")
         return
     if not args.confirm_external_service:
         raise SystemExit("Real Codex runs send repository-derived context to the external Codex service. "
@@ -128,6 +155,6 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
     print("Running real Codex benchmark; repository-derived context will reach the external Codex service.", flush=True)
     suite = run_suite(tuple(task.id for task in tasks), repository_root=root, artifact_base=base,
                       model=args.model, effort=args.effort, timeout=args.timeout, windows_sandbox=args.windows_sandbox,
-                      snapshot_root=args.snapshot_root, policy=policy)
+                      snapshot_root=args.snapshot_root, policy=policy, optimized_mode=args.optimized_mode)
     print(format_report(asdict(suite)))
     print(f"Local sanitized artifacts: {suite.artifact_root}")
