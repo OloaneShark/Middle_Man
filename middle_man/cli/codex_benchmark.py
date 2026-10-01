@@ -42,6 +42,7 @@ def add_codex_benchmark_commands(subparsers: argparse._SubParsersAction) -> None
         action.add_argument("--snapshot-root", type=Path)
         action.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
         action.add_argument("--benchmark-source-delivery-budget", type=int)
+        action.add_argument("--benchmark-delivery-policy", choices=("locator-only",))
         action.add_argument("--dry-run", action="store_true")
         action.add_argument("--confirm-external-service", action="store_true")
     for name in ("report", "overlap"):
@@ -85,7 +86,8 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
     if args.timeout <= 0:
         raise SystemExit("--timeout must be positive")
     try:
-        policy = BenchmarkPolicy(initial_source_delivery_budget=args.benchmark_source_delivery_budget)
+        policy = BenchmarkPolicy(initial_source_delivery_budget=args.benchmark_source_delivery_budget,
+                                 delivery_policy="locator_only" if args.benchmark_delivery_policy == "locator-only" else None)
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
     base = root / ".middle_man_cache" / "codex_benchmarks"
@@ -94,7 +96,7 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
         print("Real runs disclose repository-derived context to the external Codex service.")
         print(f"Model: {args.model}  reasoning effort: {args.effort} (explicit CLI configuration)")
         print(f"Windows sandbox: {args.windows_sandbox} (explicit; no automatic fallback)")
-        print(f"Delivery policy: {'progressive' if policy.initial_source_delivery_budget is not None else 'one-shot'}; "
+        print(f"Delivery policy: {policy.delivery_mode.replace('_', '-')}; "
               f"canonical selection: {policy.initial_context_budget}; "
               f"initial source delivery: {policy.initial_source_delivery_budget}; "
               f"expansion ceiling: {policy.expansion_ceiling}")
@@ -111,6 +113,7 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
                     server_budgets = (f"--benchmark-context-budget {policy.initial_context_budget} "
                                       + (f"--benchmark-source-delivery-budget {policy.initial_source_delivery_budget} "
                                          if policy.initial_source_delivery_budget is not None else "")
+                                      + ("--benchmark-delivery-policy locator-only " if policy.delivery_mode == "locator_only" else "")
                                       + f"--benchmark-expansion-budget {policy.expansion_ceiling}")
                     print(f"  optimized MCP policy args: {server_budgets}")
                 print("  " + subprocess.list2cmdline(build_invocation("codex", task, mode, snapshot,

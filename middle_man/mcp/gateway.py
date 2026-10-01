@@ -89,7 +89,16 @@ class MCPGateway:
             data = self._sanitize(payload.data, categories)
             if categories:
                 data["redaction_categories"] = sorted(set(data.get("redaction_categories", ())) | categories)
+            if payload.budget_audit is not None and payload.budget_audit.get("delivery_policy") == "locator_only":
+                if (data.get("excerpts") != [] or payload.delivery_excerpts != () or
+                        data.get("source_delivered") is not False or
+                        not isinstance(data.get("evidence_locator"), list) or
+                        (payload.metrics.get("selected_tokens", 0) > 0 and not data["evidence_locator"])):
+                    raise ValueError("locator-only context must return a source-free evidence locator")
             metrics = {**payload.metrics, "result_tokens": self.estimator.estimate(json.dumps(data, ensure_ascii=False))}
+            budget_audit = payload.budget_audit
+            if budget_audit is not None and budget_audit.get("delivery_policy") == "locator_only":
+                budget_audit = {**budget_audit, "locator_result_tokens_estimate": metrics["result_tokens"]}
             delivery = None
             if name in {"middleman_context_pack", "middleman_context", "middleman_expand_context"}:
                 delivery = []
@@ -107,7 +116,7 @@ class MCPGateway:
                               generation=payload.generation, delivery=delivery,
                               server_session_id=self.server_session_id, call_sequence=sequence,
                               ledger_lines_before=ledger_before, ledger_lines_after=ledger_after,
-                              budget=payload.budget_audit)
+                              budget=budget_audit)
             if payload.pack_fingerprint is not None and delivery is not None:
                 self.delivery_ledger.commit(payload.pack_fingerprint, delivery)
             return data
@@ -238,6 +247,22 @@ class MCPGateway:
                                          "map_tokens": map_tokens}}
         return replace(payload, data=data)
 
+    def _locator_payload(self, pack: ContextPack) -> _Payload:
+        payload = self._core_payload(pack, source_excerpts=())
+        paths: OrderedDict[str, list[dict[str, Any]]] = OrderedDict()
+        for item in pack.excerpts:
+            locator = {"start": item.start_line, "end": item.end_line}
+            if item.symbols:
+                locator["symbol"] = item.symbols[0]
+            if item.reasons:
+                locator["reason"] = self.redactor.redact(item.reasons[0]).text[:48]
+            if item.complete_file:
+                locator["complete_file"] = True
+            paths.setdefault(item.path, []).append(locator)
+        evidence_locator = [{"path": path, "ranges": ranges} for path, ranges in paths.items()]
+        return replace(payload, data={**payload.data, "evidence_locator": evidence_locator,
+                                      "source_delivered": False, "delivery_policy": "locator_only"})
+
     def context(self, task: str, *, mode: str = "balanced", max_context_tokens: int = 6000,
                 error_text: str = "", paths: list[str] | None = None,
                 symbols: list[str] | None = None, force_replay: bool = False) -> dict[str, Any]:
@@ -249,14 +274,20 @@ class MCPGateway:
             query = self._query(task, paths, symbols, error_text)
             cap = self.benchmark_policy.initial_context_budget if self.benchmark_policy else None
             source_budget = self.benchmark_policy.initial_source_delivery_budget if self.benchmark_policy else None
-            effective = (cap if source_budget is not None else
+            locator_only = self.benchmark_policy is not None and self.benchmark_policy.delivery_mode == "locator_only"
+            fixed_selection = source_budget is not None or locator_only
+            effective = (cap if fixed_selection else
                          min(max_context_tokens, cap) if cap is not None else max_context_tokens)
-            pack = self.builder.build(query, mode="balanced" if source_budget is not None else mode,
+            pack = self.builder.build(query, mode="balanced" if fixed_selection else mode,
                                       max_context_tokens=effective)
-            if source_budget is not None and force_replay:
-                raise ValueError("force_replay is unavailable for progressive delivery")
-            payload = (self._core_payload(pack, force_replay=force_replay) if source_budget is None else
-                       self._progressive_payload(pack, source_budget))
+            if fixed_selection and force_replay:
+                raise ValueError("force_replay is unavailable for fixed benchmark delivery")
+            if locator_only:
+                payload = self._locator_payload(pack)
+            elif source_budget is not None:
+                payload = self._progressive_payload(pack, source_budget)
+            else:
+                payload = self._core_payload(pack, force_replay=force_replay)
             audit = {"requested_context_tokens": max_context_tokens,
                      "effective_context_tokens": effective,
                      "benchmark_context_cap": cap, "budget_capped": effective < max_context_tokens,
@@ -269,12 +300,17 @@ class MCPGateway:
                 audit["initial_source_delivery_overrun"] = delivery.get(
                     "seed_overrun", max(0, audit["initial_source_delivery_tokens"] - source_budget))
                 audit["canonical_selection_fixed"] = True
+            if locator_only:
+                audit.update({"delivery_policy": "locator_only", "canonical_selection_fixed": True,
+                              "initial_source_lines_delivered": 0,
+                              "initial_source_delivery_tokens": 0,
+                              "locator_entries": len(pack.excerpts)})
             payload = replace(payload, budget_audit=audit)
             if cap is not None:
                 visible_audit = {
                     key: value for key, value in audit.items()
                     if key not in {"initial_source_delivery_tokens", "initial_source_delivery_overrun"}
-                    and ("progressive_delivery" in payload.data or
+                    and ("progressive_delivery" in payload.data or locator_only or
                          key not in {"initial_source_delivery_budget", "canonical_selection_fixed"})}
                 payload = replace(payload, data={**payload.data, "budget": visible_audit})
             if self.benchmark_receipts is not None:

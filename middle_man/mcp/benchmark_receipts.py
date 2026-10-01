@@ -23,6 +23,7 @@ class BenchmarkPolicy:
     initial_context_budget: int = 6000
     expansion_ceiling: int = 12000
     initial_source_delivery_budget: int | None = None
+    delivery_policy: str | None = None
 
     def __post_init__(self) -> None:
         if (type(self.initial_context_budget) is not int or
@@ -33,6 +34,16 @@ class BenchmarkPolicy:
                 type(self.initial_source_delivery_budget) is not int or
                 not 1 <= self.initial_source_delivery_budget <= self.initial_context_budget):
             raise ValueError("source delivery budget must be between 1 and the initial context budget")
+        if self.delivery_policy not in (None, "one_shot", "progressive", "locator_only"):
+            raise ValueError("unsupported benchmark delivery policy")
+        mode = self.delivery_policy or ("progressive" if self.initial_source_delivery_budget is not None else "one_shot")
+        if (mode == "progressive") != (self.initial_source_delivery_budget is not None):
+            raise ValueError("delivery policy and source delivery budget conflict")
+        object.__setattr__(self, "delivery_policy", mode)
+
+    @property
+    def delivery_mode(self) -> str:
+        return self.delivery_policy
 
 
 @dataclass(frozen=True, slots=True)
@@ -103,6 +114,7 @@ class BenchmarkReceipts:
                 "initial_context_budget": self.identity.policy.initial_context_budget,
                 "initial_source_delivery_budget": self.identity.policy.initial_source_delivery_budget,
                 "expansion_ceiling": self.identity.policy.expansion_ceiling,
+                "delivery_policy": self.identity.policy.delivery_mode,
             },
             "source_tree_fingerprint": source_fingerprint(self.config.repository_root),
             "repository": {"name": self._safe(pack.repository.name), "head": pack.repository.head},

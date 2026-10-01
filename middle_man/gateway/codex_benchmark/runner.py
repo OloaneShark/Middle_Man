@@ -134,6 +134,8 @@ def _server_args(root: Path, *, run_id: str = "", task_id: str = "", mode: str =
                      "--benchmark-context-budget", str(policy.initial_context_budget)])
         if policy.initial_source_delivery_budget is not None:
             args.extend(["--benchmark-source-delivery-budget", str(policy.initial_source_delivery_budget)])
+        if policy.delivery_mode == "locator_only":
+            args.extend(["--benchmark-delivery-policy", "locator-only"])
         args.extend(["--benchmark-expansion-budget", str(policy.expansion_ceiling)])
     return [*args, "--tool-profile", "codex-core"]
 
@@ -229,13 +231,31 @@ def validate_initial_context_budgets(entries: tuple[dict[str, Any], ...],
         budget = entry.get("budget")
         effective = budget.get("effective_context_tokens") if isinstance(budget, dict) else None
         recorded_cap = budget.get("benchmark_context_cap") if isinstance(budget, dict) else None
-        progressive = policy.initial_source_delivery_budget is not None
+        progressive = policy.delivery_mode == "progressive"
+        locator_only = policy.delivery_mode == "locator_only"
         if (type(effective) is not int or type(recorded_cap) is not int or
-                recorded_cap != cap or (effective != cap if progressive else not 1 <= effective <= cap)):
+                recorded_cap != cap or (effective != cap if progressive or locator_only else not 1 <= effective <= cap)):
             warnings.append("optimized initial context budget invalid or unverified")
         if isinstance(budget, dict) and budget.get("force_replay") is True:
             warnings.append("optimized model-facing context replay violates benchmark policy")
-        if progressive:
+        if locator_only:
+            metrics = entry.get("metrics")
+            result = metrics.get("result_tokens") if isinstance(metrics, dict) else None
+            selected = metrics.get("selected_tokens") if isinstance(metrics, dict) else None
+            if (not isinstance(budget, dict) or budget.get("delivery_policy") != "locator_only" or
+                    budget.get("canonical_selection_fixed") is not True or budget.get("force_replay") is not False or
+                    budget.get("initial_source_lines_delivered") != 0 or
+                    budget.get("initial_source_delivery_tokens") != 0 or
+                    budget.get("initial_source_delivery_budget") is not None or
+                    type(result) is not int or result < 0 or
+                    budget.get("locator_result_tokens_estimate") != result or
+                    type(selected) is not int or selected < 0 or
+                    type(budget.get("locator_entries")) is not int or
+                    (selected > 0 and budget["locator_entries"] == 0) or
+                    entry.get("delivery") != [] or entry.get("new_lines_delivered") != 0 or
+                    entry.get("ledger_lines_before") != entry.get("ledger_lines_after")):
+                warnings.append("optimized locator-only initial context budget invalid or source delivered")
+        elif progressive:
             expected = policy.initial_source_delivery_budget
             seed = budget.get("initial_source_delivery_tokens") if isinstance(budget, dict) else None
             overrun = budget.get("initial_source_delivery_overrun") if isinstance(budget, dict) else None
@@ -245,7 +265,8 @@ def validate_initial_context_budgets(entries: tuple[dict[str, Any], ...],
                     seed > expected + overrun or overrun > cap - expected):
                 warnings.append("optimized progressive initial context budget invalid or unverified")
         elif isinstance(budget, dict) and (budget.get("initial_source_delivery_budget") is not None or
-                                           budget.get("canonical_selection_fixed") is True):
+                                           budget.get("canonical_selection_fixed") is True or
+                                           budget.get("delivery_policy") == "locator_only"):
             warnings.append("optimized one-shot initial context budget invalid or unverified")
     return tuple(warnings)
 
@@ -256,6 +277,7 @@ def _infrastructure_valid(mode: str, entries: tuple[dict[str, Any], ...],
         "contaminated" in item or "no Middle_Man" in item or "call counts differ" in item or
         "differs from configured" in item or "implementation identity differs" in item or
         "initial context budget invalid" in item or "model-facing context replay" in item or
+        "locator-only initial context budget invalid" in item or
         "primary repository MCP usage log changed" in item
         for item in warnings)
 
@@ -642,9 +664,10 @@ def format_report(data: dict[str, Any]) -> str:
              f"Codex: {data['codex_version']}  Model: {data['model']}  Effort: {data['effort']}"]
     policy = data.get("benchmark_policy") or asdict(BenchmarkPolicy())
     delivery = policy.get("initial_source_delivery_budget")
-    lines.append(f"Delivery policy: {'progressive' if delivery is not None else 'one-shot'}; "
+    mode = "locator-only" if policy.get("delivery_policy") == "locator_only" else "progressive" if delivery is not None else "one-shot"
+    lines.append(f"Delivery policy: {mode}; "
                  f"canonical selection: {policy['initial_context_budget']}; "
-                 f"initial source delivery: {delivery if delivery is not None else 'full selected source'}; "
+                 f"initial source delivery: {0 if mode == 'locator-only' else delivery if delivery is not None else 'full selected source'}; "
                  f"expansion ceiling: {policy['expansion_ceiling']}")
     for pair in data["pairs"]:
         baseline, optimized = pair["baseline"], pair["optimized"]
