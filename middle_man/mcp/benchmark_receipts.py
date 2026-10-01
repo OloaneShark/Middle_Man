@@ -22,12 +22,17 @@ from middle_man.gateway.state_store import StateStoreError
 class BenchmarkPolicy:
     initial_context_budget: int = 6000
     expansion_ceiling: int = 12000
+    initial_source_delivery_budget: int | None = None
 
     def __post_init__(self) -> None:
         if (type(self.initial_context_budget) is not int or
                 type(self.expansion_ceiling) is not int or
                 not 1 <= self.initial_context_budget <= self.expansion_ceiling <= 12000):
             raise ValueError("benchmark budgets must satisfy 1 <= initial <= expansion <= 12000")
+        if self.initial_source_delivery_budget is not None and (
+                type(self.initial_source_delivery_budget) is not int or
+                not 1 <= self.initial_source_delivery_budget <= self.initial_context_budget):
+            raise ValueError("source delivery budget must be between 1 and the initial context budget")
 
 
 @dataclass(frozen=True, slots=True)

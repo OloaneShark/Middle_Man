@@ -22,6 +22,7 @@ def add_mcp_commands(subparsers: argparse._SubParsersAction) -> None:
     serve.add_argument("--benchmark-mode", choices=("baseline", "optimized"))
     serve.add_argument("--benchmark-source-commit")
     serve.add_argument("--benchmark-context-budget", type=int)
+    serve.add_argument("--benchmark-source-delivery-budget", type=int)
     serve.add_argument("--benchmark-expansion-budget", type=int)
     usage = actions.add_parser("usage", help="show local MCP invocation counts and estimates")
     usage.add_argument("--repo", type=Path, required=True)
@@ -51,12 +52,15 @@ def run_mcp(args: argparse.Namespace) -> None:
               args.benchmark_source_commit)
     if any(values) and not all(values):
         raise SystemExit("benchmark identity requires run ID, task ID, mode, and source commit")
-    if not all(values) and (args.benchmark_context_budget is not None or args.benchmark_expansion_budget is not None):
+    if not all(values) and (args.benchmark_context_budget is not None or
+                            args.benchmark_source_delivery_budget is not None or
+                            args.benchmark_expansion_budget is not None):
         raise SystemExit("benchmark budgets require a complete benchmark identity")
     try:
         policy = BenchmarkPolicy(
             initial_context_budget=6000 if args.benchmark_context_budget is None else args.benchmark_context_budget,
-            expansion_ceiling=12000 if args.benchmark_expansion_budget is None else args.benchmark_expansion_budget)
+            expansion_ceiling=12000 if args.benchmark_expansion_budget is None else args.benchmark_expansion_budget,
+            initial_source_delivery_budget=args.benchmark_source_delivery_budget)
         identity = BenchmarkIdentity(*values, policy=policy) if all(values) else None
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc

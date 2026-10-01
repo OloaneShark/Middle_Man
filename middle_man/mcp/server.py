@@ -92,7 +92,7 @@ def create_server(config: GatewayConfig, tool_profile: str = "full",
     @server.tool(annotations=annotation)
     def middleman_expand_context(fingerprint: str, kind: str, target: str | None = None,
                                  context_lines: int = 3, max_context_tokens: int | None = None) -> dict[str, Any]:
-        """Get missing source from a partial Context Pack; native reads remain valid for exact or stale source."""
+        """Get missing source from a partial Context Pack. Use selected_path with a mapped path for already-selected source; native reads remain valid."""
         return invoke(lambda: gateway.expand_context(fingerprint, kind, target=target, core=tool_profile == "codex-core",
                                                      context_lines=context_lines, max_context_tokens=max_context_tokens))
 

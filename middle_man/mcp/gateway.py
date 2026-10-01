@@ -11,7 +11,7 @@ from uuid import uuid4
 from middle_man.gateway.compact import OutputCompactor
 from middle_man.gateway.config import GatewayConfig
 from middle_man.gateway.context_builder import ContextBuilder
-from middle_man.gateway.context_models import ContextPack, ExpansionRequest
+from middle_man.gateway.context_models import ContextPack, ExpansionRequest, SourceExcerpt
 from middle_man.gateway.git_diff import GitDiff, GitDiffReader
 from middle_man.gateway.handoff import HandoffService
 from middle_man.gateway.indexer import RepositoryIndexer
@@ -19,8 +19,10 @@ from middle_man.gateway.models import RepositoryIndex
 from middle_man.gateway.project_memory import ProjectMemoryService
 from middle_man.gateway.relevance import ContextQuery, RelevanceEngine
 from middle_man.gateway.secrets import SecretRedactor
+from middle_man.gateway.source import SourceReader, StaleSourceError
 from middle_man.gateway.tokens import HeuristicTokenEstimator
 from middle_man.mcp.delivery import DeliveredRange, DeliveryLedger
+from middle_man.mcp.progressive import plan_seed
 from middle_man.mcp.benchmark_receipts import BenchmarkIdentity, BenchmarkReceipts
 from middle_man.mcp.usage import MCPUsageLog
 
@@ -183,11 +185,14 @@ class MCPGateway:
                         pack.fingerprint, pack.generation)
 
     def _core_payload(self, pack: ContextPack, *, parent: str | None = None,
-                      force_replay: bool = False) -> _Payload:
+                      force_replay: bool = False,
+                      source_excerpts: tuple[SourceExcerpt, ...] | None = None) -> _Payload:
         if pack.metrics.estimated_selected_tokens > MAX_CONTEXT_TOKENS:
             raise ValueError("required source exceeds the MCP Context Pack limit; use a narrower query or native read")
         already = self.delivery_ledger.already_delivered(pack.fingerprint)
-        delivered = self.delivery_ledger.select(pack.fingerprint, pack.excerpts, force_replay=force_replay)
+        delivered = self.delivery_ledger.select(pack.fingerprint,
+                                                pack.excerpts if source_excerpts is None else source_excerpts,
+                                                force_replay=force_replay)
         complete = {(item.path, item.content_hash, item.start_line, item.end_line)
                     for item in pack.excerpts if item.complete_file}
         excerpts = [{"path": item.path, "start_line": item.start_line, "end_line": item.end_line,
@@ -210,6 +215,29 @@ class MCPGateway:
                                "tokens_avoided": metrics.estimated_tokens_avoided},
                         pack.fingerprint, pack.generation, delivered)
 
+    def _progressive_payload(self, pack: ContextPack, source_budget: int) -> _Payload:
+        seed, overrun = plan_seed(pack, source_budget)
+        if len(seed) == len(pack.excerpts):
+            return self._core_payload(pack)
+        payload = self._core_payload(pack, source_excerpts=seed)
+        delivered = payload.delivery_excerpts or ()
+        evidence_map = [{
+            "path": item.path, "start_line": item.start_line, "end_line": item.end_line,
+            "symbol": item.symbols[0] if item.symbols else None,
+            "reason": self.redactor.redact(item.reasons[0]).text[:48] if item.reasons else None,
+            "complete_file": item.complete_file,
+            "delivered": self.delivery_ledger.covers(item.path, item.content_hash,
+                                                        item.start_line, item.end_line, delivered),
+        } for item in pack.excerpts]
+        map_tokens = self.estimator.estimate(json.dumps(evidence_map, ensure_ascii=False))
+        seed_tokens = sum(self.estimator.estimate(item.text) for item in delivered)
+        data = {**payload.data, "evidence_map": evidence_map,
+                "progressive_delivery": {"partial_initial_delivery": any(not item["delivered"] for item in evidence_map),
+                                         "expand_kind": "selected_path", "seed_source_tokens": seed_tokens,
+                                         "seed_budget": source_budget, "seed_overrun": overrun,
+                                         "map_tokens": map_tokens}}
+        return replace(payload, data=data)
+
     def context(self, task: str, *, mode: str = "balanced", max_context_tokens: int = 6000,
                 error_text: str = "", paths: list[str] | None = None,
                 symbols: list[str] | None = None, force_replay: bool = False) -> dict[str, Any]:
@@ -220,16 +248,28 @@ class MCPGateway:
             self._limits(None, max_context_tokens)
             query = self._query(task, paths, symbols, error_text)
             cap = self.benchmark_policy.initial_context_budget if self.benchmark_policy else None
-            effective = min(max_context_tokens, cap) if cap is not None else max_context_tokens
-            pack = self.builder.build(query, mode=mode, max_context_tokens=effective)
-            payload = self._core_payload(pack, force_replay=force_replay)
+            source_budget = self.benchmark_policy.initial_source_delivery_budget if self.benchmark_policy else None
+            effective = (cap if source_budget is not None else
+                         min(max_context_tokens, cap) if cap is not None else max_context_tokens)
+            pack = self.builder.build(query, mode="balanced" if source_budget is not None else mode,
+                                      max_context_tokens=effective)
+            if source_budget is not None and force_replay:
+                raise ValueError("force_replay is unavailable for progressive delivery")
+            payload = (self._core_payload(pack, force_replay=force_replay) if source_budget is None else
+                       self._progressive_payload(pack, source_budget))
             audit = {"requested_context_tokens": max_context_tokens,
                      "effective_context_tokens": effective,
                      "benchmark_context_cap": cap, "budget_capped": effective < max_context_tokens,
                      "force_replay": force_replay}
+            if source_budget is not None:
+                audit["initial_source_delivery_budget"] = source_budget
+                audit["canonical_selection_fixed"] = True
             payload = replace(payload, budget_audit=audit)
             if cap is not None:
-                payload = replace(payload, data={**payload.data, "budget": audit})
+                visible_audit = audit if "progressive_delivery" in payload.data else {
+                    key: value for key, value in audit.items()
+                    if key not in {"initial_source_delivery_budget", "canonical_selection_fixed"}}
+                payload = replace(payload, data={**payload.data, "budget": visible_audit})
             if self.benchmark_receipts is not None:
                 self.benchmark_receipts.record(inputs, pack)
             self._remember(pack)
@@ -312,14 +352,35 @@ class MCPGateway:
             pack = self._packs.get(fingerprint)
             if pack is None:
                 raise ValueError("unknown Context Pack fingerprint; build a fresh pack in this server session")
-            if kind in {"file", "full_file", "related_imports", "related_tests", "surrounding_lines"} and target:
+            if kind in {"file", "full_file", "related_imports", "related_tests", "surrounding_lines", "selected_path"} and target:
                 safe_target = self.config.relative_path(target)
             else:
                 safe_target = target
-            request = ExpansionRequest(kind, safe_target, context_lines)
             requested = min(MAX_CONTEXT_TOKENS, pack.max_context_tokens * 2) if max_context_tokens is None else max_context_tokens
             ceiling = self.benchmark_policy.expansion_ceiling if self.benchmark_policy else None
             budget = min(requested, ceiling) if ceiling is not None else requested
+            if kind == "selected_path":
+                if not safe_target:
+                    raise ValueError("selected_path requires a target path")
+                selected = tuple(item for item in pack.excerpts if item.path == safe_target)
+                if not selected:
+                    raise ValueError("target path is not in the canonical Context Pack")
+                index = self.indexer.index()
+                if index.get_file(safe_target) is None:
+                    raise StaleSourceError(f"canonical selected source disappeared: {safe_target}")
+                current = SourceReader(self.config, index).read(safe_target)
+                if any(item.content_hash != current.sha256 for item in selected):
+                    raise StaleSourceError(f"canonical selected source changed: {safe_target}")
+                payload = self._core_payload(pack, parent=fingerprint, source_excerpts=selected)
+                source_tokens = sum(self.estimator.estimate(item.text) for item in payload.delivery_excerpts or ())
+                if source_tokens > budget:
+                    raise ValueError("selected path source exceeds expansion budget; request a larger budget")
+                return replace(payload, data={**payload.data, "selected_path": safe_target}, budget_audit={
+                    "requested_expansion_budget": max_context_tokens,
+                    "effective_expansion_budget": budget,
+                    "benchmark_expansion_ceiling": ceiling,
+                    "budget_capped": budget < requested})
+            request = ExpansionRequest(kind, safe_target, context_lines)
             expanded = self.builder.expand(pack, request, max_context_tokens=budget)
             payload = self._core_payload(expanded, parent=fingerprint) if core else self._pack_payload(expanded)
             payload = replace(payload, budget_audit={

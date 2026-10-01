@@ -69,6 +69,14 @@ class DeliveryLedger:
     def already_delivered(self, fingerprint: str) -> bool:
         return fingerprint in self._fingerprints
 
+    def covers(self, path: str, content_hash: str, start_line: int, end_line: int,
+               additional: tuple[DeliveredRange, ...] = ()) -> bool:
+        extra = {(item.path, item.content_hash, number) for item in additional
+                 for number in range(item.start_line, item.end_line + 1)}
+        covered = self._lines | extra
+        return all((path, content_hash, number) in covered
+                   for number in range(start_line, end_line + 1))
+
     @property
     def line_count(self) -> int:
         return len(self._lines)
