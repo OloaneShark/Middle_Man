@@ -510,6 +510,40 @@ def load_suite(repository_root: Path, run_id: str) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def pair_input_diagnostics(pair: dict[str, Any]) -> dict[str, int | None] | None:
+    """Descriptive Codex usage arithmetic, only for infrastructure-valid correct pairs."""
+    if not pair.get("valid") or not all(pair.get(mode, {}).get("correctness") for mode in ("baseline", "optimized")):
+        return None
+
+    def count(value: Any) -> int | None:
+        return value if type(value) is int and value >= 0 else None
+
+    def usage(mode: str, field: str) -> int | None:
+        return count(pair[mode].get("codex_reported_usage", {}).get(field))
+
+    def difference(left: int | None, right: int | None) -> int | None:
+        return left - right if left is not None and right is not None else None
+
+    baseline_input, optimized_input = usage("baseline", "input_tokens"), usage("optimized", "input_tokens")
+    baseline_cached, optimized_cached = usage("baseline", "cached_input_tokens"), usage("optimized", "cached_input_tokens")
+    baseline_uncached = (difference(baseline_input, baseline_cached)
+                         if baseline_input is not None and baseline_cached is not None
+                         and baseline_cached <= baseline_input else None)
+    optimized_uncached = (difference(optimized_input, optimized_cached)
+                          if optimized_input is not None and optimized_cached is not None
+                          and optimized_cached <= optimized_input else None)
+    context = pair["optimized"].get("context", {})
+    return {
+        "baseline_uncached_input_diagnostic": baseline_uncached,
+        "optimized_uncached_input_diagnostic": optimized_uncached,
+        "input_delta_diagnostic": difference(optimized_input, baseline_input),
+        "cached_input_delta_diagnostic": difference(optimized_cached, baseline_cached),
+        "uncached_input_delta_diagnostic": difference(optimized_uncached, baseline_uncached),
+        "optimized_mcp_result_tokens_estimate": count(context.get("all_mcp_result_tokens")),
+        "optimized_selected_source_tokens_estimate": count(context.get("selected_tokens")),
+    }
+
+
 def aggregate_report(pairs: list[dict[str, Any]]) -> dict[str, Any]:
     versions = {(pair.get("task_id", "legacy"), pair.get("task_version", 1)) for pair in pairs}
     by_family: dict[str, set[int]] = {}
@@ -546,6 +580,14 @@ def aggregate_report(pairs: list[dict[str, Any]]) -> dict[str, Any]:
         result[f"{mode}_native_listings"] = native(mode, "listing_calls")
         result[f"{mode}_unique_file_accesses"] = summed(
             [len(pair[mode]["native"]["unique_files"]) for pair in valid])
+        native_calls = [pair[mode]["native"].get("tool_calls") for pair in valid]
+        result[f"{mode}_native_tool_calls"] = (sum(native_calls) if native_calls and
+                                               all(type(value) is int and value >= 0 for value in native_calls) else None)
+        mcp_calls = summed([sum(count for _, count in pair[mode]["mcp_calls_by_tool"]) for pair in valid])
+        result[f"{mode}_mcp_calls"] = mcp_calls
+        result[f"{mode}_observed_tool_interactions"] = (
+            result[f"{mode}_native_tool_calls"] + mcp_calls
+            if result[f"{mode}_native_tool_calls"] is not None and mcp_calls is not None else None)
         for field in ("input_tokens", "cached_input_tokens", "output_tokens", "reasoning_output_tokens",
                       "total_tokens"):
             result[f"{mode}_codex_{field}"] = official(mode, field)
@@ -564,6 +606,9 @@ def aggregate_report(pairs: list[dict[str, Any]]) -> dict[str, Any]:
         "optimized_overlap_ratio": (repeated_bytes / delivered_bytes) if delivered_bytes else None,
         "optimized_non_source_pack_overhead_tokens_estimate": summed(
             [item["non_source_pack_overhead_estimate"] for item in contexts]),
+        "correct_pair_input_diagnostics": [
+            {"task_id": pair.get("task_id"), **diagnostics}
+            for pair in valid if (diagnostics := pair_input_diagnostics(pair)) is not None],
     })
     return result
 
@@ -583,6 +628,7 @@ def format_report(data: dict[str, Any]) -> str:
             continue
         lines.extend(["", f"{pair['title']} v{pair.get('task_version', 1)} [{pair['quality_gate']}]",
                       f"Correctness: baseline={baseline['correctness']} optimized={optimized['correctness']}",
+                      f"Native tool calls: {baseline['native'].get('tool_calls')} -> {optimized['native'].get('tool_calls')}",
                       f"Native reads: {baseline['native']['file_reads']} -> {optimized['native']['file_reads']}; "
                       f"unique files: {len(baseline['native']['unique_files'])} -> {len(optimized['native']['unique_files'])}; "
                       f"rereads: {baseline['native']['rereads']} -> {optimized['native']['rereads']}",
@@ -592,6 +638,9 @@ def format_report(data: dict[str, Any]) -> str:
                       f"delivered files: {len(optimized['context']['selected_paths'])}",
                       f"Middle_Man calls: {sum(count for _, count in optimized['mcp_calls_by_tool'])} "
                       f"{dict(optimized['mcp_calls_by_tool'])}",
+                      f"Total observed tool interactions (native + MCP): "
+                      f"{baseline['native'].get('tool_calls', 0) + sum(count for _, count in baseline['mcp_calls_by_tool'])} -> "
+                      f"{optimized['native'].get('tool_calls', 0) + sum(count for _, count in optimized['mcp_calls_by_tool'])}",
                       f"MCP session trace: {optimized.get('mcp_session_trace', [])}; "
                       f"native read MCP coverage: {optimized.get('native_read_mcp_coverage', [])}",
                       f"Estimated candidate/selected/unique/repeated source tokens: "
@@ -608,6 +657,17 @@ def format_report(data: dict[str, Any]) -> str:
                       f"{optimized['codex_reported_usage']['input_tokens']}/"
                       f"{optimized['codex_reported_usage']['output_tokens']}",
                       f"Modified files: baseline={baseline['modified_files']} optimized={optimized['modified_files']}"])
+        diagnostics = pair_input_diagnostics(pair)
+        if diagnostics is not None:
+            lines.append(f"Codex input diagnostics (not billing or quota): "
+                         f"input delta={diagnostics['input_delta_diagnostic']}; "
+                         f"cached delta={diagnostics['cached_input_delta_diagnostic']}; "
+                         f"input-minus-cached={diagnostics['baseline_uncached_input_diagnostic']} -> "
+                         f"{diagnostics['optimized_uncached_input_diagnostic']} "
+                         f"(delta={diagnostics['uncached_input_delta_diagnostic']}); "
+                         f"optimized MCP result/selected source estimates="
+                         f"{diagnostics['optimized_mcp_result_tokens_estimate']}/"
+                         f"{diagnostics['optimized_selected_source_tokens_estimate']}")
         if baseline["correctness_notes"] or optimized["correctness_notes"]:
             lines.append(f"Correctness notes: baseline={baseline['correctness_notes']} optimized={optimized['correctness_notes']}")
     if len(data["pairs"]) < len(data.get("planned_task_ids", data["pairs"])):
@@ -620,6 +680,12 @@ def format_report(data: dict[str, Any]) -> str:
         lines.append(f"Aggregate native reads/rereads/unique file accesses: "
                      f"{aggregate['baseline_native_reads']}/{aggregate['baseline_native_rereads']}/{aggregate['baseline_unique_file_accesses']} -> "
                      f"{aggregate['optimized_native_reads']}/{aggregate['optimized_native_rereads']}/{aggregate['optimized_unique_file_accesses']}")
+        if aggregate.get("baseline_observed_tool_interactions") is not None:
+            lines.append(f"Aggregate native calls / MCP calls / observed interactions: "
+                         f"{aggregate['baseline_native_tool_calls']}/{aggregate['baseline_mcp_calls']}/"
+                         f"{aggregate['baseline_observed_tool_interactions']} -> "
+                         f"{aggregate['optimized_native_tool_calls']}/{aggregate['optimized_mcp_calls']}/"
+                         f"{aggregate['optimized_observed_tool_interactions']}")
         lines.append(f"Aggregate searches/listings: {aggregate['baseline_native_searches']}/{aggregate['baseline_native_listings']} -> "
                      f"{aggregate['optimized_native_searches']}/{aggregate['optimized_native_listings']}")
         lines.append(f"Aggregate optimized MCP calls/packs: {aggregate['optimized_mcp_calls']}/{aggregate['optimized_context_packs']}; "

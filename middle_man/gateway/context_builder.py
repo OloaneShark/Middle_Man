@@ -77,7 +77,8 @@ class ContextBuilder:
         self.indexer = indexer or RepositoryIndexer(config)
 
     def build(self, query: ContextQuery | str, *, mode: ContextMode | str = ContextMode.SAFE,
-              max_context_tokens: int | None = None, top_k: int | None = None) -> ContextPack:
+              max_context_tokens: int | None = None, top_k: int | None = None,
+              depth_token_limit: int | None = None) -> ContextPack:
         if isinstance(query, str):
             query = ContextQuery(query)
         mode = ContextMode(mode)
@@ -88,7 +89,7 @@ class ContextBuilder:
         error_redaction = self.redactor.redact(query.error_text)
         safe_query = ContextQuery(task_redaction.text, query.paths, query.symbols,
                                   error_redaction.text, query.changed_files)
-        pack = self._build(safe_query, mode, budget, top_k, 0, ())
+        pack = self._build(safe_query, mode, budget, top_k, 0, (), depth_token_limit=depth_token_limit)
         query_categories = task_redaction.categories + error_redaction.categories
         if query_categories:
             pack = replace(pack, warnings=tuple(dict.fromkeys((*pack.warnings, "REDACTIONS_APPLIED"))),
@@ -105,7 +106,8 @@ class ContextBuilder:
                            pack.generation + 1, pack.excerpts, request)
 
     def _build(self, query: ContextQuery, mode: ContextMode, budget: int, top_k: int | None,
-               generation: int, previous: tuple[SourceExcerpt, ...], expansion: ExpansionRequest | None = None) -> ContextPack:
+               generation: int, previous: tuple[SourceExcerpt, ...], expansion: ExpansionRequest | None = None,
+               depth_token_limit: int | None = None) -> ContextPack:
         stale_during_build = False
         for attempt in range(2):
             index = self.indexer.index()
@@ -116,7 +118,8 @@ class ContextBuilder:
             try:
                 candidates = RelevanceEngine(index, self.config).find(
                     effective_query, top_k=top_k if top_k is not None else max(50, self.config.max_search_results))
-                return self._assemble(index, diff, effective_query, candidates, mode, budget, generation, previous, expansion, stale_during_build)
+                return self._assemble(index, diff, effective_query, candidates, mode, budget, generation,
+                                      previous, expansion, stale_during_build, depth_token_limit)
             except StaleSourceError:
                 stale_during_build = True
                 if attempt:
@@ -126,7 +129,7 @@ class ContextBuilder:
     def _assemble(self, index: RepositoryIndex, diff: GitDiff, query: ContextQuery,
                   candidates: tuple[RelevanceCandidate, ...], mode: ContextMode, budget: int,
                   generation: int, previous: tuple[SourceExcerpt, ...], expansion: ExpansionRequest | None,
-                  stale_during_build: bool) -> ContextPack:
+                  stale_during_build: bool, depth_token_limit: int | None) -> ContextPack:
         reader = SourceReader(self.config, index)
         by_path = {item.path: item for item in candidates}
         forced: dict[str, list[_Range]] = {}
@@ -230,7 +233,7 @@ class ContextBuilder:
             path in anchors, index.get_file(path).is_test) for _, path, item in planned)
         selected_indices, diagnostics = allocate(
             allocation_entries, budget,
-            tests_requested=tests_requested)
+            tests_requested=tests_requested, depth_token_limit=depth_token_limit)
         omissions = [entry for entry in diagnostics if entry.omission_reason == "context_budget"]
         for entry in omissions[:3]:
             warnings.append(f"CONTEXT_BUDGET_OMISSION:{entry.candidate_path}:{entry.proposed_source_ranges[0][0]}-{entry.proposed_source_ranges[0][1]}")

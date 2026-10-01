@@ -24,6 +24,14 @@ class SelectionEntry:
 
 
 @dataclass(frozen=True, slots=True)
+class SelectedRangePhase:
+    start_line: int
+    end_line: int
+    phase: str
+    estimated_source_tokens: int
+
+
+@dataclass(frozen=True, slots=True)
 class SelectionDiagnostic:
     candidate_path: str
     candidate_score: float
@@ -45,6 +53,7 @@ class SelectionDiagnostic:
     coverage_before: tuple[str, ...] = ()
     coverage_after: tuple[str, ...] = ()
     repair_reason: str | None = None
+    selected_range_phases: tuple[SelectedRangePhase, ...] = ()
 
 
 def _strengths(entry: SelectionEntry) -> dict[str, int]:
@@ -163,14 +172,18 @@ def _repair(entries: tuple[SelectionEntry, ...], chosen: list[int], budget: int,
         index for index in selected if index not in chosen), repairs
 
 
-def allocate(entries: tuple[SelectionEntry, ...], budget: int, *, tests_requested: bool = False
+def allocate(entries: tuple[SelectionEntry, ...], budget: int, *, tests_requested: bool = False,
+             depth_token_limit: int | None = None
              ) -> tuple[tuple[int, ...], tuple[SelectionDiagnostic, ...]]:
     """Select atomic ranges: required, novel strong evidence, then depth."""
+    if depth_token_limit is not None and depth_token_limit < 0:
+        raise ValueError("depth_token_limit must be nonnegative")
     frequencies = Counter(signal.key for entry in entries if entry.candidate
                           for signal in entry.candidate.signals if signal.term)
     chosen: list[int] = []
     covered: set[str] = set()
     decisions: dict[int, tuple[int, tuple[str, ...], str | None]] = {}
+    phases: dict[int, str] = {}
     used = 0
 
     def value(index: int) -> tuple[float, tuple[str, ...]]:
@@ -217,6 +230,7 @@ def allocate(entries: tuple[SelectionEntry, ...], budget: int, *, tests_requeste
         chosen.append(index)
         remaining.remove(index)
         decisions[index] = (used, keys, None)
+        phases[index] = "REQUIRED"
         covered.update(keys)
         used += entries[index].cost
 
@@ -237,6 +251,7 @@ def allocate(entries: tuple[SelectionEntry, ...], budget: int, *, tests_requeste
         chosen.append(index)
         remaining.remove(index)
         decisions[index] = (used, keys, None)
+        phases[index] = "COVERAGE"
         covered.update(keys)
         used += entries[index].cost
 
@@ -250,22 +265,30 @@ def allocate(entries: tuple[SelectionEntry, ...], budget: int, *, tests_requeste
                           for signal in candidate.signals)
         return candidate.score * (2.5 if rare_family else 1.0) / (entries[number].cost + 80) ** 0.4
 
+    depth_used = 0
     for index in sorted(remaining, key=lambda number: (
             -depth_value(number), entries[number].path, entries[number].start_line)):
         entry = entries[index]
-        if entry.affinity and used + entry.cost <= budget:
+        if (entry.affinity and used + entry.cost <= budget and
+                (depth_token_limit is None or depth_used + entry.cost <= depth_token_limit)):
             chosen.append(index)
             decisions[index] = (used, (), None)
+            phases[index] = "DEPTH"
             used += entry.cost
+            depth_used += entry.cost
         else:
-            decisions[index] = (used, (), "context_budget" if entry.affinity else "outside_task_cluster")
+            reason = ("outside_task_cluster" if not entry.affinity else
+                      "context_budget" if used + entry.cost > budget else "depth_limit")
+            decisions[index] = (used, (), reason)
 
     original = set(chosen)
     chosen, repairs = _repair(entries, chosen, budget, tests_requested, coverage_selected)
     for index in original - set(chosen):
         decisions[index] = (decisions[index][0], (), "context_budget")
+        phases.pop(index, None)
     for index in set(chosen) - original:
         decisions[index] = (used, (), None)
+        phases[index] = "REPAIR"
 
     by_path: dict[str, list[int]] = {}
     for index, entry in enumerate(entries):
@@ -276,8 +299,10 @@ def allocate(entries: tuple[SelectionEntry, ...], budget: int, *, tests_requeste
         candidate = entries[indices[0]].candidate
         chosen_any = any(index in selected for index in indices)
         reasons = {decisions[index][2] for index in indices if decisions[index][2]}
-        omission = ("partial_context_budget" if chosen_any else
+        omission = (("partial_context_budget" if "context_budget" in reasons else "partial_depth_limit")
+                    if chosen_any else
                     "context_budget" if "context_budget" in reasons else
+                    "depth_limit" if "depth_limit" in reasons else
                     "outside_task_cluster") if reasons else None
         diagnostics.append(SelectionDiagnostic(
             path, candidate.score if candidate else 0.0,
@@ -299,5 +324,8 @@ def allocate(entries: tuple[SelectionEntry, ...], budget: int, *, tests_requeste
             sum(entries[index].cost for index in indices if index in repairs),
             next((repairs[index][2] for index in indices if index in repairs), ()),
             next((repairs[index][3] for index in indices if index in repairs), ()),
-            "underrepresented_query_evidence" if any(index in repairs for index in indices) else None))
+            "underrepresented_query_evidence" if any(index in repairs for index in indices) else None,
+            tuple(SelectedRangePhase(entries[index].start_line, entries[index].end_line,
+                                     phases[index], entries[index].cost)
+                  for index in indices if index in selected)))
     return tuple(chosen), tuple(diagnostics)

@@ -167,7 +167,9 @@ class MCPGateway:
             "generation": pack.generation, "selected_paths": list(pack.selected_files),
             "selected_symbols": list(pack.selected_symbols),
             "candidates": [asdict(item) for item in pack.candidates],
-            "selection_diagnostics": [asdict(item) for item in pack.selection_diagnostics],
+            "selection_diagnostics": [
+                {key: value for key, value in asdict(item).items() if key != "selected_range_phases"}
+                for item in pack.selection_diagnostics],
             "excerpts": [asdict(item) for item in pack.excerpts],
             "related_tests": list(pack.related_tests),
             "changed_files": [asdict(item) for item in pack.changed_files],
