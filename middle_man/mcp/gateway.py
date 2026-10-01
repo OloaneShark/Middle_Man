@@ -263,12 +263,19 @@ class MCPGateway:
                      "force_replay": force_replay}
             if source_budget is not None:
                 audit["initial_source_delivery_budget"] = source_budget
+                delivery = payload.data.get("progressive_delivery", {})
+                audit["initial_source_delivery_tokens"] = sum(
+                    self.estimator.estimate(item.text) for item in payload.delivery_excerpts or ())
+                audit["initial_source_delivery_overrun"] = delivery.get(
+                    "seed_overrun", max(0, audit["initial_source_delivery_tokens"] - source_budget))
                 audit["canonical_selection_fixed"] = True
             payload = replace(payload, budget_audit=audit)
             if cap is not None:
-                visible_audit = audit if "progressive_delivery" in payload.data else {
+                visible_audit = {
                     key: value for key, value in audit.items()
-                    if key not in {"initial_source_delivery_budget", "canonical_selection_fixed"}}
+                    if key not in {"initial_source_delivery_tokens", "initial_source_delivery_overrun"}
+                    and ("progressive_delivery" in payload.data or
+                         key not in {"initial_source_delivery_budget", "canonical_selection_fixed"})}
                 payload = replace(payload, data={**payload.data, "budget": visible_audit})
             if self.benchmark_receipts is not None:
                 self.benchmark_receipts.record(inputs, pack)

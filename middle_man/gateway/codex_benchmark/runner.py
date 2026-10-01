@@ -107,6 +107,7 @@ class CodexBenchmarkSuite:
     artifact_root: str
     planned_task_ids: tuple[str, ...]
     aborted_reason: str | None = None
+    benchmark_policy: BenchmarkPolicy = BenchmarkPolicy()
 
 
 def _codex_executable() -> str:
@@ -120,7 +121,8 @@ def _codex_version(command: str) -> str:
     return subprocess.run([command, "--version"], capture_output=True, text=True, check=True).stdout.strip()
 
 
-def _server_args(root: Path, *, run_id: str = "", task_id: str = "", mode: str = "") -> list[str]:
+def _server_args(root: Path, *, run_id: str = "", task_id: str = "", mode: str = "",
+                 policy: BenchmarkPolicy = BenchmarkPolicy()) -> list[str]:
     source_root = Path(__file__).resolve().parents[3]
     launcher = ("import sys;sys.path.insert(0,sys.argv.pop(1));"
                 "from middle_man.cli.main import main;main()")
@@ -129,23 +131,26 @@ def _server_args(root: Path, *, run_id: str = "", task_id: str = "", mode: str =
         task = next(item for item in TASKS if item.id == task_id)
         args.extend(["--benchmark-run-id", run_id, "--benchmark-task-id", task_id,
                      "--benchmark-mode", mode, "--benchmark-source-commit", task.source_ref or "fixture",
-                     "--benchmark-context-budget", str(BenchmarkPolicy().initial_context_budget),
-                     "--benchmark-expansion-budget", str(BenchmarkPolicy().expansion_ceiling)])
+                     "--benchmark-context-budget", str(policy.initial_context_budget)])
+        if policy.initial_source_delivery_budget is not None:
+            args.extend(["--benchmark-source-delivery-budget", str(policy.initial_source_delivery_budget)])
+        args.extend(["--benchmark-expansion-budget", str(policy.expansion_ceiling)])
     return [*args, "--tool-profile", "codex-core"]
 
 
-def _overrides(mode: str, root: Path, *, run_id: str = "", task_id: str = "") -> list[str]:
+def _overrides(mode: str, root: Path, *, run_id: str = "", task_id: str = "",
+               policy: BenchmarkPolicy = BenchmarkPolicy()) -> list[str]:
     settings = []
     if mode == "optimized":
         settings = ["mcp_servers.middle-man.command=" + json.dumps(str(Path(sys.executable).resolve())),
                     "mcp_servers.middle-man.args=" + json.dumps(_server_args(
-                        root, run_id=run_id, task_id=task_id, mode=mode)),
+                        root, run_id=run_id, task_id=task_id, mode=mode, policy=policy)),
                     "mcp_servers.middle-man.enabled=true", "mcp_servers.middle-man.required=true"]
     return [part for setting in settings for part in ("-c", setting)]
 
 def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, model: str,
                      effort: str, windows_sandbox: str = WINDOWS_SANDBOX,
-                     run_id: str = "") -> list[str]:
+                     run_id: str = "", policy: BenchmarkPolicy = BenchmarkPolicy()) -> list[str]:
     if mode not in {"baseline", "optimized"}:
         raise ValueError("unknown benchmark mode")
     if windows_sandbox not in {"elevated", "unelevated"}:
@@ -153,7 +158,7 @@ def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, mod
     sandbox = "read-only" if task.read_only else "workspace-write"
     return [command, "--no-daemon", "-a", "never", "exec", "--ignore-user-config", "--strict-config",
             "-c", f'windows.sandbox="{windows_sandbox}"',
-            *_overrides(mode, root, run_id=run_id, task_id=task.id), "-C", str(root.resolve()),
+            *_overrides(mode, root, run_id=run_id, task_id=task.id, policy=policy), "-C", str(root.resolve()),
             "-s", sandbox, "--ephemeral", "--json", "-m", model,
             "-c", f'model_reasoning_effort="{effort}"',
             *(["--output-schema", str(Path(__file__).with_name(
@@ -162,10 +167,11 @@ def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, mod
             task.prompt + " Work only inside this benchmark working copy. Do not commit or push."]
 
 
-def _mcp_preflight(command: str, mode: str, root: Path, *, run_id: str = "", task_id: str = "") -> None:
+def _mcp_preflight(command: str, mode: str, root: Path, *, run_id: str = "", task_id: str = "",
+                   policy: BenchmarkPolicy = BenchmarkPolicy()) -> None:
     if mode == "baseline":
         return
-    result = subprocess.run([command, *_overrides(mode, root, run_id=run_id, task_id=task_id),
+    result = subprocess.run([command, *_overrides(mode, root, run_id=run_id, task_id=task_id, policy=policy),
                              "mcp", "get", "middle-man", "--json"],
                             capture_output=True, text=True, check=True)
     config = json.loads(result.stdout)
@@ -173,7 +179,7 @@ def _mcp_preflight(command: str, mode: str, root: Path, *, run_id: str = "", tas
         raise RuntimeError("optimized Middle_Man MCP server is disabled")
     if config["transport"]["args"][config["transport"]["args"].index("--repo") + 1] != str(root.resolve()):
         raise RuntimeError("optimized MCP server is not scoped to its benchmark snapshot")
-    if config["transport"]["args"] != _server_args(root, run_id=run_id, task_id=task_id, mode=mode):
+    if config["transport"]["args"] != _server_args(root, run_id=run_id, task_id=task_id, mode=mode, policy=policy):
         raise RuntimeError("optimized MCP arguments do not pin the current implementation and codex-core profile")
     if Path(config["transport"]["command"]).resolve() != Path(sys.executable).resolve():
         raise RuntimeError("optimized MCP command differs from the benchmark Python environment")
@@ -211,7 +217,11 @@ def isolation_warnings(mode: str, entries: tuple[dict[str, Any], ...],
     return tuple(warnings)
 
 
-def validate_initial_context_budgets(entries: tuple[dict[str, Any], ...], cap: int) -> tuple[str, ...]:
+def validate_initial_context_budgets(entries: tuple[dict[str, Any], ...],
+                                     policy: BenchmarkPolicy | int) -> tuple[str, ...]:
+    if isinstance(policy, int):
+        policy = BenchmarkPolicy(initial_context_budget=policy)
+    cap = policy.initial_context_budget
     warnings = []
     for entry in entries:
         if entry.get("tool") != "middleman_context" or not entry.get("success"):
@@ -219,11 +229,24 @@ def validate_initial_context_budgets(entries: tuple[dict[str, Any], ...], cap: i
         budget = entry.get("budget")
         effective = budget.get("effective_context_tokens") if isinstance(budget, dict) else None
         recorded_cap = budget.get("benchmark_context_cap") if isinstance(budget, dict) else None
+        progressive = policy.initial_source_delivery_budget is not None
         if (type(effective) is not int or type(recorded_cap) is not int or
-                recorded_cap != cap or not 1 <= effective <= cap):
+                recorded_cap != cap or (effective != cap if progressive else not 1 <= effective <= cap)):
             warnings.append("optimized initial context budget invalid or unverified")
         if isinstance(budget, dict) and budget.get("force_replay") is True:
             warnings.append("optimized model-facing context replay violates benchmark policy")
+        if progressive:
+            expected = policy.initial_source_delivery_budget
+            seed = budget.get("initial_source_delivery_tokens") if isinstance(budget, dict) else None
+            overrun = budget.get("initial_source_delivery_overrun") if isinstance(budget, dict) else None
+            if (not isinstance(budget, dict) or budget.get("initial_source_delivery_budget") != expected or
+                    budget.get("canonical_selection_fixed") is not True or budget.get("force_replay") is not False or
+                    type(seed) is not int or type(overrun) is not int or seed < 0 or overrun < 0 or
+                    seed > expected + overrun or overrun > cap - expected):
+                warnings.append("optimized progressive initial context budget invalid or unverified")
+        elif isinstance(budget, dict) and (budget.get("initial_source_delivery_budget") is not None or
+                                           budget.get("canonical_selection_fixed") is True):
+            warnings.append("optimized one-shot initial context budget invalid or unverified")
     return tuple(warnings)
 
 
@@ -330,18 +353,18 @@ def _evaluate(task: TaskSpec, root: Path, message: str, changed: tuple[str, ...]
 def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: int,
             codex_command: str, codex_version: str, model: str, effort: str, timeout: int,
             artifact_root: Path, primary_repository_root: Path, windows_sandbox: str,
-            run_id: str | None = None) -> CodexBenchmarkRun:
+            run_id: str | None = None, policy: BenchmarkPolicy = BenchmarkPolicy()) -> CodexBenchmarkRun:
     if source_fingerprint(root) != fingerprint:
         raise RuntimeError("benchmark snapshot changed before Codex invocation")
     before = _status(root)
     if before:
         raise RuntimeError("benchmark snapshot is not clean before Codex invocation")
     run_id = run_id or _new_run_id()
-    _mcp_preflight(codex_command, mode, root, run_id=run_id, task_id=task.id)
+    _mcp_preflight(codex_command, mode, root, run_id=run_id, task_id=task.id, policy=policy)
     primary_before = primary_usage_signature(primary_repository_root)
     start_head = _head(root)
     command = build_invocation(codex_command, task, mode, root, model=model, effort=effort,
-                               windows_sandbox=windows_sandbox, run_id=run_id)
+                               windows_sandbox=windows_sandbox, run_id=run_id, policy=policy)
     if _status(root):
         raise RuntimeError("benchmark snapshot is not clean immediately before Codex process creation")
     timestamp = datetime.now(timezone.utc).isoformat()
@@ -368,7 +391,7 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
     middleman_events = tuple((server, tool) for server, tool in trace.mcp_calls if server == "middle-man")
     warnings.extend(isolation_warnings(mode, entries, trace.mcp_calls))
     if mode == "optimized":
-        warnings.extend(validate_initial_context_budgets(entries, BenchmarkPolicy().initial_context_budget))
+        warnings.extend(validate_initial_context_budgets(entries, policy))
         sessions = {entry.get("server_session_id") for entry in entries
                     if isinstance(entry.get("server_session_id"), str)}
         if len(sessions) > 1:
@@ -415,7 +438,8 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
 
 def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: int, command: str,
           version: str, model: str, effort: str, timeout: int, artifacts: Path,
-          primary_repository_root: Path, windows_sandbox: str, run_id: str) -> CodexBenchmarkPair:
+          primary_repository_root: Path, windows_sandbox: str, run_id: str,
+          policy: BenchmarkPolicy = BenchmarkPolicy()) -> CodexBenchmarkPair:
     baseline, optimized, fingerprint = prepare_pair(task, root, instructions)
     if task.id == "oauth-bug":
         for snapshot in (baseline, optimized):
@@ -428,10 +452,10 @@ def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: i
     first_root = baseline if first == "baseline" else optimized
     second_root = optimized if first == "baseline" else baseline
     first_run = run_one(task, first, first_root, fingerprint, order=order, codex_command=command,
-                        codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id)
+                        codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id, policy=policy)
     second_mode = "optimized" if first == "baseline" else "baseline"
     second_run = run_one(task, second_mode, second_root, fingerprint, order=order + 1, codex_command=command,
-                         codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id)
+                         codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id, policy=policy)
     baseline_run = first_run if first == "baseline" else second_run
     optimized_run = first_run if first == "optimized" else second_run
     valid = baseline_run.valid and optimized_run.valid and baseline_run.starting_fingerprint == optimized_run.starting_fingerprint
@@ -454,7 +478,8 @@ def _pair(task: TaskSpec, root: Path, instructions: str, *, first: str, order: i
 def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base: Path,
               model: str = DEFAULT_MODEL, effort: str = DEFAULT_EFFORT,
               timeout: int = DEFAULT_TIMEOUT, windows_sandbox: str = WINDOWS_SANDBOX,
-              snapshot_root: Path | None = None) -> CodexBenchmarkSuite:
+              snapshot_root: Path | None = None,
+              policy: BenchmarkPolicy = BenchmarkPolicy()) -> CodexBenchmarkSuite:
     from middle_man.gateway.codex_benchmark.infrastructure import run_local_preflight
 
     if len({task_id for task_id in task_ids if task_id in
@@ -489,11 +514,11 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
         pair = _pair(task, pair_root, instructions, first=first, order=index * 2 + 1,
                      command=command, version=version, model=model, effort=effort,
                      timeout=timeout, artifacts=artifacts, primary_repository_root=repository_root, windows_sandbox=windows_sandbox,
-                     run_id=run_id)
+                     run_id=run_id, policy=policy)
         pairs.append(pair)
         reason = f"stopped after infrastructure-invalid pair: {task.id}" if not pair.valid else None
         partial = CodexBenchmarkSuite(run_id, datetime.now(timezone.utc).isoformat(), version,
-                                      model, effort, tuple(pairs), str(artifacts), task_ids, reason)
+                                      model, effort, tuple(pairs), str(artifacts), task_ids, reason, policy)
         result = asdict(partial)
         result["aggregate"] = aggregate_report(result["pairs"])
         (artifacts / "result.json").write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n",
@@ -615,6 +640,12 @@ def aggregate_report(pairs: list[dict[str, Any]]) -> dict[str, Any]:
 def format_report(data: dict[str, Any]) -> str:
     lines = ["MIDDLE_MAN CODEX A/B BENCHMARK", f"Run: {data['run_id']}",
              f"Codex: {data['codex_version']}  Model: {data['model']}  Effort: {data['effort']}"]
+    policy = data.get("benchmark_policy") or asdict(BenchmarkPolicy())
+    delivery = policy.get("initial_source_delivery_budget")
+    lines.append(f"Delivery policy: {'progressive' if delivery is not None else 'one-shot'}; "
+                 f"canonical selection: {policy['initial_context_budget']}; "
+                 f"initial source delivery: {delivery if delivery is not None else 'full selected source'}; "
+                 f"expansion ceiling: {policy['expansion_ceiling']}")
     for pair in data["pairs"]:
         baseline, optimized = pair["baseline"], pair["optimized"]
         lines.append(f"Source commit: {pair.get('source_commit') or 'synthetic fixture'}; source fingerprint: {pair.get('source_tree_fingerprint') or pair.get('source_fingerprint', 'unknown')}")

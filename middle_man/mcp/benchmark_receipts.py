@@ -99,6 +99,11 @@ class BenchmarkReceipts:
             "task_id": self.identity.task_id,
             "benchmark_mode": self.identity.mode,
             "source_commit": self.identity.source_commit,
+            "policy": {
+                "initial_context_budget": self.identity.policy.initial_context_budget,
+                "initial_source_delivery_budget": self.identity.policy.initial_source_delivery_budget,
+                "expansion_ceiling": self.identity.policy.expansion_ceiling,
+            },
             "source_tree_fingerprint": source_fingerprint(self.config.repository_root),
             "repository": {"name": self._safe(pack.repository.name), "head": pack.repository.head},
             "server_implementation": server_implementation_identity(),

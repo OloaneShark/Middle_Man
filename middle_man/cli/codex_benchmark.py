@@ -14,6 +14,7 @@ from middle_man.gateway.codex_benchmark.runner import (
 )
 from middle_man.gateway.codex_benchmark.tasks import TASKS
 from middle_man.gateway.codex_benchmark.infrastructure import run_local_preflight
+from middle_man.mcp.benchmark_receipts import BenchmarkPolicy
 
 
 def add_codex_benchmark_commands(subparsers: argparse._SubParsersAction) -> None:
@@ -40,6 +41,7 @@ def add_codex_benchmark_commands(subparsers: argparse._SubParsersAction) -> None
         action.add_argument("--windows-sandbox", choices=("elevated", "unelevated"), default="elevated")
         action.add_argument("--snapshot-root", type=Path)
         action.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
+        action.add_argument("--benchmark-source-delivery-budget", type=int)
         action.add_argument("--dry-run", action="store_true")
         action.add_argument("--confirm-external-service", action="store_true")
     for name in ("report", "overlap"):
@@ -82,12 +84,20 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
              if action == "run-all" else tuple(task for task in TASKS if task.id == args.task))
     if args.timeout <= 0:
         raise SystemExit("--timeout must be positive")
+    try:
+        policy = BenchmarkPolicy(initial_source_delivery_budget=args.benchmark_source_delivery_budget)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
     base = root / ".middle_man_cache" / "codex_benchmarks"
     if args.dry_run:
         print("DRY RUN: no Codex call or snapshot write")
         print("Real runs disclose repository-derived context to the external Codex service.")
         print(f"Model: {args.model}  reasoning effort: {args.effort} (explicit CLI configuration)")
         print(f"Windows sandbox: {args.windows_sandbox} (explicit; no automatic fallback)")
+        print(f"Delivery policy: {'progressive' if policy.initial_source_delivery_budget is not None else 'one-shot'}; "
+              f"canonical selection: {policy.initial_context_budget}; "
+              f"initial source delivery: {policy.initial_source_delivery_budget}; "
+              f"expansion ceiling: {policy.expansion_ceiling}")
         print(f"Artifact root: {base / '<run-id>'}")
         snapshot_base = (args.snapshot_root.resolve() if args.snapshot_root else Path(tempfile.gettempdir())) / "middle-man-codex-<run-id>"
         print(f"Independent working-copy root: {snapshot_base}")
@@ -97,8 +107,16 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
             for mode in ("baseline", "optimized"):
                 snapshot = snapshot_base / task.id / mode
                 print(f"  {mode} snapshot: {snapshot}")
+                if mode == "optimized":
+                    server_budgets = (f"--benchmark-context-budget {policy.initial_context_budget} "
+                                      + (f"--benchmark-source-delivery-budget {policy.initial_source_delivery_budget} "
+                                         if policy.initial_source_delivery_budget is not None else "")
+                                      + f"--benchmark-expansion-budget {policy.expansion_ceiling}")
+                    print(f"  optimized MCP policy args: {server_budgets}")
                 print("  " + subprocess.list2cmdline(build_invocation("codex", task, mode, snapshot,
-                                                            model=args.model, effort=args.effort, windows_sandbox=args.windows_sandbox)))
+                                                            model=args.model, effort=args.effort,
+                                                            windows_sandbox=args.windows_sandbox,
+                                                            run_id="dry-run", policy=policy)))
         print("Both runs ignore user config; baseline has no AGENTS.md or Middle_Man registration; optimized configures snapshot-scoped MCP.")
         return
     if not args.confirm_external_service:
@@ -106,6 +124,7 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
                          "Review --dry-run, then pass --confirm-external-service explicitly.")
     print("Running real Codex benchmark; repository-derived context will reach the external Codex service.", flush=True)
     suite = run_suite(tuple(task.id for task in tasks), repository_root=root, artifact_base=base,
-                      model=args.model, effort=args.effort, timeout=args.timeout, windows_sandbox=args.windows_sandbox, snapshot_root=args.snapshot_root)
+                      model=args.model, effort=args.effort, timeout=args.timeout, windows_sandbox=args.windows_sandbox,
+                      snapshot_root=args.snapshot_root, policy=policy)
     print(format_report(asdict(suite)))
     print(f"Local sanitized artifacts: {suite.artifact_root}")
