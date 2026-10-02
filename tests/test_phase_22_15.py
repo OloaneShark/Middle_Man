@@ -139,9 +139,10 @@ def test_large_edit_auto_selection_locator_and_prompt(
     assert pack.fingerprint == repeat.fingerprint == locator.pack_fingerprint
     assert locator == build_offline_locator(config, query)
     assert MIN_CANDIDATE_SOURCE_TOKENS == 10_000
-    decision = decide_offline_locator(pack, locator)
-    assert decision == decide_offline_locator(pack, locator)
-    assert decision.use_locator and decision.candidate_tokens == 23982
+    decision = decide_offline_locator(pack, locator, read_only=TASK.read_only)
+    assert decision == decide_offline_locator(pack, locator, read_only=TASK.read_only)
+    assert not decision.use_locator and decision.candidate_tokens == 23982
+    assert decision.reason == "workspace_write_not_validated_for_full_locator"
     assert decision.selected_tokens == 5993 and decision.locator_tokens == 214
     assert len(pack.candidates) >= 29 and len(locator.selected_paths) == 14
     assert len(locator.selected_ranges) == 19
@@ -178,11 +179,15 @@ def test_large_edit_auto_selection_locator_and_prompt(
         effort="high", optimized_mode="offline-auto")
     optimized = runner.build_invocation(
         "codex", TASK, "optimized", optimized_root, model="gpt-6-sol",
-        effort="high", optimized_mode="offline-auto", locator_text=locator.text)
+        effort="high", optimized_mode="offline-auto")
     original = TASK.prompt + " Work only inside this benchmark working copy. Do not commit or push."
     assert baseline[-1] == original
-    assert optimized[-1] == append_offline_locator(original, locator.text)
-    assert optimized[-1].count(LOCATOR_HEADING) == 1
+    assert optimized[-1].encode("utf-8") == baseline[-1].encode("utf-8")
+    assert LOCATOR_HEADING not in optimized[-1]
+    forced = runner.build_invocation(
+        "codex", TASK, "optimized", optimized_root, model="gpt-6-sol",
+        effort="high", optimized_mode="offline-locator", locator_text=locator.text)
+    assert forced[-1] == append_offline_locator(original, locator.text)
     for argv in (baseline, optimized):
         assert argv[argv.index("-s") + 1] == "workspace-write"
         assert "--ignore-user-config" in argv
@@ -200,8 +205,8 @@ def test_medium_size_tiers_cross_unchanged_gate(
     expected = {
         "core": (3016, False), "memory": (4901, False),
         "scheduling": (6603, False), "adapters": (8335, False),
-        "memory-control": (11157, True), "execution": (15004, True),
-        "workflows": (19322, True),
+        "memory-control": (11157, False), "execution": (15004, False),
+        "workflows": (19322, False),
     }
     for name, paths in SAMPLE_TIERS:
         root = tmp_path / name
@@ -231,7 +236,7 @@ def test_large_edit_auto_dry_run_does_not_start_codex(
     main(["codex", "benchmark", "run", "large-edit-v1", "--repo", str(tmp_path),
           "--dry-run", "--optimized-mode", "offline-auto", "--windows-sandbox", "unelevated"])
     output = capsys.readouterr().out
-    assert "Offline AUTO: LOCATOR USED" in output and LOCATOR_HEADING in output
+    assert "Offline AUTO: BYPASSED" in output and LOCATOR_HEADING not in output
     assert "mcp_servers." not in output and "no AGENTS.md or MCP registration" in output
     assert "IndependentCancellationAcceptance" not in output
     assert not (tmp_path / ".middle_man_cache").exists()

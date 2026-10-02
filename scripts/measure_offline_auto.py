@@ -17,11 +17,12 @@ from middle_man.gateway.relevance import ContextQuery
 from tests.test_phase_22_11 import ACTUAL_QUERY, STRONG
 
 
-def measure(name: str, root: Path, query: ContextQuery) -> dict[str, int | float | str]:
+def measure(name: str, root: Path, query: ContextQuery, *,
+            read_only: bool) -> dict[str, int | float | str]:
     config = GatewayConfig(root)
     pack = ContextBuilder(config).build(query, mode="balanced", max_context_tokens=6000)
     locator = build_offline_locator(config, query)
-    decision = decide_offline_locator(pack, locator)
+    decision = decide_offline_locator(pack, locator, read_only=read_only)
     index = RepositoryIndexer(config).index()
     text_files = [item for item in index.files if item.is_text]
     candidate = pack.metrics.estimated_raw_candidate_tokens
@@ -52,11 +53,12 @@ def main() -> None:
                    "task-a-recorded": ContextQuery(ACTUAL_QUERY, symbols=("WorkKind", "InferenceRequest")),
                    **{f"task-a-{name}": ContextQuery(value) for name, value in STRONG.items()}}
         for name, query in queries.items():
-            print("AUTO_DECISION", json.dumps(measure(name, pinned, query), sort_keys=True))
+            print("AUTO_DECISION", json.dumps(measure(name, pinned, query, read_only=True), sort_keys=True))
         for task_id in ("oauth-bug", "upload-feature"):
             task = next(item for item in TASKS if item.id == task_id)
             _, root, _ = prepare_pair(task, base / task_id, None)
-            print("AUTO_DECISION", json.dumps(measure(task_id, root, ContextQuery(task.prompt)),
+            print("AUTO_DECISION", json.dumps(measure(task_id, root, ContextQuery(task.prompt),
+                                                      read_only=task.read_only),
                                                   sort_keys=True))
         for case in coverage_cases():
             root = base / case.name
@@ -65,7 +67,8 @@ def main() -> None:
                 target = root / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_text(source, encoding="utf-8")
-            print("AUTO_DECISION", json.dumps(measure(case.name, root, ContextQuery(case.query)),
+            print("AUTO_DECISION", json.dumps(measure(case.name, root, ContextQuery(case.query),
+                                                      read_only=True),
                                                   sort_keys=True))
 
 

@@ -132,7 +132,8 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
                 offline_locator = build_offline_locator(config, query)
                 if args.optimized_mode == "offline-auto":
                     pack = ContextBuilder(config).build(query, mode="balanced", max_context_tokens=6000)
-                    offline_decision = decide_offline_locator(pack, offline_locator)
+                    offline_decision = decide_offline_locator(
+                        pack, offline_locator, read_only=tasks[0].read_only)
             if offline_decision is not None:
                 print(f"Offline AUTO: {'LOCATOR USED' if offline_decision.use_locator else 'BYPASSED'}; "
                       f"candidate source: {offline_decision.candidate_tokens}; reason: {offline_decision.reason}")

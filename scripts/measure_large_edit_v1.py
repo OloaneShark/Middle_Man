@@ -62,7 +62,7 @@ def measure(root: Path, prompt: str) -> dict[str, object]:
     query = ContextQuery(prompt)
     pack = ContextBuilder(config).build(query, mode="balanced", max_context_tokens=6000)
     locator = build_offline_locator(config, query)
-    decision = decide_offline_locator(pack, locator)
+    decision = decide_offline_locator(pack, locator, read_only=False)
     indexed = [item for item in RepositoryIndexer(config).index().files if item.is_text]
     candidate = pack.metrics.estimated_raw_candidate_tokens
     selected = pack.metrics.estimated_selected_tokens

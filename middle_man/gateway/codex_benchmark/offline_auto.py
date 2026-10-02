@@ -22,12 +22,15 @@ class OfflineLocatorDecision:
     selected_paths: int
 
 
-def decide_offline_locator(pack: ContextPack, locator: OfflineLocator) -> OfflineLocatorDecision:
+def decide_offline_locator(pack: ContextPack, locator: OfflineLocator, *,
+                           read_only: bool) -> OfflineLocatorDecision:
     candidate = pack.metrics.estimated_raw_candidate_tokens
-    use_locator = bool(locator.selected_paths) and candidate >= MIN_CANDIDATE_SOURCE_TOKENS
+    use_locator = (read_only and bool(locator.selected_paths) and
+                   candidate >= MIN_CANDIDATE_SOURCE_TOKENS)
     return OfflineLocatorDecision(
         use_locator=use_locator,
-        reason=("candidate_source_at_least_10000" if use_locator else
+        reason=("workspace_write_not_validated_for_full_locator" if not read_only else
+                "candidate_source_at_least_10000" if use_locator else
                 "candidate_source_below_10000_or_no_selected_paths"),
         candidate_tokens=candidate,
         selected_tokens=pack.metrics.estimated_selected_tokens,

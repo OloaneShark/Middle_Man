@@ -25,11 +25,11 @@ from middle_man.gateway.relevance import ContextQuery
 from tests.test_phase_22_11 import ACTUAL_QUERY, STRONG
 
 
-def _selection(root: Path, query: ContextQuery):
+def _selection(root: Path, query: ContextQuery, *, read_only: bool = True):
     config = GatewayConfig(root)
     pack = ContextBuilder(config).build(query, mode="balanced", max_context_tokens=6000)
     locator = build_offline_locator(config, query)
-    return pack, locator, decide_offline_locator(pack, locator)
+    return pack, locator, decide_offline_locator(pack, locator, read_only=read_only)
 
 
 @pytest.fixture(scope="module")
@@ -46,7 +46,7 @@ def test_auto_measurements_and_determinism(task_a_root: Path, tmp_path: Path) ->
                **{name: ContextQuery(prompt) for name, prompt in STRONG.items()}}
     for name, query in queries.items():
         pack, locator, decision = _selection(task_a_root, query)
-        assert decision == decide_offline_locator(pack, locator)
+        assert decision == decide_offline_locator(pack, locator, read_only=True)
         assert decision.use_locator, name
         assert decision.candidate_tokens >= 33030
         assert decision.selected_paths >= 12
@@ -56,8 +56,8 @@ def test_auto_measurements_and_determinism(task_a_root: Path, tmp_path: Path) ->
     for task_id in ("oauth-bug", "upload-feature"):
         task = next(item for item in TASKS if item.id == task_id)
         _, root, _ = prepare_pair(task, tmp_path / task_id, None)
-        pack, locator, decision = _selection(root, ContextQuery(task.prompt))
-        assert decision == decide_offline_locator(pack, locator)
+        pack, locator, decision = _selection(root, ContextQuery(task.prompt), read_only=task.read_only)
+        assert decision == decide_offline_locator(pack, locator, read_only=task.read_only)
         assert not decision.use_locator
         assert decision.candidate_tokens < 600
     for case in coverage_cases():
@@ -78,11 +78,13 @@ def test_auto_gate_uses_metrics_not_task_identity(task_a_root: Path) -> None:
     assert decision.use_locator
     assert decide_offline_locator(replace(pack, metrics=replace(
         pack.metrics, estimated_raw_candidate_tokens=MIN_CANDIDATE_SOURCE_TOKENS - 1)),
-        locator).use_locator is False
+        locator, read_only=True).use_locator is False
     assert decide_offline_locator(replace(pack, metrics=replace(
         pack.metrics, estimated_raw_candidate_tokens=MIN_CANDIDATE_SOURCE_TOKENS)),
-        locator).use_locator is True
-    assert decide_offline_locator(pack, replace(locator, selected_paths=())).use_locator is False
+        locator, read_only=True).use_locator is True
+    assert decide_offline_locator(pack, replace(locator, selected_paths=()), read_only=True).use_locator is False
+    assert decide_offline_locator(pack, locator, read_only=False).reason == (
+        "workspace_write_not_validated_for_full_locator")
 
 
 @pytest.mark.parametrize("task_id,used", [
@@ -95,7 +97,7 @@ def test_auto_prompt_parity_and_locator_unchanged(task_id: str, used: bool,
         root = task_a_root
     else:
         _, root, _ = prepare_pair(task, tmp_path / task_id, None)
-    _, locator, decision = _selection(root, ContextQuery(task.prompt))
+    _, locator, decision = _selection(root, ContextQuery(task.prompt), read_only=task.read_only)
     assert decision.use_locator is used
     baseline = runner.build_invocation("codex", task, "baseline", root, model="gpt-6-sol",
                                        effort="high", optimized_mode="offline-auto")

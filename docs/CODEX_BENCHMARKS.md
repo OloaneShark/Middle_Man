@@ -450,9 +450,9 @@ The locked Task A v4 pair `20261001T161512Z-015fde5e` remains **PASS/PASS**, wit
 | Queue/cancellation fixture | 2,299 | 306 | 35 | 5/4 | 4 | 2,305/7 | 0.1331 | 0.1144 | Bypass |
 | Upload/validation fixture | 2,271 | 129 | 39 | 4/4 | 4 | 2,286/7 | 0.0568 | 0.3023 | Bypass |
 
-The conservative gate is **use locator iff candidate source >= 10,000 estimated tokens and at least one selected path exists**. It is task-ID-independent and uses one primary size metric; the empty-selection check prevents a useless hint. The observed gap is 2,299 to 33,030, so 10,000 is not tuned to a percentage reduction. Smaller or unfamiliar tasks default to bypass. This is a local decision candidate, not proof that the threshold is optimal or that AUTO improves external Codex performance generally.
+At Phase 22.14, the conservative gate used a locator iff candidate source was >= 10,000 estimated tokens and at least one selected path existed. That historical size-only policy is superseded by the Phase 22.16 read-only requirement below. The 10,000 threshold, selector, and full locator renderer are unchanged.
 
-`--optimized-mode offline-auto` supports one of `preemption-v4`, `oauth-bug`, or `upload-feature` at a time. It builds the canonical pack and offline locator before process creation. Use appends the exact existing locator; bypass appends nothing, yielding an optimized prompt byte-for-byte equal to baseline. Both branches have no benchmark `AGENTS.md`, MCP registration, or Middle_Man tool calls; the local decision costs zero Codex tokens. Sanitized audit fields include decision, reason, candidate/selected/locator counts, selected-path count, visible flag and visible-token estimate; locator hash/size are recorded only if used. Human reports distinguish `Offline AUTO: LOCATOR USED` from `Offline AUTO: BYPASSED`, with **Model-visible Middle_Man tokens: 0** for bypass. The forced `offline-locator` mode remains unchanged for research.
+`--optimized-mode offline-auto` supports a single eligible benchmark task, including `large-edit-v1`. It builds the canonical pack and offline locator before process creation. Use appends the exact existing locator; bypass appends nothing, yielding an optimized prompt byte-for-byte equal to baseline. Both branches have no benchmark `AGENTS.md`, MCP registration, or Middle_Man tool calls; the local decision costs zero Codex tokens. Sanitized audit fields include decision, reason, candidate/selected/locator counts, selected-path count, visible flag and visible-token estimate; locator hash/size are recorded only if used. Human reports distinguish `Offline AUTO: LOCATOR USED` from `Offline AUTO: BYPASSED`, with **Model-visible Middle_Man tokens: 0** for bypass. The forced `offline-locator` mode remains unchanged for research.
 
 Local reproduction:
 
@@ -474,7 +474,7 @@ The manifest pins 29 real Lab source/test files from commit `284c4451ad9213f4f27
 
 Canonical BALANCED/6000 measurements on the **unsolved** fixture (heuristic tokens):
 
-| Coherent subset | Indexed text files/tokens | Candidate paths/tokens | Selected paths/tokens/ranges | Locator tokens | Selected/candidate | Locator/selected | AUTO |
+| Coherent subset | Indexed text files/tokens | Candidate paths/tokens | Selected paths/tokens/ranges | Locator tokens | Selected/candidate | Locator/selected | Phase 22.15 AUTO |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
 | Core request/config | 7 / 3,256 | 4 / 3,016 | 4 / 1,169 / 9 | 108 | 0.3876 | 0.0924 | Bypass |
 | Memory ownership | 9 / 5,141 | 6 / 4,901 | 4 / 2,257 / 11 | 164 | 0.4605 | 0.0727 | Bypass |
@@ -485,7 +485,7 @@ Canonical BALANCED/6000 measurements on the **unsolved** fixture (heuristic toke
 | Workflows/reporting | 26 / 19,333 | 25 / 19,322 | 12 / 5,962 / 25 | 242 | 0.3086 | 0.0406 | Locator |
 | Full large edit | 31 / 24,008 | 29 / 23,982 | 14 / 5,993 / 19 | 214 | 0.2499 | 0.0357 | Locator |
 
-The extra indexed text file in the full fixture is `.gitignore`; it is not source padding. The current **10,000-token** gate falls between the natural 8,335 and 11,157 candidate samples. No threshold, selector, or locator renderer was changed. The full locator SHA-256 is `5217171cd64bca42a207a2cbf070c4b9a9964dfe96bf5375e944a5045e70ad50`:
+The extra indexed text file in the full fixture is `.gitignore`; it is not source padding. The Phase 22.15 size-only **10,000-token** gate fell between the natural 8,335 and 11,157 candidate samples; the current read-only gate bypasses **all** these edit subsets. No threshold, selector, or locator renderer was changed. The full locator SHA-256 is `5217171cd64bca42a207a2cbf070c4b9a9964dfe96bf5375e944a5045e70ad50`:
 
 ```text
 - middle_man/lab/benchmarks.py:23-23 (BenchmarkCase); 29-67 (BenchmarkCase.run); 84-94 (BenchmarkSuite); 98-112 (BenchmarkSuite.run)
@@ -506,4 +506,22 @@ The extra indexed text file in the full fixture is `.gitignore`; it is not sourc
 
 Required production change paths represented: **2/3** (`engine.py`, `events.py`; `metrics.py` missing). Required visible test path represented: **1/1**. Audited indexed symbols represented: **4/6** (`SimulationEngine.run`, `EventType`, `InferenceRequest.cancel`, `ExistingSimulationTests`; `MetricsCollector.build` and `AggregateMetrics` missing). Six selected reporting/benchmark neighbors are nonessential to the direct fix; runner, prefix cache, request, trace, and serialization are related architecture. The locator is navigation metadata only. No hidden test, model answer, source code, selection score, or decision metadata appears in it.
 
-Local prompt proof: baseline is the unmodified task plus the common working-copy footer; AUTO optimized is byte-for-byte that baseline prompt plus `append_offline_locator` using the text above. Both use workspace-write, `--ignore-user-config`, native tools, and **no MCP or benchmark `AGENTS.md`**. `large-edit-v1` refuses MCP mode, and `run-all` remains the historical three tasks. Reproduce selection without inference with `python -m scripts.measure_large_edit_v1` or preview with `python -m middle_man codex benchmark run large-edit-v1 --repo . --dry-run --optimized-mode offline-auto`. No external Codex call or real large-edit A/B was made. AUTO does not imply lower real input for every workload: Task A is still the only proven real offline-locator reduction, while AUTO bypass adds zero model-visible Middle_Man tokens.
+Historical Phase 22.15 prompt proof: baseline was the unmodified task plus the common working-copy footer; the then-size-only AUTO optimized prompt appended `append_offline_locator` using the text above. Both used workspace-write, `--ignore-user-config`, native tools, and **no MCP or benchmark `AGENTS.md`**. A later real A/B pair and the current bypass rule are recorded below. `large-edit-v1` refuses MCP mode, and `run-all` remains the historical three tasks. Reproduce current selection without inference with `python -m scripts.measure_large_edit_v1` or preview with `python -m middle_man codex benchmark run large-edit-v1 --repo . --dry-run --optimized-mode offline-auto`.
+
+## Phase 22.16: Real Large-Edit Result and Read-Only AUTO Safety
+
+The frozen real `large-edit-v1` run `20261002T123023Z-ca9cd316` was **VALID_CORRECT_PAIR**. Baseline -> former size-only AUTO: Codex-reported input **363,533 -> 494,991** (**+131,458; +36.16%**), interactions **12 -> 22**, explicit reads **10 -> 16**, elapsed **160.915s -> 202.295s**. Both sides were correct; Middle_Man MCP calls **0/0**. The full locator had **14 paths, 19 ranges, 214 heuristic tokens**. The optimized run read 11 locator paths and five additional nonlocator paths. The 214 tokens themselves did not directly cause 131k more input; a broad locator acting as an implicit exploration checklist is a plausible, unproven behavioral explanation. The earlier Task A **86,515 -> 38,269** PASS/PASS saving and OAuth **78,925 -> 94,466** FAIL/FAIL result remain frozen.
+
+Current `offline-auto` requires **read-only**, candidate source >= **10,000**, and a nonempty selected-path set to inject the full locator. Any workspace-write task bypasses, with audit `auto_decision=BYPASSED`, `auto_reason=workspace_write_not_validated_for_full_locator`, and `model_visible_middle_man_tokens=0`; the reason never enters the prompt. The optimized prompt bytes equal baseline, and no MCP or `AGENTS.md` is introduced. Task A (~33k candidates) uses the locator; OAuth (557), Upload (350), and large-edit (23,982) bypass. This is a general task-property rule, not task-ID special casing. Forced `offline-locator` still uses the original full renderer and hash.
+
+The separate local-only `offline-anchor` prototype is **not** a CLI optimized mode or an AUTO branch and has not run against Codex. It ranks canonically selected REQUIRED/COVERAGE locations using filename/query term overlap, safe matched symbols, and candidate relevance; DEPTH-only and weak support locations are excluded. It emits only the following four path/symbol anchors, **66 heuristic tokens**:
+
+```text
+Relevant entry points:
+- middle_man/lab/engine.py: SimulationEngine.run
+- middle_man/lab/request.py: InferenceRequest.cancel
+- tests/test_batch_cancellation.py: ExistingSimulationTests.test_uncancelled_requests_complete
+- middle_man/lab/events.py: SimulationEvent
+```
+
+`engine.py` and `request.py` are REQUIRED-phase, scores 298 and 225, matching run/engine/simulation and cancel/request terms. The visible test and `events.py` are COVERAGE-phase, scores 227 and 107, matching simulation/tests and event/simulation. These are useful engine, request-state, test, and event starting points for the requested architecture; the expected patch and hidden acceptance were not used to choose them. The prototype does **not** claim complete required-path recall and does not name `metrics.py`. It omits full-locator neighbors including `benchmarks.py`, `runner.py`, `reporting.py`, `trace.py`, `serialization.py`, `visualization.py`, `comparison.py`, `workloads.py`, `prefix_cache.py`, and `suites.py`; the obvious benchmark/reporting/visualization support paths are especially unlikely starting points. Phase/relevance metadata is available only to local audit, not emitted. This phase made **zero external Codex calls**.

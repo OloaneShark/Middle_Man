@@ -461,7 +461,7 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
                                                 max_context_tokens=6000)
             if pack.fingerprint != locator.pack_fingerprint:
                 raise RuntimeError("AUTO decision pack differs from offline locator selection")
-            decision = decide_offline_locator(pack, locator)
+            decision = decide_offline_locator(pack, locator, read_only=task.read_only)
             visible_locator = locator if decision.use_locator else None
             locator_audit.update({
                 "auto_decision": "LOCATOR_USED" if decision.use_locator else "BYPASSED",
