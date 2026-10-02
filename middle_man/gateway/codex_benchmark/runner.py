@@ -32,6 +32,7 @@ from middle_man.mcp.usage import server_implementation_identity
 DEFAULT_MODEL = "gpt-6-sol"
 DEFAULT_EFFORT = "high"
 DEFAULT_TIMEOUT = 360
+OFFLINE_LOCATOR_TASK_IDS = frozenset({"preemption-v4", "oauth-bug", "upload-feature"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -80,11 +81,16 @@ class CodexBenchmarkRun:
     server_session_ids: tuple[str, ...] = ()
     mcp_session_trace: tuple[tuple[int | None, str, str | None], ...] = ()
     native_read_mcp_coverage: tuple[tuple[str, str], ...] = ()
+    native_read_locator_coverage: tuple[tuple[str, str], ...] = ()
     offline_locator_audit: dict[str, Any] | None = None
 
 
 def _new_run_id() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
+
+
+def snapshot_root_kind(snapshot_root: Path | None) -> str:
+    return "external-configured" if snapshot_root is not None else "system-temp"
 
 
 @dataclass(frozen=True, slots=True)
@@ -166,8 +172,8 @@ def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, mod
         raise ValueError("unsupported Windows sandbox implementation")
     if optimized_mode not in {"mcp", "offline-locator"}:
         raise ValueError("unsupported optimized benchmark mode")
-    if optimized_mode == "offline-locator" and task.id != "preemption-v4":
-        raise ValueError("offline-locator is limited to preemption-v4")
+    if optimized_mode == "offline-locator" and task.id not in OFFLINE_LOCATOR_TASK_IDS:
+        raise ValueError("offline-locator is not supported for this task")
     if (mode == "optimized" and optimized_mode == "offline-locator") != (locator_text is not None):
         raise ValueError("offline optimized invocation requires only its precomputed locator")
     sandbox = "read-only" if task.read_only else "workspace-write"
@@ -219,6 +225,13 @@ def _usage_entries(root: Path) -> tuple[dict[str, Any], ...]:
     if not path.exists():
         return ()
     return tuple(json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
+
+
+def classify_native_locator_reads(events: tuple[dict[str, Any], ...],
+                                  selected_paths: tuple[str, ...]) -> tuple[tuple[str, str], ...]:
+    selected = set(selected_paths)
+    return tuple((path, "LOCATOR_PATH" if path in selected else "NON_LOCATOR_PATH")
+                 for event in events for path in event.get("explicit_read_paths", ()))
 
 
 def isolation_warnings(mode: str, entries: tuple[dict[str, Any], ...],
@@ -397,7 +410,7 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
             codex_command: str, codex_version: str, model: str, effort: str, timeout: int,
             artifact_root: Path, primary_repository_root: Path, windows_sandbox: str,
             run_id: str | None = None, policy: BenchmarkPolicy = BenchmarkPolicy(),
-            optimized_mode: str = "mcp") -> CodexBenchmarkRun:
+            optimized_mode: str = "mcp", snapshot_root_kind: str = "system-temp") -> CodexBenchmarkRun:
     if source_fingerprint(root) != fingerprint:
         raise RuntimeError("benchmark snapshot changed before Codex invocation")
     before = _status(root)
@@ -407,8 +420,8 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
     locator = None
     locator_audit = None
     if mode == "optimized" and optimized_mode == "offline-locator":
-        if task.id != "preemption-v4" or policy != BenchmarkPolicy():
-            raise ValueError("offline-locator requires preemption-v4 and canonical BALANCED/6000 policy")
+        if task.id not in OFFLINE_LOCATOR_TASK_IDS or policy != BenchmarkPolicy():
+            raise ValueError("offline-locator requires a supported task and canonical BALANCED/6000 policy")
         if (root / "AGENTS.md").exists():
             raise RuntimeError("offline-locator snapshot must not contain AGENTS.md")
         if _usage_entries(root):
@@ -494,7 +507,8 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
                              len(entries) == len(middleman_events) and
                              bool(entries) and primary_unchanged,
                              primary_repo_usage_unchanged=primary_unchanged, preflight_passed=True,
-                             sandbox_mode=windows_sandbox, task_version=task.schema_version,
+                             sandbox_mode=windows_sandbox, snapshot_root_kind=snapshot_root_kind,
+                             task_version=task.schema_version,
                              evaluator_version=task.schema_version,
                              tool_profile="codex-core" if mode == "optimized" and optimized_mode == "mcp" else "none",
                              source_commit=task.source_ref, source_tree_fingerprint=fingerprint,
@@ -505,15 +519,18 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
                                                       entry.get("server_session_id")) for entry in entries),
                              native_read_mcp_coverage=classify_native_read_coverage(
                                  root, trace.native.unique_files, entries),
+                             native_read_locator_coverage=classify_native_locator_reads(
+                                 trace.sanitized_events, locator.selected_paths) if locator is not None else (),
                              offline_locator_audit=locator_audit)
 
 
 def _pair(task: TaskSpec, root: Path, instructions: str | None, *, first: str, order: int, command: str,
           version: str, model: str, effort: str, timeout: int, artifacts: Path,
           primary_repository_root: Path, windows_sandbox: str, run_id: str,
-          policy: BenchmarkPolicy = BenchmarkPolicy(), optimized_mode: str = "mcp") -> CodexBenchmarkPair:
-    if optimized_mode == "offline-locator" and task.id != "preemption-v4":
-        raise ValueError("offline-locator is limited to preemption-v4")
+          policy: BenchmarkPolicy = BenchmarkPolicy(), optimized_mode: str = "mcp",
+          snapshot_root_kind: str = "system-temp") -> CodexBenchmarkPair:
+    if optimized_mode == "offline-locator" and task.id not in OFFLINE_LOCATOR_TASK_IDS:
+        raise ValueError("offline-locator is not supported for this task")
     baseline, optimized, fingerprint = prepare_pair(task, root,
                                                     None if optimized_mode == "offline-locator" else instructions)
     if task.id == "oauth-bug":
@@ -527,10 +544,16 @@ def _pair(task: TaskSpec, root: Path, instructions: str | None, *, first: str, o
     first_root = baseline if first == "baseline" else optimized
     second_root = optimized if first == "baseline" else baseline
     first_run = run_one(task, first, first_root, fingerprint, order=order, codex_command=command,
-                        codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id, policy=policy, optimized_mode=optimized_mode)
+                        codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts,
+                        primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox,
+                        run_id=run_id, policy=policy, optimized_mode=optimized_mode,
+                        snapshot_root_kind=snapshot_root_kind)
     second_mode = "optimized" if first == "baseline" else "baseline"
     second_run = run_one(task, second_mode, second_root, fingerprint, order=order + 1, codex_command=command,
-                         codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts, primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox, run_id=run_id, policy=policy, optimized_mode=optimized_mode)
+                         codex_version=version, model=model, effort=effort, timeout=timeout, artifact_root=artifacts,
+                         primary_repository_root=primary_repository_root, windows_sandbox=windows_sandbox,
+                         run_id=run_id, policy=policy, optimized_mode=optimized_mode,
+                         snapshot_root_kind=snapshot_root_kind)
     baseline_run = first_run if first == "baseline" else second_run
     optimized_run = first_run if first == "optimized" else second_run
     valid = baseline_run.valid and optimized_run.valid and baseline_run.starting_fingerprint == optimized_run.starting_fingerprint
@@ -561,8 +584,8 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
             {"preemption", "preemption-v2", "preemption-v3", "preemption-v4"}}) > 1:
         raise ValueError("cannot run and aggregate different Task A versions in the same suite")
     if optimized_mode not in {"mcp", "offline-locator"} or (optimized_mode == "offline-locator" and
-            (task_ids != ("preemption-v4",) or policy != BenchmarkPolicy())):
-        raise ValueError("offline-locator requires only preemption-v4 with the canonical benchmark policy")
+            (len(task_ids) != 1 or task_ids[0] not in OFFLINE_LOCATOR_TASK_IDS or policy != BenchmarkPolicy())):
+        raise ValueError("offline-locator requires one supported task with the canonical benchmark policy")
     command = _codex_executable()
     preflight = run_local_preflight(command, model=model, effort=effort, windows_sandbox=windows_sandbox,
                                     snapshot_root=snapshot_root, repository_root=repository_root,
@@ -594,7 +617,8 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
         pair = _pair(task, pair_root, instructions, first=first, order=index * 2 + 1,
                      command=command, version=version, model=model, effort=effort,
                      timeout=timeout, artifacts=artifacts, primary_repository_root=repository_root, windows_sandbox=windows_sandbox,
-                     run_id=run_id, policy=policy, optimized_mode=optimized_mode)
+                     run_id=run_id, policy=policy, optimized_mode=optimized_mode,
+                     snapshot_root_kind=snapshot_root_kind(snapshot_root))
         pairs.append(pair)
         reason = f"stopped after infrastructure-invalid pair: {task.id}" if not pair.valid else None
         partial = CodexBenchmarkSuite(run_id, datetime.now(timezone.utc).isoformat(), version,
@@ -739,7 +763,7 @@ def format_report(data: dict[str, Any]) -> str:
             lines.extend(["", f"{pair['title']} v{pair.get('task_version', 1)} [{pair['quality_gate']}]",
                           f"Invalid A/B pair; diagnostics only. baseline warnings={baseline['warnings']} "
                           f"optimized warnings={optimized['warnings']}",
-                          f"Optimized MCP session trace: {optimized.get('mcp_session_trace', [])}",
+                          f"Optimized MCP session trace: {optimized.get('mcp_session_trace', [])}" if optimized_mode != "offline-locator" else "Offline locator: local preprocessing only; no MCP interaction",
                           f"Correctness notes: baseline={baseline['correctness_notes']} "
                           f"optimized={optimized['correctness_notes']}"])
             continue
@@ -751,34 +775,49 @@ def format_report(data: dict[str, Any]) -> str:
                       f"rereads: {baseline['native']['rereads']} -> {optimized['native']['rereads']}",
                       f"Search/listing: {baseline['native']['search_calls'] + baseline['native']['listing_calls']} -> "
                       f"{optimized['native']['search_calls'] + optimized['native']['listing_calls']}",
-                      f"Context Packs/expansions: {len(optimized['context']['pack_fingerprints'])}; "
-                      f"delivered files: {len(optimized['context']['selected_paths'])}",
+                      *([] if optimized_mode == "offline-locator" else [
+                          f"Context Packs/expansions: {len(optimized['context']['pack_fingerprints'])}; "
+                          f"delivered files: {len(optimized['context']['selected_paths'])}"]),
                       f"Middle_Man calls: {sum(count for _, count in optimized['mcp_calls_by_tool'])} "
                       f"{dict(optimized['mcp_calls_by_tool'])}",
                       f"Total observed tool interactions (native + MCP): "
                       f"{baseline['native'].get('tool_calls', 0) + sum(count for _, count in baseline['mcp_calls_by_tool'])} -> "
                       f"{optimized['native'].get('tool_calls', 0) + sum(count for _, count in optimized['mcp_calls_by_tool'])}",
-                      f"MCP session trace: {optimized.get('mcp_session_trace', [])}; "
-                      f"native read MCP coverage: {optimized.get('native_read_mcp_coverage', [])}",
-                      f"Estimated candidate/selected/unique/repeated source tokens: "
-                      f"{optimized['context']['candidate_tokens']}/{optimized['context']['selected_tokens']}/"
-                      f"{optimized['context']['unique_source_tokens_estimate']}/"
-                      f"{optimized['context']['repeated_source_tokens_estimate']}",
-                      f"Estimated MCP result/pack overhead tokens: "
-                      f"{optimized['context']['all_mcp_result_tokens']}/"
-                      f"{optimized['context']['non_source_pack_overhead_estimate']}",
-                      f"Overlap: {optimized['context']['overlap_ratio']}; "
-                      f"duration: {baseline['elapsed_seconds']}s -> {optimized['elapsed_seconds']}s",
+                      *([] if optimized_mode == "offline-locator" else [
+                          f"MCP session trace: {optimized.get('mcp_session_trace', [])}; "
+                          f"native read MCP coverage: {optimized.get('native_read_mcp_coverage', [])}",
+                          f"Estimated candidate/selected/unique/repeated source tokens: "
+                          f"{optimized['context']['candidate_tokens']}/{optimized['context']['selected_tokens']}/"
+                          f"{optimized['context']['unique_source_tokens_estimate']}/"
+                          f"{optimized['context']['repeated_source_tokens_estimate']}",
+                          f"Estimated MCP result/pack overhead tokens: "
+                          f"{optimized['context']['all_mcp_result_tokens']}/"
+                          f"{optimized['context']['non_source_pack_overhead_estimate']}",
+                          f"Overlap: {optimized['context']['overlap_ratio']}"]),
+                      f"Duration: {baseline['elapsed_seconds']}s -> {optimized['elapsed_seconds']}s",
                       f"Codex-reported input/output: {baseline['codex_reported_usage']['input_tokens']}/"
                       f"{baseline['codex_reported_usage']['output_tokens']} -> "
                       f"{optimized['codex_reported_usage']['input_tokens']}/"
                       f"{optimized['codex_reported_usage']['output_tokens']}",
                       f"Modified files: baseline={baseline['modified_files']} optimized={optimized['modified_files']}"])
+        if optimized_mode == "offline-locator" and "native_read_locator_coverage" not in optimized:
+            lines.append("Snapshot root kind: historical artifact metadata not revalidated")
+        else:
+            lines.append(f"Snapshot root kind: baseline={baseline.get('snapshot_root_kind', 'unknown')} "
+                         f"optimized={optimized.get('snapshot_root_kind', 'unknown')}")
         if optimized.get("offline_locator_audit"):
             audit = optimized["offline_locator_audit"]
-            lines.append(f"Offline locator: {audit['locator_estimated_tokens']} heuristic tokens; "
+            lines.append(f"Local preprocessing - offline locator: {audit['locator_estimated_tokens']} heuristic tokens; "
                          f"canonical selected source: {audit['canonical_selected_source_tokens']}; "
                          f"hash: {audit['locator_sha256']}; MCP calls: 0")
+            if "native_read_locator_coverage" in optimized:
+                reads = optimized["native_read_locator_coverage"]
+                locator_paths = {path for path, label in reads if label == "LOCATOR_PATH"}
+                non_locator_paths = {path for path, label in reads if label == "NON_LOCATOR_PATH"}
+                lines.append(f"Native locator reads: {len(locator_paths)}/{len(audit['selected_paths'])} paths accessed; "
+                             f"non-locator paths: {len(non_locator_paths)}; classifications: {reads}")
+            else:
+                lines.append("Native locator read classification: not recorded in this historical artifact")
         diagnostics = pair_input_diagnostics(pair)
         if diagnostics is not None:
             lines.append(f"Codex input diagnostics (not billing or quota): "
@@ -786,10 +825,11 @@ def format_report(data: dict[str, Any]) -> str:
                          f"cached delta={diagnostics['cached_input_delta_diagnostic']}; "
                          f"input-minus-cached={diagnostics['baseline_uncached_input_diagnostic']} -> "
                          f"{diagnostics['optimized_uncached_input_diagnostic']} "
-                         f"(delta={diagnostics['uncached_input_delta_diagnostic']}); "
-                         f"optimized MCP result/selected source estimates="
-                         f"{diagnostics['optimized_mcp_result_tokens_estimate']}/"
-                         f"{diagnostics['optimized_selected_source_tokens_estimate']}")
+                         f"(delta={diagnostics['uncached_input_delta_diagnostic']})"
+                         + ("" if optimized_mode == "offline-locator" else
+                            f"; optimized MCP result/selected source estimates="
+                            f"{diagnostics['optimized_mcp_result_tokens_estimate']}/"
+                            f"{diagnostics['optimized_selected_source_tokens_estimate']}"))
         if baseline["correctness_notes"] or optimized["correctness_notes"]:
             lines.append(f"Correctness notes: baseline={baseline['correctness_notes']} optimized={optimized['correctness_notes']}")
     if len(data["pairs"]) < len(data.get("planned_task_ids", data["pairs"])):
@@ -810,9 +850,10 @@ def format_report(data: dict[str, Any]) -> str:
                          f"{aggregate['optimized_observed_tool_interactions']}")
         lines.append(f"Aggregate searches/listings: {aggregate['baseline_native_searches']}/{aggregate['baseline_native_listings']} -> "
                      f"{aggregate['optimized_native_searches']}/{aggregate['optimized_native_listings']}")
-        lines.append(f"Aggregate optimized MCP calls/packs: {aggregate['optimized_mcp_calls']}/{aggregate['optimized_context_packs']}; "
-                     f"unique/repeated source tokens estimated: {aggregate['optimized_unique_source_tokens_estimate']}/"
-                     f"{aggregate['optimized_repeated_source_tokens_estimate']}; overlap: {aggregate['optimized_overlap_ratio']}")
+        if optimized_mode != "offline-locator":
+            lines.append(f"Aggregate optimized MCP calls/packs: {aggregate['optimized_mcp_calls']}/{aggregate['optimized_context_packs']}; "
+                         f"unique/repeated source tokens estimated: {aggregate['optimized_unique_source_tokens_estimate']}/"
+                         f"{aggregate['optimized_repeated_source_tokens_estimate']}; overlap: {aggregate['optimized_overlap_ratio']}")
         lines.append(f"Aggregate Codex-reported input tokens: {aggregate['baseline_codex_input_tokens']} -> "
                      f"{aggregate['optimized_codex_input_tokens']}")
     if data.get("aborted_reason"):

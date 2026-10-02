@@ -72,6 +72,8 @@ def test_actual_exact_and_strong_offline_locators(pinned: Path) -> None:
         if name == "exact":
             assert locator.selected_source_tokens == 5983
             assert len(locator.selected_paths) == 12 and len(locator.selected_ranges) == 13
+            assert locator.estimated_tokens == 159
+            assert locator.sha256 == "14587213a088bcc66d0304ee0473fc23000bd01e2f13042c714a14550da62e97"
 
 
 @pytest.mark.parametrize("case", coverage_cases(), ids=lambda case: case.name)
@@ -178,8 +180,11 @@ def test_invocation_and_dry_run_are_mcp_free(pinned: Path, tmp_path: Path,
     assert "mcp_servers." not in output and "optimized MCP policy args" not in output
     assert "no AGENTS.md or MCP registration" in output
     assert not (tmp_path / ".middle_man_cache").exists()
-    with pytest.raises(SystemExit, match="requires only preemption-v4"):
-        main(["codex", "benchmark", "run", "oauth-bug", "--repo", str(tmp_path), "--dry-run",
+    with pytest.raises(SystemExit, match="requires one supported task"):
+        main(["codex", "benchmark", "run", "preemption-v3", "--repo", str(tmp_path), "--dry-run",
+              "--optimized-mode", "offline-locator"])
+    with pytest.raises(SystemExit, match="requires one supported task"):
+        main(["codex", "benchmark", "run-all", "--repo", str(tmp_path), "--dry-run",
               "--optimized-mode", "offline-locator"])
 
 
@@ -202,8 +207,10 @@ def test_offline_run_isolation_and_audit_without_codex(pinned: Path, tmp_path: P
     result = runner.run_one(TASK, "optimized", pinned, source_fingerprint(pinned), order=1,
                             codex_command="codex", codex_version="local", model="gpt-6-sol", effort="high",
                             timeout=10, artifact_root=artifacts, primary_repository_root=tmp_path,
-                            windows_sandbox="unelevated", optimized_mode="offline-locator")
+                            windows_sandbox="unelevated", optimized_mode="offline-locator",
+                            snapshot_root_kind="external-configured")
     assert result.valid and result.tool_profile == "none" and result.mcp_calls_in_events == 0
+    assert result.snapshot_root_kind == "external-configured"
     assert result.mcp_calls_by_tool == () and result.offline_locator_audit is not None
     assert result.offline_locator_audit["locator_estimated_tokens"] > 0
     assert result.offline_locator_audit["canonical_selected_source_tokens"] == 5983

@@ -344,7 +344,7 @@ Fixed-overhead audit (local UTF-8-bytes/4 heuristic): root `AGENTS.md` **169**, 
 
 The runner carries locator policy into optimized MCP registration and preflight, and validates source-free usage evidence: `delivery_policy=locator_only`, effective 6,000, fixed selection, zero initial source lines/tokens, matching locator result estimate, `force_replay=false`, empty delivery, and unchanged ledger. It rejects a source-bearing initial result as infrastructure-invalid. Baseline remains MCP-free. Future evaluation would require a fresh baseline v4 versus locator-only optimized v4 pair and separate authorization. **No external inference, Task B/C run, new A/B pair, or real token-saving claim occurred in Phase 22.11.**
 
-## Offline-Locator Preprocessor: Local-Only
+## Phase 22.12: Offline-Locator Preprocessor (Historical Local Design)
 
 The latest valid real progressive pair remains `20261001T135609Z-65fcdc63`, PASS/PASS. It reduced native calls **14 to 7**, reads **9 to 4**, and observed interactions **14 to 8**, but Codex input rose **97,833 to 152,900** (+55,067) and cached input **70,016 to 116,352**. The input-minus-cached diagnostic was **27,817 to 36,548**. The new local experiment asks whether retaining Middle_Man's navigation hints while removing its persistent MCP surface is a better integration shape; these historical differences are not causal attribution or billing measures.
 
@@ -388,4 +388,44 @@ The actual recorded-query locator, including every canonical selected path and r
 - middle_man/lab/serialization.py:4-12
 ```
 
-This is navigation metadata only, not source text or a proof of the answer. In particular, the actual canonical pack still omits `middle_man/lab/memory.py`, so native search may be required for its release implementation. The offline text is **624 heuristic tokens smaller** than the same-pack **819-token MCP-locator JSON result**; the comparable progressive and one-shot results are **5,687** and **6,931**. The exact prompt is **159** versus MCP locator **717**, progressive **5,359**, and one-shot **6,913**. Historical fixed local estimates of root AGENTS **169**, MCP instructions **136**, and five tool definitions **834** are absent in offline mode, along with the MCP tool-result wrapper. Summing or subtracting these heuristic sizes does **not** predict Codex input, caching, billing, or quota. No external Codex call, Task B/C run, real offline A/B, or real token-saving claim occurred.
+This is navigation metadata only, not source text or a proof of the answer. In particular, the actual canonical pack still omits `middle_man/lab/memory.py`, so native search may be required for its release implementation. The offline text is **624 heuristic tokens smaller** than the same-pack **819-token MCP-locator JSON result**; the comparable progressive and one-shot results are **5,687** and **6,931**. The exact prompt is **159** versus MCP locator **717**, progressive **5,359**, and one-shot **6,913**. Historical fixed local estimates of root AGENTS **169**, MCP instructions **136**, and five tool definitions **834** are absent in offline mode, along with the MCP tool-result wrapper. Summing or subtracting these heuristic sizes does **not** predict Codex input, caching, billing, or quota. No external Codex call occurred during Phase 22.12.
+
+## Phase 22.13: Locked Real Result and Local Edit-Task Extension
+
+The first real offline-locator pair, `20261001T161512Z-015fde5e`, is frozen as **VALID_CORRECT_PAIR** for `preemption-v4`. Baseline versus optimized Codex-reported input was **86,515 -> 38,269**, a reduction of **48,246 (55.8%)**; cached input **57,728 -> 14,336**; output **713 -> 628**; reasoning output **145 -> 240**; elapsed **26.378s -> 17.957s**. Native calls **10 -> 3**, explicit reads **9 -> 8**, searches **1 -> 0**, observed interactions **10 -> 3**, and Middle_Man MCP calls **0 -> 0**. Both structured v4 answers passed. The exact-prompt locator was 159 heuristic tokens from 5,983 selected-source tokens. `input - cached` was 28,787 -> 23,933 (diagnostic only). This is a real task-specific Codex input saving, not a general claim or provider billing/quota measurement.
+
+Offline-locator now accepts `oauth-bug` and `upload-feature` individually alongside `preemption-v4`. Historical Task A variants and offline `run-all` remain excluded. No selector, BALANCED/6000 budget, locator format, task prompt, fixture, or acceptance evaluator changed. Baseline receives the original task prompt; optimized receives that same prompt plus only path/range/primary-symbol navigation hints. Both have no benchmark `AGENTS.md`, no MCP registration, and native Codex tools. OAuth/upload retain `workspace-write`; Task A remains `read-only`. The local preprocessor runs before Codex, and its pack/hash/source estimates live in `offline_locator_audit`, not in the model prompt or as a Codex tool interaction. Reports now classify every observed explicit optimized native read as `LOCATOR_PATH` or `NON_LOCATOR_PATH`, count accessed locator/non-locator paths, and omit MCP delivery statistics in offline mode. `snapshot_root_kind` reflects the actual parent (`system-temp` or `external-configured`); snapshot placement is unchanged.
+
+Local clean-snapshot proofs (not external task runs):
+
+| Edit task | Canonical selected source | Locator estimate | Paths/ranges | Required fixture path/symbol coverage |
+| --- | ---: | ---: | ---: | ---: |
+| OAuth | 451 | 44 | 4/5 | 4/4 paths, 4/4 indexed symbols |
+| Upload | 259 | 45 | 4/5 | 4/4 paths, 4/4 indexed symbols |
+
+OAuth locator:
+
+```text
+- app/auth.py:3-3 (AuthService); 9-14 (AuthService.callback)
+- tests/test_auth.py:1-17 (AuthTests)
+- app/state.py:1-28 (StateRecord)
+- app/config.py:1-2 (CLOCK_SKEW_SECONDS)
+```
+
+Upload locator:
+
+```text
+- app/uploads.py:2-4 (UploadService); 8-14 (UploadService.upload)
+- tests/test_uploads.py:1-12 (UploadTests)
+- app/rules.py:1-5 (validate_size)
+- app/config.py:1-5 (UploadConfig)
+```
+
+Canonical local-only previews:
+
+```powershell
+.venv\Scripts\python.exe -m middle_man codex benchmark run oauth-bug --repo . --dry-run --optimized-mode offline-locator --windows-sandbox unelevated
+.venv\Scripts\python.exe -m middle_man codex benchmark run upload-feature --repo . --dry-run --optimized-mode offline-locator --windows-sandbox unelevated
+```
+
+Both previews preserve prompt parity and workspace-write edit sandboxing and show no `mcp_servers.middle-man` override or benchmark `AGENTS.md`. They do not execute either edit task. Phase 22.13 ran zero external Codex calls and adds no generalized token-saving claim. MCP remains available for interactive navigation and diagnostics, but offline locator is the leading Codex token-efficiency path.

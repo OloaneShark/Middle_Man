@@ -10,7 +10,8 @@ from dataclasses import asdict
 from pathlib import Path
 
 from middle_man.gateway.codex_benchmark.runner import (
-    DEFAULT_EFFORT, DEFAULT_MODEL, DEFAULT_TIMEOUT, build_invocation, format_report, load_suite, run_suite,
+    DEFAULT_EFFORT, DEFAULT_MODEL, DEFAULT_TIMEOUT, OFFLINE_LOCATOR_TASK_IDS,
+    build_invocation, format_report, load_suite, run_suite,
 )
 from middle_man.gateway.codex_benchmark.tasks import TASKS
 from middle_man.gateway.codex_benchmark.offline_locator import build_offline_locator
@@ -96,9 +97,9 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
                                  delivery_policy="locator_only" if args.benchmark_delivery_policy == "locator-only" else None)
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
-    if args.optimized_mode == "offline-locator" and (len(tasks) != 1 or tasks[0].id != "preemption-v4" or
+    if args.optimized_mode == "offline-locator" and (len(tasks) != 1 or tasks[0].id not in OFFLINE_LOCATOR_TASK_IDS or
             policy != BenchmarkPolicy()):
-        raise SystemExit("offline-locator requires only preemption-v4 without MCP delivery-policy flags")
+        raise SystemExit("offline-locator requires one supported task without MCP delivery-policy flags")
     base = root / ".middle_man_cache" / "codex_benchmarks"
     if args.dry_run:
         print("DRY RUN: no Codex call or persistent snapshot write")
