@@ -428,4 +428,38 @@ Canonical local-only previews:
 .venv\Scripts\python.exe -m middle_man codex benchmark run upload-feature --repo . --dry-run --optimized-mode offline-locator --windows-sandbox unelevated
 ```
 
-Both previews preserve prompt parity and workspace-write edit sandboxing and show no `mcp_servers.middle-man` override or benchmark `AGENTS.md`. They do not execute either edit task. Phase 22.13 ran zero external Codex calls and adds no generalized token-saving claim. MCP remains available for interactive navigation and diagnostics, but offline locator is the leading Codex token-efficiency path.
+Both previews preserve prompt parity and workspace-write edit sandboxing and show no `mcp_servers.middle-man` override or benchmark `AGENTS.md`. They do not execute either edit task. Phase 22.13 ran zero external Codex calls and adds no generalized token-saving claim. MCP remains available for interactive navigation and diagnostics.
+
+## Phase 22.14: Local Adaptive Offline AUTO
+
+The locked Task A v4 pair `20261001T161512Z-015fde5e` remains **PASS/PASS**, with Codex input **86,515 -> 38,269** (48,246 fewer, 55.8%) and observed interactions **10 -> 3**. The separate frozen real OAuth pair `20261002T005428Z-70b36999` was infrastructure-valid **FAIL/FAIL** on the same independent acceptance test: input **78,925 -> 94,466** (+15,541, 19.7%) and interactions **6 -> 6**. Both agents implemented TTL plus clock skew as the expiry rule, although the acceptance contract treats skew only as future-issued timestamp tolerance. The existing `oauth-bug` prompt does not clearly disambiguate this; its definition and artifact remain frozen. The evidence does **not** establish that the locator caused the shared correctness failure. Upload has no external run.
+
+`scripts/measure_offline_auto.py` performs canonical BALANCED/6000 selection and renders the unchanged offline locator on temporary fixtures only. Candidate/selected/locator counts below are heuristic tokens; indexed source totals sum text-file byte sizes divided by four. No source text is sent to a model.
+
+| Local case | Candidate | Selected | Locator | Candidate/selected paths | Ranges | Indexed text tokens/files | Selected/candidate | Locator/selected | AUTO |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Task A exact v4 | 33,552 | 5,983 | 159 | 41/12 | 13 | 37,859/51 | 0.1783 | 0.0266 | Use |
+| Task A recorded | 33,552 | 5,845 | 195 | 41/13 | 16 | 37,859/51 | 0.1742 | 0.0334 | Use |
+| Task A historical-exact variant | 33,030 | 5,891 | 179 | 39/13 | 16 | 37,859/51 | 0.1784 | 0.0304 | Use |
+| Task A behavior variant | 33,030 | 5,475 | 232 | 39/14 | 20 | 37,859/51 | 0.1658 | 0.0424 | Use |
+| Task A reordered variant | 33,030 | 5,544 | 173 | 39/12 | 15 | 37,859/51 | 0.1678 | 0.0312 | Use |
+| Task A agent variant | 33,030 | 5,693 | 210 | 39/14 | 18 | 37,859/51 | 0.1724 | 0.0369 | Use |
+| OAuth | 557 | 451 | 44 | 6/4 | 5 | 574/9 | 0.8097 | 0.0976 | Bypass |
+| Upload | 350 | 259 | 45 | 5/4 | 5 | 368/8 | 0.7400 | 0.1737 | Bypass |
+| Auth/callback fixture | 2,285 | 133 | 43 | 5/4 | 4 | 2,294/7 | 0.0582 | 0.3233 | Bypass |
+| Queue/cancellation fixture | 2,299 | 306 | 35 | 5/4 | 4 | 2,305/7 | 0.1331 | 0.1144 | Bypass |
+| Upload/validation fixture | 2,271 | 129 | 39 | 4/4 | 4 | 2,286/7 | 0.0568 | 0.3023 | Bypass |
+
+The conservative gate is **use locator iff candidate source >= 10,000 estimated tokens and at least one selected path exists**. It is task-ID-independent and uses one primary size metric; the empty-selection check prevents a useless hint. The observed gap is 2,299 to 33,030, so 10,000 is not tuned to a percentage reduction. Smaller or unfamiliar tasks default to bypass. This is a local decision candidate, not proof that the threshold is optimal or that AUTO improves external Codex performance generally.
+
+`--optimized-mode offline-auto` supports one of `preemption-v4`, `oauth-bug`, or `upload-feature` at a time. It builds the canonical pack and offline locator before process creation. Use appends the exact existing locator; bypass appends nothing, yielding an optimized prompt byte-for-byte equal to baseline. Both branches have no benchmark `AGENTS.md`, MCP registration, or Middle_Man tool calls; the local decision costs zero Codex tokens. Sanitized audit fields include decision, reason, candidate/selected/locator counts, selected-path count, visible flag and visible-token estimate; locator hash/size are recorded only if used. Human reports distinguish `Offline AUTO: LOCATOR USED` from `Offline AUTO: BYPASSED`, with **Model-visible Middle_Man tokens: 0** for bypass. The forced `offline-locator` mode remains unchanged for research.
+
+Local reproduction:
+
+```powershell
+.venv\Scripts\python.exe -m scripts.measure_offline_auto
+.venv\Scripts\python.exe -m middle_man codex benchmark run preemption-v4 --repo . --dry-run --optimized-mode offline-auto --windows-sandbox unelevated
+.venv\Scripts\python.exe -m middle_man codex benchmark run oauth-bug --repo . --dry-run --optimized-mode offline-auto --windows-sandbox unelevated
+```
+
+The local phase ran no `codex exec`, no external inference, no Upload external task, and no AUTO A/B pair. The frozen OAuth contract ambiguity was documented without adding a v2 task. Adaptive offline navigation is a better policy candidate than unconditional injection, but the Task A real saving remains task-specific.

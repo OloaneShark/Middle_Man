@@ -107,7 +107,7 @@ def run_local_preflight(command: str, *, model: str, effort: str,
     errors: list[str] = []
     if windows_sandbox not in {"elevated", "unelevated"}:
         raise ValueError("unsupported Windows sandbox implementation")
-    if optimized_mode not in {"mcp", "offline-locator"}:
+    if optimized_mode not in {"mcp", "offline-locator", "offline-auto"}:
         raise ValueError("unsupported optimized benchmark mode")
     version = None
     read_exit = write_exit = None
@@ -137,18 +137,18 @@ def run_local_preflight(command: str, *, model: str, effort: str,
         read_script, readonly_script, write_script = _marker_scripts(root)
         marker.write_text("original\n", encoding="utf-8")
         subprocess.run(["git", "init", "-q", str(root)], capture_output=True, check=True)
-        probe_task = next(item for item in TASKS if item.id == "preemption-v4") if optimized_mode == "offline-locator" else TASKS[0]
+        probe_task = next(item for item in TASKS if item.id == "preemption-v4") if optimized_mode != "mcp" else TASKS[0]
         baseline = build_invocation(command, probe_task, "baseline", root, model=model, effort=effort,
                                     windows_sandbox=windows_sandbox, optimized_mode=optimized_mode)
         optimized = build_invocation(command, probe_task, "optimized", root, model=model, effort=effort,
                                      windows_sandbox=windows_sandbox, optimized_mode=optimized_mode,
-                                     locator_text="- marker.txt:1-1" if optimized_mode == "offline-locator" else None)
+                                     locator_text="- marker.txt:1-1" if optimized_mode != "mcp" else None)
         baseline_ok = ("--ignore-user-config" in baseline and "--ignore-user-config" in optimized and
                        not any("mcp_servers." in part for part in baseline) and
                        f'windows.sandbox="{windows_sandbox}"' in baseline and
                        f'windows.sandbox="{windows_sandbox}"' in optimized and
                        "danger-full-access" not in baseline and "danger-full-access" not in optimized)
-        if optimized_mode == "offline-locator":
+        if optimized_mode != "mcp":
             baseline_ok = baseline_ok and not any("mcp_servers." in part for part in optimized)
         if not baseline_ok:
             errors.append("baseline invocation is not isolated or sandboxed")
