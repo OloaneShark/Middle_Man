@@ -107,7 +107,7 @@ def run_local_preflight(command: str, *, model: str, effort: str,
     errors: list[str] = []
     if windows_sandbox not in {"elevated", "unelevated"}:
         raise ValueError("unsupported Windows sandbox implementation")
-    if optimized_mode not in {"mcp", "offline-locator", "offline-auto"}:
+    if optimized_mode not in {"mcp", "offline-locator", "offline-auto", "offline-anchor"}:
         raise ValueError("unsupported optimized benchmark mode")
     version = None
     read_exit = write_exit = None
@@ -137,12 +137,24 @@ def run_local_preflight(command: str, *, model: str, effort: str,
         read_script, readonly_script, write_script = _marker_scripts(root)
         marker.write_text("original\n", encoding="utf-8")
         subprocess.run(["git", "init", "-q", str(root)], capture_output=True, check=True)
-        probe_task = next(item for item in TASKS if item.id == "preemption-v4") if optimized_mode != "mcp" else TASKS[0]
+        probe_id = "large-edit-v1" if optimized_mode == "offline-anchor" else "preemption-v4"
+        probe_task = next(item for item in TASKS if item.id == probe_id) if optimized_mode != "mcp" else TASKS[0]
+        anchors = None
+        if optimized_mode == "offline-anchor":
+            from middle_man.gateway.codex_benchmark.offline_anchor import NavigationAnchor, OfflineAnchors
+            from middle_man.gateway.tokens import HeuristicTokenEstimator
+            items = (NavigationAnchor("marker.py", "Marker.run", "REQUIRED", 1.0, ("marker",)),
+                     NavigationAnchor("related.py", "Related.check", "COVERAGE", 1.0, ("related",)))
+            text = "Relevant entry points:\n" + "\n".join(
+                f"- {item.path}: {item.symbol}" for item in items)
+            anchors = OfflineAnchors(text, HeuristicTokenEstimator().estimate(text), items)
         baseline = build_invocation(command, probe_task, "baseline", root, model=model, effort=effort,
                                     windows_sandbox=windows_sandbox, optimized_mode=optimized_mode)
         optimized = build_invocation(command, probe_task, "optimized", root, model=model, effort=effort,
                                      windows_sandbox=windows_sandbox, optimized_mode=optimized_mode,
-                                     locator_text="- marker.txt:1-1" if optimized_mode != "mcp" else None)
+                                     locator_text="- marker.txt:1-1" if optimized_mode in
+                                     {"offline-locator", "offline-auto"} else None,
+                                     anchors=anchors)
         baseline_ok = ("--ignore-user-config" in baseline and "--ignore-user-config" in optimized and
                        not any("mcp_servers." in part for part in baseline) and
                        f'windows.sandbox="{windows_sandbox}"' in baseline and

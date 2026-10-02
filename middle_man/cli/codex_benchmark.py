@@ -11,11 +11,13 @@ from pathlib import Path
 
 from middle_man.gateway.codex_benchmark.runner import (
     DEFAULT_EFFORT, DEFAULT_MODEL, DEFAULT_TIMEOUT, OFFLINE_LOCATOR_TASK_IDS,
+    OFFLINE_ANCHOR_TASK_IDS,
     build_invocation, format_report, load_suite, run_suite,
 )
 from middle_man.gateway.codex_benchmark.tasks import TASKS
 from middle_man.gateway.codex_benchmark.offline_locator import build_offline_locator
 from middle_man.gateway.codex_benchmark.offline_auto import decide_offline_locator
+from middle_man.gateway.codex_benchmark.offline_anchor import render_offline_anchors
 from middle_man.gateway.codex_benchmark.tasks import prepare_pair
 from middle_man.gateway.config import GatewayConfig
 from middle_man.gateway.context_builder import ContextBuilder
@@ -38,7 +40,7 @@ def add_codex_benchmark_commands(subparsers: argparse._SubParsersAction) -> None
     preflight.add_argument("--windows-sandbox", choices=("elevated", "unelevated"), default="elevated")
     preflight.add_argument("--snapshot-root", type=Path)
     preflight.add_argument("--json", action="store_true")
-    preflight.add_argument("--optimized-mode", choices=("mcp", "offline-locator", "offline-auto"), default="mcp")
+    preflight.add_argument("--optimized-mode", choices=("mcp", "offline-locator", "offline-auto", "offline-anchor"), default="mcp")
     for name in ("run", "run-all"):
         action = actions.add_parser(name, help="run one pair" if name == "run" else "run all three pairs")
         if name == "run":
@@ -51,7 +53,7 @@ def add_codex_benchmark_commands(subparsers: argparse._SubParsersAction) -> None
         action.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
         action.add_argument("--benchmark-source-delivery-budget", type=int)
         action.add_argument("--benchmark-delivery-policy", choices=("locator-only",))
-        action.add_argument("--optimized-mode", choices=("mcp", "offline-locator", "offline-auto"), default="mcp")
+        action.add_argument("--optimized-mode", choices=("mcp", "offline-locator", "offline-auto", "offline-anchor"), default="mcp")
         action.add_argument("--dry-run", action="store_true")
         action.add_argument("--confirm-external-service", action="store_true")
     for name in ("report", "overlap"):
@@ -104,14 +106,19 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
     if args.optimized_mode in {"offline-locator", "offline-auto"} and (len(tasks) != 1 or tasks[0].id not in OFFLINE_LOCATOR_TASK_IDS or
             policy != BenchmarkPolicy()):
         raise SystemExit("offline-locator requires one supported task without MCP delivery-policy flags")
+    if args.optimized_mode == "offline-anchor" and (len(tasks) != 1 or
+            tasks[0].id not in OFFLINE_ANCHOR_TASK_IDS or policy != BenchmarkPolicy()):
+        raise SystemExit("offline-anchor requires only large-edit-v1 without MCP delivery-policy flags")
     base = root / ".middle_man_cache" / "codex_benchmarks"
     if args.dry_run:
         print("DRY RUN: no Codex call or persistent snapshot write")
         print("Real runs disclose repository-derived context to the external Codex service.")
         print(f"Model: {args.model}  reasoning effort: {args.effort} (explicit CLI configuration)")
         print(f"Windows sandbox: {args.windows_sandbox} (explicit; no automatic fallback)")
-        if args.optimized_mode in {"offline-locator", "offline-auto"}:
-            print(f"Delivery policy: {'offline-locator prompt metadata' if args.optimized_mode == 'offline-locator' else 'local offline navigation'}; "
+        if args.optimized_mode in {"offline-locator", "offline-auto", "offline-anchor"}:
+            label = ("offline-locator prompt metadata" if args.optimized_mode == "offline-locator" else
+                     "local edit anchors" if args.optimized_mode == "offline-anchor" else "local offline navigation")
+            print(f"Delivery policy: {label}; "
                   "canonical selection: BALANCED/6000; initial MCP source delivery: none")
         else:
             print(f"Delivery policy: {policy.delivery_mode.replace('_', '-')}; "
@@ -124,12 +131,17 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
         print(f"Independent working-copy root: {snapshot_base}")
         offline_locator = None
         offline_decision = None
-        if args.optimized_mode in {"offline-locator", "offline-auto"}:
+        offline_anchors = None
+        if args.optimized_mode in {"offline-locator", "offline-auto", "offline-anchor"}:
             with tempfile.TemporaryDirectory(prefix="middle-man-offline-preview-") as temporary:
                 _, preview_root, _ = prepare_pair(tasks[0], Path(temporary) / "pair", None)
                 config = GatewayConfig(preview_root)
                 query = ContextQuery(tasks[0].prompt)
-                offline_locator = build_offline_locator(config, query)
+                if args.optimized_mode == "offline-anchor":
+                    pack = ContextBuilder(config).build(query, mode="balanced", max_context_tokens=6000)
+                    offline_anchors = render_offline_anchors(pack, config)
+                else:
+                    offline_locator = build_offline_locator(config, query)
                 if args.optimized_mode == "offline-auto":
                     pack = ContextBuilder(config).build(query, mode="balanced", max_context_tokens=6000)
                     offline_decision = decide_offline_locator(
@@ -137,7 +149,11 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
             if offline_decision is not None:
                 print(f"Offline AUTO: {'LOCATOR USED' if offline_decision.use_locator else 'BYPASSED'}; "
                       f"candidate source: {offline_decision.candidate_tokens}; reason: {offline_decision.reason}")
-            if offline_decision is None or offline_decision.use_locator:
+            if offline_anchors is not None:
+                print(f"Offline anchor: {offline_anchors.estimated_tokens} heuristic tokens; "
+                      f"paths: {len(offline_anchors.anchors)}")
+                print(offline_anchors.text)
+            elif offline_decision is None or offline_decision.use_locator:
                 print(f"Offline locator: {offline_locator.estimated_tokens} heuristic tokens; "
                       f"canonical source: {offline_locator.selected_source_tokens}; hash: {offline_locator.sha256}")
                 print(offline_locator.text)
@@ -160,8 +176,9 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
                                                             run_id="dry-run", policy=policy,
                                                             optimized_mode=args.optimized_mode,
                                                             locator_text=offline_locator.text if mode == "optimized" and offline_locator and
-                                                            (offline_decision is None or offline_decision.use_locator) else None)))
-        if args.optimized_mode in {"offline-locator", "offline-auto"}:
+                                                            (offline_decision is None or offline_decision.use_locator) else None,
+                                                            anchors=offline_anchors if mode == "optimized" else None)))
+        if args.optimized_mode in {"offline-locator", "offline-auto", "offline-anchor"}:
             print("Both runs ignore user config and have no AGENTS.md or MCP registration; preprocessing is outside Codex.")
         else:
             print("Both runs ignore user config; baseline has no AGENTS.md or Middle_Man registration; optimized configures snapshot-scoped MCP.")

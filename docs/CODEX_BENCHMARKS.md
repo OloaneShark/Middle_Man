@@ -514,7 +514,7 @@ The frozen real `large-edit-v1` run `20261002T123023Z-ca9cd316` was **VALID_CORR
 
 Current `offline-auto` requires **read-only**, candidate source >= **10,000**, and a nonempty selected-path set to inject the full locator. Any workspace-write task bypasses, with audit `auto_decision=BYPASSED`, `auto_reason=workspace_write_not_validated_for_full_locator`, and `model_visible_middle_man_tokens=0`; the reason never enters the prompt. The optimized prompt bytes equal baseline, and no MCP or `AGENTS.md` is introduced. Task A (~33k candidates) uses the locator; OAuth (557), Upload (350), and large-edit (23,982) bypass. This is a general task-property rule, not task-ID special casing. Forced `offline-locator` still uses the original full renderer and hash.
 
-The separate local-only `offline-anchor` prototype is **not** a CLI optimized mode or an AUTO branch and has not run against Codex. It ranks canonically selected REQUIRED/COVERAGE locations using filename/query term overlap, safe matched symbols, and candidate relevance; DEPTH-only and weak support locations are excluded. It emits only the following four path/symbol anchors, **66 heuristic tokens**:
+At Phase 22.16, the separate local-only `offline-anchor` prototype was **not yet** a CLI optimized mode or an AUTO branch and had not run against Codex. It ranks canonically selected REQUIRED/COVERAGE locations using filename/query term overlap, safe matched symbols, and candidate relevance; DEPTH-only and weak support locations are excluded. It emits only the following four path/symbol anchors, **66 heuristic tokens**:
 
 ```text
 Relevant entry points:
@@ -525,3 +525,28 @@ Relevant entry points:
 ```
 
 `engine.py` and `request.py` are REQUIRED-phase, scores 298 and 225, matching run/engine/simulation and cancel/request terms. The visible test and `events.py` are COVERAGE-phase, scores 227 and 107, matching simulation/tests and event/simulation. These are useful engine, request-state, test, and event starting points for the requested architecture; the expected patch and hidden acceptance were not used to choose them. The prototype does **not** claim complete required-path recall and does not name `metrics.py`. It omits full-locator neighbors including `benchmarks.py`, `runner.py`, `reporting.py`, `trace.py`, `serialization.py`, `visualization.py`, `comparison.py`, `workloads.py`, `prefix_cache.py`, and `suites.py`; the obvious benchmark/reporting/visualization support paths are especially unlikely starting points. Phase/relevance metadata is available only to local audit, not emitted. This phase made **zero external Codex calls**.
+
+## Phase 22.17: Explicit Offline-Anchor Harness Mode (Local Only)
+
+`--optimized-mode offline-anchor` now accepts **only** `large-edit-v1` with the canonical benchmark policy. It does not change `offline-auto`: Task A still uses the full locator, while OAuth, Upload, and large-edit bypass. Forced `offline-locator` is unchanged. Before a future optimized Codex invocation, the harness builds the canonical BALANCED/6000 pack on the clean snapshot and renders the exact four-line anchor text above. The baseline keeps the original task plus common benchmark footer. The optimized prompt is exactly that baseline text followed by this **98-heuristic-token** appended block (the anchor lines alone are 66):
+
+```text
+MIDDLE_MAN LOCAL ANCHORS
+Relevant entry points:
+- middle_man/lab/engine.py: SimulationEngine.run
+- middle_man/lab/request.py: InferenceRequest.cancel
+- tests/test_batch_cancellation.py: ExistingSimulationTests.test_uncancelled_requests_complete
+- middle_man/lab/events.py: SimulationEvent
+
+Use these only as starting points. Verify behavior and related code with native repository tools.
+```
+
+The wrapper adds no source excerpts, full-locator ranges, hidden tests, or audit metadata. Both snapshot commands keep `--ignore-user-config`, no MCP registration, no `AGENTS.md`, and workspace-write sandboxing. Missing/malformed/source-bearing anchors, unsupported tasks, noncanonical policy, or pre-existing MCP/AGENTS contamination fail closed. Local result audit fields include anchor and wrapper token estimates, path/symbol/phase tuples, canonical pack fingerprint, and selector implementation fingerprint. Explicit native reads are classified `ANCHOR_PATH` and `NON_ANCHOR_PATH`, never `LOCATOR_PATH` in anchor reports. A local disposable-snapshot pack fingerprint observed during this phase was `76adc81c6483e6618a378ca27c8a78a2d2074fdaba33ac15f4d5ffbfb41c270c`; fingerprints include the absolute snapshot root and will differ on another snapshot.
+
+Preview without inference:
+
+```powershell
+.venv\Scripts\python.exe -m middle_man codex benchmark run large-edit-v1 --repo . --dry-run --optimized-mode offline-anchor --windows-sandbox unelevated
+```
+
+This mode exists to test whether a few high-confidence starting points avoid the broad-checklist behavior seen in the former full-locator large-edit pair (**363,533 -> 494,991** input, **+36.16%**). No real anchor A/B ran in Phase 22.17; **no anchor token saving is claimed**. External execution requires separate authorization.

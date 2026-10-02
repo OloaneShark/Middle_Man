@@ -17,6 +17,9 @@ from uuid import uuid4
 
 from middle_man.gateway.codex_benchmark.events import CodexUsage, NativeExploration, parse_codex_events
 from middle_man.gateway.codex_benchmark.infrastructure import WINDOWS_SANDBOX, primary_usage_signature
+from middle_man.gateway.codex_benchmark.offline_anchor import (
+    OfflineAnchors, append_offline_anchors, render_offline_anchors,
+)
 from middle_man.gateway.codex_benchmark.offline_auto import decide_offline_locator
 from middle_man.gateway.codex_benchmark.offline_locator import append_offline_locator, build_offline_locator
 from middle_man.gateway.codex_benchmark.overlap import ContextDelivery, measure_delivery
@@ -29,13 +32,15 @@ from middle_man.gateway.relevance import ContextQuery
 from middle_man.gateway.secrets import SecretRedactor
 from middle_man.gateway.tokens import HeuristicTokenEstimator
 from middle_man.mcp.benchmark_receipts import BenchmarkPolicy
+from middle_man.mcp.benchmark_receipts import selector_implementation_fingerprint
 from middle_man.mcp.usage import server_implementation_identity
 
 DEFAULT_MODEL = "gpt-6-sol"
 DEFAULT_EFFORT = "high"
 DEFAULT_TIMEOUT = 360
 OFFLINE_LOCATOR_TASK_IDS = frozenset({"preemption-v4", "oauth-bug", "upload-feature", "large-edit-v1"})
-OFFLINE_MODES = frozenset({"offline-locator", "offline-auto"})
+OFFLINE_ANCHOR_TASK_IDS = frozenset({"large-edit-v1"})
+OFFLINE_MODES = frozenset({"offline-locator", "offline-auto", "offline-anchor"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,6 +91,8 @@ class CodexBenchmarkRun:
     native_read_mcp_coverage: tuple[tuple[str, str], ...] = ()
     native_read_locator_coverage: tuple[tuple[str, str], ...] = ()
     offline_locator_audit: dict[str, Any] | None = None
+    native_read_anchor_coverage: tuple[tuple[str, str], ...] = ()
+    offline_anchor_audit: dict[str, Any] | None = None
 
 
 def _new_run_id() -> str:
@@ -168,7 +175,8 @@ def _overrides(mode: str, root: Path, *, run_id: str = "", task_id: str = "",
 def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, model: str,
                      effort: str, windows_sandbox: str = WINDOWS_SANDBOX,
                      run_id: str = "", policy: BenchmarkPolicy = BenchmarkPolicy(),
-                     optimized_mode: str = "mcp", locator_text: str | None = None) -> list[str]:
+                     optimized_mode: str = "mcp", locator_text: str | None = None,
+                     anchors: OfflineAnchors | None = None) -> list[str]:
     if mode not in {"baseline", "optimized"}:
         raise ValueError("unknown benchmark mode")
     if windows_sandbox not in {"elevated", "unelevated"}:
@@ -176,17 +184,25 @@ def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, mod
     if optimized_mode not in {"mcp", *OFFLINE_MODES}:
         raise ValueError("unsupported optimized benchmark mode")
     if task.id == "large-edit-v1" and optimized_mode == "mcp":
-        raise ValueError("large-edit-v1 requires offline-auto or offline-locator")
-    if optimized_mode in OFFLINE_MODES and task.id not in OFFLINE_LOCATOR_TASK_IDS:
+        raise ValueError("large-edit-v1 requires offline-auto, offline-locator, or offline-anchor")
+    if optimized_mode in {"offline-locator", "offline-auto"} and task.id not in OFFLINE_LOCATOR_TASK_IDS:
         raise ValueError("offline-locator is not supported for this task")
-    if locator_text is not None and (mode != "optimized" or optimized_mode not in OFFLINE_MODES):
+    if optimized_mode == "offline-anchor" and task.id not in OFFLINE_ANCHOR_TASK_IDS:
+        raise ValueError("offline-anchor is supported only for large-edit-v1")
+    if locator_text is not None and (mode != "optimized" or optimized_mode not in {"offline-locator", "offline-auto"}):
         raise ValueError("locator text is only valid for optimized offline mode")
+    if anchors is not None and (mode != "optimized" or optimized_mode != "offline-anchor"):
+        raise ValueError("anchors are only valid for optimized offline-anchor mode")
     if mode == "optimized" and optimized_mode == "offline-locator" and locator_text is None:
         raise ValueError("offline optimized invocation requires only its precomputed locator")
+    if mode == "optimized" and optimized_mode == "offline-anchor" and anchors is None:
+        raise ValueError("offline-anchor requires generated anchors")
     sandbox = "read-only" if task.read_only else "workspace-write"
     prompt = task.prompt + " Work only inside this benchmark working copy. Do not commit or push."
     if locator_text is not None:
         prompt = append_offline_locator(prompt, locator_text)
+    if anchors is not None:
+        prompt = append_offline_anchors(prompt, anchors)
     return [command, "--no-daemon", "-a", "never", "exec", "--ignore-user-config", "--strict-config",
             "-c", f'windows.sandbox="{windows_sandbox}"',
             *_overrides(mode, root, run_id=run_id, task_id=task.id, policy=policy,
@@ -241,6 +257,13 @@ def classify_native_locator_reads(events: tuple[dict[str, Any], ...],
                  for event in events for path in event.get("explicit_read_paths", ()))
 
 
+def classify_native_anchor_reads(events: tuple[dict[str, Any], ...],
+                                 anchor_paths: tuple[str, ...]) -> tuple[tuple[str, str], ...]:
+    selected = set(anchor_paths)
+    return tuple((path, "ANCHOR_PATH" if path in selected else "NON_ANCHOR_PATH")
+                 for event in events for path in event.get("explicit_read_paths", ()))
+
+
 def isolation_warnings(mode: str, entries: tuple[dict[str, Any], ...],
                        mcp_calls: tuple[tuple[str, str], ...], *,
                        optimized_mode: str = "mcp") -> tuple[str, ...]:
@@ -249,7 +272,8 @@ def isolation_warnings(mode: str, entries: tuple[dict[str, Any], ...],
     if mode == "baseline" and (entries or mcp_calls):
         warnings.append("baseline contaminated by an MCP call")
     if mode == "optimized" and optimized_mode in OFFLINE_MODES and (entries or mcp_calls):
-        warnings.append("offline locator contaminated by an MCP call")
+        warnings.append("offline anchor contaminated by an MCP call" if optimized_mode == "offline-anchor"
+                        else "offline locator contaminated by an MCP call")
     if mode == "optimized" and optimized_mode == "mcp" and not entries:
         warnings.append("optimized run made no snapshot-scoped Middle_Man MCP calls")
     if mode == "optimized" and optimized_mode == "mcp" and middleman_calls and not entries:
@@ -434,7 +458,35 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
     locator = None
     visible_locator = None
     locator_audit = None
-    if mode == "optimized" and optimized_mode in OFFLINE_MODES:
+    anchors = None
+    anchor_audit = None
+    if mode == "optimized" and optimized_mode == "offline-anchor":
+        if task.id not in OFFLINE_ANCHOR_TASK_IDS or policy != BenchmarkPolicy():
+            raise ValueError("offline-anchor requires large-edit-v1 and canonical BALANCED/6000 policy")
+        if (root / "AGENTS.md").exists():
+            raise RuntimeError("offline-anchor snapshot must not contain AGENTS.md")
+        if _usage_entries(root):
+            raise RuntimeError("offline-anchor snapshot must not contain MCP usage records")
+        config = GatewayConfig(root)
+        pack = ContextBuilder(config).build(ContextQuery(task.prompt), mode="balanced",
+                                            max_context_tokens=6000)
+        anchors = render_offline_anchors(pack, config)
+        append_tokens = HeuristicTokenEstimator().estimate(append_offline_anchors("", anchors))
+        if source_fingerprint(root) != fingerprint or _status(root):
+            raise RuntimeError("offline anchor preprocessing changed the benchmark snapshot")
+        anchor_audit = {
+            "delivery_mode": "offline-anchor",
+            "anchor_estimated_tokens": anchors.estimated_tokens,
+            "prompt_append_estimated_tokens": append_tokens,
+            "anchor_paths": tuple(item.path for item in anchors.anchors),
+            "anchor_symbols": tuple(item.symbol for item in anchors.anchors),
+            "anchor_phases": tuple(item.phase for item in anchors.anchors),
+            "pack_fingerprint": pack.fingerprint,
+            "selector_implementation_fingerprint": selector_implementation_fingerprint(),
+            "canonical_selected_source_tokens": pack.metrics.estimated_selected_tokens,
+            "model_visible_middle_man_tokens": append_tokens,
+        }
+    elif mode == "optimized" and optimized_mode in {"offline-locator", "offline-auto"}:
         if task.id not in OFFLINE_LOCATOR_TASK_IDS or policy != BenchmarkPolicy():
             raise ValueError("offline-locator requires a supported task and canonical BALANCED/6000 policy")
         if (root / "AGENTS.md").exists():
@@ -482,7 +534,8 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
     command = build_invocation(codex_command, task, mode, root, model=model, effort=effort,
                                windows_sandbox=windows_sandbox, run_id=run_id, policy=policy,
                                optimized_mode=optimized_mode,
-                               locator_text=visible_locator.text if visible_locator is not None else None)
+                               locator_text=visible_locator.text if visible_locator is not None else None,
+                               anchors=anchors)
     if source_fingerprint(root) != fingerprint or _status(root):
         raise RuntimeError("benchmark snapshot changed immediately before Codex process creation")
     timestamp = datetime.now(timezone.utc).isoformat()
@@ -557,7 +610,11 @@ def run_one(task: TaskSpec, mode: str, root: Path, fingerprint: str, *, order: i
                              native_read_locator_coverage=classify_native_locator_reads(
                                  trace.sanitized_events, visible_locator.selected_paths)
                                  if visible_locator is not None else (),
-                             offline_locator_audit=locator_audit)
+                             offline_locator_audit=locator_audit,
+                             native_read_anchor_coverage=classify_native_anchor_reads(
+                                 trace.sanitized_events, anchor_audit["anchor_paths"])
+                                 if anchor_audit is not None else (),
+                             offline_anchor_audit=anchor_audit)
 
 
 def _pair(task: TaskSpec, root: Path, instructions: str | None, *, first: str, order: int, command: str,
@@ -565,8 +622,10 @@ def _pair(task: TaskSpec, root: Path, instructions: str | None, *, first: str, o
           primary_repository_root: Path, windows_sandbox: str, run_id: str,
           policy: BenchmarkPolicy = BenchmarkPolicy(), optimized_mode: str = "mcp",
           snapshot_root_kind: str = "system-temp") -> CodexBenchmarkPair:
-    if optimized_mode in OFFLINE_MODES and task.id not in OFFLINE_LOCATOR_TASK_IDS:
+    if optimized_mode in {"offline-locator", "offline-auto"} and task.id not in OFFLINE_LOCATOR_TASK_IDS:
         raise ValueError("offline-locator is not supported for this task")
+    if optimized_mode == "offline-anchor" and task.id not in OFFLINE_ANCHOR_TASK_IDS:
+        raise ValueError("offline-anchor is supported only for large-edit-v1")
     baseline, optimized, fingerprint = prepare_pair(task, root,
                                                     None if optimized_mode in OFFLINE_MODES else instructions)
     if task.id == "oauth-bug":
@@ -624,9 +683,14 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
             {"preemption", "preemption-v2", "preemption-v3", "preemption-v4"}}) > 1:
         raise ValueError("cannot run and aggregate different Task A versions in the same suite")
     if "large-edit-v1" in task_ids and optimized_mode == "mcp":
-        raise ValueError("large-edit-v1 requires offline-auto or offline-locator")
-    if optimized_mode not in {"mcp", *OFFLINE_MODES} or (optimized_mode in OFFLINE_MODES and
-            (len(task_ids) != 1 or task_ids[0] not in OFFLINE_LOCATOR_TASK_IDS or policy != BenchmarkPolicy())):
+        raise ValueError("large-edit-v1 requires offline-auto, offline-locator, or offline-anchor")
+    if optimized_mode not in {"mcp", *OFFLINE_MODES}:
+        raise ValueError("unsupported optimized benchmark mode")
+    if optimized_mode == "offline-anchor":
+        if task_ids != ("large-edit-v1",) or policy != BenchmarkPolicy():
+            raise ValueError("offline-anchor requires only large-edit-v1 with the canonical benchmark policy")
+    elif optimized_mode in OFFLINE_MODES and (len(task_ids) != 1 or
+            task_ids[0] not in OFFLINE_LOCATOR_TASK_IDS or policy != BenchmarkPolicy()):
         raise ValueError("offline-locator requires one supported task with the canonical benchmark policy")
     command = _codex_executable()
     preflight = run_local_preflight(command, model=model, effort=effort, windows_sandbox=windows_sandbox,
@@ -805,7 +869,9 @@ def format_report(data: dict[str, Any]) -> str:
             lines.extend(["", f"{pair['title']} v{pair.get('task_version', 1)} [{pair['quality_gate']}]",
                           f"Invalid A/B pair; diagnostics only. baseline warnings={baseline['warnings']} "
                           f"optimized warnings={optimized['warnings']}",
-                          f"Optimized MCP session trace: {optimized.get('mcp_session_trace', [])}" if optimized_mode not in OFFLINE_MODES else "Offline locator: local preprocessing only; no MCP interaction",
+                          f"Optimized MCP session trace: {optimized.get('mcp_session_trace', [])}" if optimized_mode not in OFFLINE_MODES else
+                          "Offline anchor: local preprocessing only; no MCP interaction" if optimized_mode == "offline-anchor" else
+                          "Offline locator: local preprocessing only; no MCP interaction",
                           f"Correctness notes: baseline={baseline['correctness_notes']} "
                           f"optimized={optimized['correctness_notes']}"])
             continue
@@ -842,7 +908,7 @@ def format_report(data: dict[str, Any]) -> str:
                       f"{optimized['codex_reported_usage']['input_tokens']}/"
                       f"{optimized['codex_reported_usage']['output_tokens']}",
                       f"Modified files: baseline={baseline['modified_files']} optimized={optimized['modified_files']}"])
-        if optimized_mode in OFFLINE_MODES and "native_read_locator_coverage" not in optimized:
+        if optimized_mode in {"offline-locator", "offline-auto"} and "native_read_locator_coverage" not in optimized:
             lines.append("Snapshot root kind: historical artifact metadata not revalidated")
         else:
             lines.append(f"Snapshot root kind: baseline={baseline.get('snapshot_root_kind', 'unknown')} "
@@ -871,6 +937,16 @@ def format_report(data: dict[str, Any]) -> str:
                 lines.append("Native locator read classification: not applicable (locator withheld)")
             else:
                 lines.append("Native locator read classification: not recorded in this historical artifact")
+        if optimized_mode == "offline-anchor" and optimized.get("offline_anchor_audit"):
+            audit = optimized["offline_anchor_audit"]
+            reads = optimized.get("native_read_anchor_coverage", ())
+            anchor_paths_read = {path for path, label in reads if label == "ANCHOR_PATH"}
+            non_anchor_paths_read = {path for path, label in reads if label == "NON_ANCHOR_PATH"}
+            lines.append(f"Local preprocessing - offline anchor: {audit['anchor_estimated_tokens']} heuristic tokens; "
+                         f"prompt append: {audit['prompt_append_estimated_tokens']}; "
+                         f"canonical pack: {audit['pack_fingerprint']}; MCP calls: 0")
+            lines.append(f"Native anchor reads: {len(anchor_paths_read)}/{len(audit['anchor_paths'])} paths accessed; "
+                         f"non-anchor paths: {len(non_anchor_paths_read)}; classifications: {reads}")
         diagnostics = pair_input_diagnostics(pair)
         if diagnostics is not None:
             lines.append(f"Codex input diagnostics (not billing or quota): "

@@ -1,9 +1,10 @@
-"""Local-only edit-navigation prototype; never used by AUTO or the runner."""
+"""Compact edit-navigation metadata for explicit offline research runs."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import PurePosixPath
+import re
 
 from middle_man.gateway.codex_benchmark.offline_locator import _SYMBOL
 from middle_man.gateway.config import GatewayConfig
@@ -27,6 +28,33 @@ class OfflineAnchors:
     text: str
     estimated_tokens: int
     anchors: tuple[NavigationAnchor, ...]
+
+
+ANCHOR_HEADING = "MIDDLE_MAN LOCAL ANCHORS"
+_SAFE_PATH = re.compile(r"[A-Za-z0-9_./-]+")
+
+
+def append_offline_anchors(prompt: str, anchors: OfflineAnchors) -> str:
+    """Accept only the compact path/symbol grammar, never arbitrary source text."""
+    if not 2 <= len(anchors.anchors) <= 4:
+        raise ValueError("offline anchors require two to four paths")
+    redactor = SecretRedactor()
+    paths: set[str] = set()
+    for item in anchors.anchors:
+        path = PurePosixPath(item.path)
+        if (not _SAFE_PATH.fullmatch(item.path) or path.is_absolute() or ".." in path.parts or
+                path.as_posix() != item.path or item.path in paths or
+                redactor.redact(item.path).text != item.path):
+            raise ValueError("unsafe offline anchor path")
+        if not _SYMBOL.fullmatch(item.symbol) or redactor.redact(item.symbol).text != item.symbol:
+            raise ValueError("unsafe offline anchor symbol")
+        paths.add(item.path)
+    expected = "Relevant entry points:\n" + "\n".join(
+        f"- {item.path}: {item.symbol}" for item in anchors.anchors)
+    if anchors.text != expected or anchors.estimated_tokens != HeuristicTokenEstimator().estimate(expected):
+        raise ValueError("offline anchor text is not source-free canonical metadata")
+    return (prompt + "\n\n" + ANCHOR_HEADING + "\n" + expected + "\n\n"
+            "Use these only as starting points. Verify behavior and related code with native repository tools.")
 
 
 def render_offline_anchors(pack: ContextPack, config: GatewayConfig, *,
