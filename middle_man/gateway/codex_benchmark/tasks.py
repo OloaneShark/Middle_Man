@@ -9,6 +9,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from textwrap import dedent
 
+from middle_man.gateway.codex_benchmark.large_edit_v1 import (
+    ACCEPTANCE_TEST as LARGE_EDIT_ACCEPTANCE_TEST,
+    FIXTURE_PATHS as LARGE_EDIT_FIXTURE_PATHS,
+    PROMPT as LARGE_EDIT_PROMPT,
+    VISIBLE_TEST as LARGE_EDIT_VISIBLE_TEST,
+    VISIBLE_TEST_PATH as LARGE_EDIT_VISIBLE_TEST_PATH,
+)
+
 
 @dataclass(frozen=True, slots=True)
 class TaskSpec:
@@ -137,6 +145,11 @@ TASKS = (
         "preempted requests, InferenceRequest generated-output field preserved across preemption, and "
         "proving test file. Explain their interaction and KV block release.",
         True, "repository-commit", schema_version=4, source_ref=TASK_A_SOURCE_COMMIT,
+    ),
+    TaskSpec(
+        "large-edit-v1", "Batch cancellation across the Lab simulation",
+        LARGE_EDIT_PROMPT, False, "lab-large-edit-fixture",
+        acceptance_test=LARGE_EDIT_ACCEPTANCE_TEST, source_ref=TASK_A_SOURCE_COMMIT,
     ),
 )
 
@@ -276,7 +289,7 @@ def _git(root: Path, *args: str) -> str:
 
 
 def _write_fixture(task: TaskSpec, destination: Path) -> None:
-    if task.source == "repository-commit":
+    if task.source in {"repository-commit", "lab-large-edit-fixture"}:
         if not task.source_ref or len(task.source_ref) != 40 or any(ch not in "0123456789abcdef" for ch in task.source_ref):
             raise ValueError("benchmark repository source requires an exact commit SHA")
         root = Path(__file__).resolve().parents[3]
@@ -285,16 +298,23 @@ def _write_fixture(task: TaskSpec, destination: Path) -> None:
         if commit.returncode or commit.stdout.strip() != "commit":
             raise ValueError(f"benchmark source commit unavailable: {task.source_ref}")
         names = subprocess.check_output(["git", "-C", str(root), "ls-tree", "-r", "-z", "--name-only", task.source_ref])
-        for raw in names.split(b"\0"):
-            if not raw:
-                continue
-            relative = raw.decode("utf-8")
+        tracked = {raw.decode("utf-8") for raw in names.split(b"\0") if raw}
+        selected = tracked if task.source == "repository-commit" else set(LARGE_EDIT_FIXTURE_PATHS)
+        if selected - tracked:
+            raise ValueError("large-edit fixture paths missing from pinned source")
+        for relative in sorted(selected):
             path = Path(relative)
             if path.is_absolute() or ".." in path.parts or path.name.startswith(".env"):
                 raise ValueError(f"unsafe tracked snapshot path: {relative}")
             target = destination / path
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(subprocess.check_output(["git", "-C", str(root), "show", f"{task.source_ref}:{relative}"]))
+        if task.source == "lab-large-edit-fixture":
+            visible = destination / LARGE_EDIT_VISIBLE_TEST_PATH
+            visible.parent.mkdir(parents=True, exist_ok=True)
+            visible.write_text(LARGE_EDIT_VISIBLE_TEST, encoding="utf-8")
+            (destination / ".gitignore").write_text(
+                ".middle_man_cache/\n__pycache__/\n*.pyc\n.pytest_cache/\n", encoding="utf-8")
     else:
         for relative, text in _FIXTURES[task.source].items():
             target = destination / relative

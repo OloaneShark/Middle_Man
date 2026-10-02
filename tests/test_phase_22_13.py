@@ -89,7 +89,7 @@ def test_edit_fixture_offline_locator(task_id: str, required_paths: set[str],
 
 
 def test_offline_task_allowlist_and_locator_read_classification(tmp_path: Path) -> None:
-    assert OFFLINE_LOCATOR_TASK_IDS == {"preemption-v4", "oauth-bug", "upload-feature"}
+    assert OFFLINE_LOCATOR_TASK_IDS == {"preemption-v4", "oauth-bug", "upload-feature", "large-edit-v1"}
     assert snapshot_root_kind(None) == "system-temp"
     assert snapshot_root_kind(tmp_path) == "external-configured"
     events = (

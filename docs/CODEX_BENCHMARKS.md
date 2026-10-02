@@ -463,3 +463,47 @@ Local reproduction:
 ```
 
 The local phase ran no `codex exec`, no external inference, no Upload external task, and no AUTO A/B pair. The frozen OAuth contract ambiguity was documented without adding a v2 task. Adaptive offline navigation is a better policy candidate than unconditional injection, but the Task A real saving remains task-specific.
+
+## Phase 22.15: Large Edit Generalization Fixture (Local Only)
+
+The new versioned `large-edit-v1` task exercises batch cancellation in the pinned Lab simulation. Prompt (no file-name giveaway):
+
+> Add batch cancellation to the simulation engine. A caller may pass cancel_request_ids when starting a run. Before changing any request or engine state, reject unknown cancellation IDs with ValueError. At simulation start, cancel each requested ID once (duplicates count once) in input-request order; emit exactly one cancellation event for each at the start time. Never admit, execute, or allocate KV for those requests; keep their token counts and timing fields untouched. Other requests must continue normally, including when all requests are cancelled. Report the number of cancelled requests in aggregate metrics and keep trace output consistent with the new events. With no cancellation IDs, existing behavior must be unchanged. Add or adjust visible tests and run the test suite.
+
+The manifest pins 29 real Lab source/test files from commit `284c4451ad9213f4f27f6d534eac8be2484c2f9a` and adds one visible cancellation unittest: **30 Python source/test files**. This is a runnable multi-module fixture, not source repetition or filler. It includes engine, request, scheduling, KV/preemption/prefix-cache, events, metrics, trace/serialization, workload and benchmark neighbors, and six prior tests. The source-identical baseline/optimized starting snapshots are independently committed and clean. Visible state is **36/36 pytest tests passing** and one unittest test passing; hidden acceptance is absent until evaluation. The hidden contract separately checks unknown-ID atomicity, deterministic unique cancellation order/time, no canceled work or timing changes, unaffected requests, all-canceled/no-KV behavior, and aggregate/default behavior. It fails on the unsolved fixture. A reference solution is applied only to a disposable copy and passes all hidden and visible tests; a plausible shallow cancel-and-skip implementation passes visible tests but fails hidden acceptance.
+
+Canonical BALANCED/6000 measurements on the **unsolved** fixture (heuristic tokens):
+
+| Coherent subset | Indexed text files/tokens | Candidate paths/tokens | Selected paths/tokens/ranges | Locator tokens | Selected/candidate | Locator/selected | AUTO |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| Core request/config | 7 / 3,256 | 4 / 3,016 | 4 / 1,169 / 9 | 108 | 0.3876 | 0.0924 | Bypass |
+| Memory ownership | 9 / 5,141 | 6 / 4,901 | 4 / 2,257 / 11 | 164 | 0.4605 | 0.0727 | Bypass |
+| Scheduling | 11 / 6,647 | 9 / 6,603 | 5 / 2,806 / 12 | 173 | 0.4250 | 0.0617 | Bypass |
+| Execution adapters | 15 / 8,379 | 13 / 8,335 | 10 / 4,154 / 19 | 233 | 0.4984 | 0.0561 | Bypass |
+| Memory control/metrics | 17 / 11,201 | 15 / 11,157 | 11 / 5,593 / 20 | 251 | 0.5013 | 0.0449 | Locator |
+| Engine execution | 21 / 15,048 | 19 / 15,004 | 9 / 5,828 / 16 | 169 | 0.3884 | 0.0290 | Locator |
+| Workflows/reporting | 26 / 19,333 | 25 / 19,322 | 12 / 5,962 / 25 | 242 | 0.3086 | 0.0406 | Locator |
+| Full large edit | 31 / 24,008 | 29 / 23,982 | 14 / 5,993 / 19 | 214 | 0.2499 | 0.0357 | Locator |
+
+The extra indexed text file in the full fixture is `.gitignore`; it is not source padding. The current **10,000-token** gate falls between the natural 8,335 and 11,157 candidate samples. No threshold, selector, or locator renderer was changed. The full locator SHA-256 is `5217171cd64bca42a207a2cbf070c4b9a9964dfe96bf5375e944a5045e70ad50`:
+
+```text
+- middle_man/lab/benchmarks.py:23-23 (BenchmarkCase); 29-67 (BenchmarkCase.run); 84-94 (BenchmarkSuite); 98-112 (BenchmarkSuite.run)
+- middle_man/lab/engine.py:22-34 (EngineResult); 55-172 (SimulationEngine._admit_arrivals)
+- middle_man/lab/runner.py:19-57 (ModelRunner)
+- middle_man/lab/request.py:4-18 (InferenceRequest); 157-159 (InferenceRequest.cancel)
+- tests/test_batch_cancellation.py:1-16 (ExistingSimulationTests)
+- middle_man/lab/events.py:1-27 (EventType)
+- middle_man/lab/reporting.py:1-90 (DISPLAY_FIELDS)
+- middle_man/lab/trace.py:1-69 (WORK_EVENTS)
+- middle_man/lab/serialization.py:4-12
+- middle_man/lab/visualization.py:3-7
+- middle_man/lab/comparison.py:7-22 (COMPARISON_FIELDS)
+- middle_man/lab/workloads.py:51-51 (WorkloadSpec)
+- middle_man/lab/prefix_cache.py:17-17 (PrefixCache)
+- middle_man/lab/suites.py:1-106 (SUITE_DESCRIPTIONS)
+```
+
+Required production change paths represented: **2/3** (`engine.py`, `events.py`; `metrics.py` missing). Required visible test path represented: **1/1**. Audited indexed symbols represented: **4/6** (`SimulationEngine.run`, `EventType`, `InferenceRequest.cancel`, `ExistingSimulationTests`; `MetricsCollector.build` and `AggregateMetrics` missing). Six selected reporting/benchmark neighbors are nonessential to the direct fix; runner, prefix cache, request, trace, and serialization are related architecture. The locator is navigation metadata only. No hidden test, model answer, source code, selection score, or decision metadata appears in it.
+
+Local prompt proof: baseline is the unmodified task plus the common working-copy footer; AUTO optimized is byte-for-byte that baseline prompt plus `append_offline_locator` using the text above. Both use workspace-write, `--ignore-user-config`, native tools, and **no MCP or benchmark `AGENTS.md`**. `large-edit-v1` refuses MCP mode, and `run-all` remains the historical three tasks. Reproduce selection without inference with `python -m scripts.measure_large_edit_v1` or preview with `python -m middle_man codex benchmark run large-edit-v1 --repo . --dry-run --optimized-mode offline-auto`. No external Codex call or real large-edit A/B was made. AUTO does not imply lower real input for every workload: Task A is still the only proven real offline-locator reduction, while AUTO bypass adds zero model-visible Middle_Man tokens.

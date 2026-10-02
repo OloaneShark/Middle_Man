@@ -34,7 +34,7 @@ from middle_man.mcp.usage import server_implementation_identity
 DEFAULT_MODEL = "gpt-6-sol"
 DEFAULT_EFFORT = "high"
 DEFAULT_TIMEOUT = 360
-OFFLINE_LOCATOR_TASK_IDS = frozenset({"preemption-v4", "oauth-bug", "upload-feature"})
+OFFLINE_LOCATOR_TASK_IDS = frozenset({"preemption-v4", "oauth-bug", "upload-feature", "large-edit-v1"})
 OFFLINE_MODES = frozenset({"offline-locator", "offline-auto"})
 
 
@@ -175,6 +175,8 @@ def build_invocation(command: str, task: TaskSpec, mode: str, root: Path, *, mod
         raise ValueError("unsupported Windows sandbox implementation")
     if optimized_mode not in {"mcp", *OFFLINE_MODES}:
         raise ValueError("unsupported optimized benchmark mode")
+    if task.id == "large-edit-v1" and optimized_mode == "mcp":
+        raise ValueError("large-edit-v1 requires offline-auto or offline-locator")
     if optimized_mode in OFFLINE_MODES and task.id not in OFFLINE_LOCATOR_TASK_IDS:
         raise ValueError("offline-locator is not supported for this task")
     if locator_text is not None and (mode != "optimized" or optimized_mode not in OFFLINE_MODES):
@@ -400,12 +402,19 @@ def _evaluate(task: TaskSpec, root: Path, message: str, changed: tuple[str, ...]
         test_exit, test_output = _tests(root)
         if test_exit != 0:
             notes.append("visible or independent acceptance tests failed")
-        required = {"app/state.py"} if task.id == "oauth-bug" else {"app/config.py", "app/rules.py", "app/uploads.py"}
+        if task.id == "oauth-bug":
+            required = {"app/state.py"}
+        elif task.id == "large-edit-v1":
+            required = {"middle_man/lab/engine.py", "middle_man/lab/events.py", "middle_man/lab/metrics.py"}
+        else:
+            required = {"app/config.py", "app/rules.py", "app/uploads.py"}
         if not required.issubset(changed):
             notes.append("required production/helper/config modules were not all changed")
         if not any(path.startswith("tests/") for path in changed):
             notes.append("the requested tests were not added or adjusted")
-        unexpected = [path for path in changed if not (path.startswith("app/") or path.startswith("tests/"))]
+        allowed_production = "middle_man/lab/" if task.id == "large-edit-v1" else "app/"
+        unexpected = [path for path in changed if not (path.startswith(allowed_production) or
+                                                       path.startswith("tests/"))]
         if unexpected:
             notes.append("unexpected files modified: " + ", ".join(unexpected))
     return not notes, tuple(notes), test_exit, test_output
@@ -568,6 +577,10 @@ def _pair(task: TaskSpec, root: Path, instructions: str | None, *, first: str, o
         for snapshot in (baseline, optimized):
             if _tests(snapshot)[0] != 0:
                 raise RuntimeError("upload fixture is not green before Codex")
+    if task.id == "large-edit-v1":
+        for snapshot in (baseline, optimized):
+            if _tests(snapshot)[0] != 0:
+                raise RuntimeError("large-edit fixture is not green before Codex")
     first_root = baseline if first == "baseline" else optimized
     second_root = optimized if first == "baseline" else baseline
     first_run = run_one(task, first, first_root, fingerprint, order=order, codex_command=command,
@@ -610,6 +623,8 @@ def run_suite(task_ids: tuple[str, ...], *, repository_root: Path, artifact_base
     if len({task_id for task_id in task_ids if task_id in
             {"preemption", "preemption-v2", "preemption-v3", "preemption-v4"}}) > 1:
         raise ValueError("cannot run and aggregate different Task A versions in the same suite")
+    if "large-edit-v1" in task_ids and optimized_mode == "mcp":
+        raise ValueError("large-edit-v1 requires offline-auto or offline-locator")
     if optimized_mode not in {"mcp", *OFFLINE_MODES} or (optimized_mode in OFFLINE_MODES and
             (len(task_ids) != 1 or task_ids[0] not in OFFLINE_LOCATOR_TASK_IDS or policy != BenchmarkPolicy())):
         raise ValueError("offline-locator requires one supported task with the canonical benchmark policy")

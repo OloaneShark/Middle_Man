@@ -92,6 +92,8 @@ def run_codex_benchmark(args: argparse.Namespace) -> None:
     tasks = (tuple(next(task for task in TASKS if task.id == task_id)
                    for task_id in ("preemption-v4", "oauth-bug", "upload-feature"))
              if action == "run-all" else tuple(task for task in TASKS if task.id == args.task))
+    if any(task.id == "large-edit-v1" for task in tasks) and args.optimized_mode == "mcp":
+        raise SystemExit("large-edit-v1 requires --optimized-mode offline-auto or offline-locator")
     if args.timeout <= 0:
         raise SystemExit("--timeout must be positive")
     try:

@@ -77,9 +77,10 @@ def test_snapshot_isolation_and_fixture_preconditions(tmp_path: Path) -> None:
         assert (optimized / "AGENTS.md").exists()
         assert subprocess.run(["git", "-C", str(baseline), "status", "--porcelain"],
                               capture_output=True, text=True, check=True).stdout == ""
-        original = (optimized / "app" / "config.py").read_bytes()
-        (baseline / "app" / "config.py").write_text("changed\n", encoding="utf-8")
-        assert (optimized / "app" / "config.py").read_bytes() == original
+        fixture_file = "middle_man/lab/config.py" if task.id == "large-edit-v1" else "app/config.py"
+        original = (optimized / fixture_file).read_bytes()
+        (baseline / fixture_file).write_text("changed\n", encoding="utf-8")
+        assert (optimized / fixture_file).read_bytes() == original
         code = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", "tests"], cwd=optimized,
                               capture_output=True, text=True).returncode
         assert (code != 0) == (task.id == "oauth-bug")
