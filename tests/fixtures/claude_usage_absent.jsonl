@@ -1,0 +1,2 @@
+{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Write","input":{"file_path":"app/new.py"}},{"type":"tool_use","name":"Edit","input":{"file_path":"app/old.py"}}]}}
+{"type":"result","subtype":"success","result":"Edited","is_error":false,"total_cost_usd":0.01}

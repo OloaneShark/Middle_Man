@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"synthetic-incomplete"}
+{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Read","input":{"file_path":"app/a.py"}}]}}

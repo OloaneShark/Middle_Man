@@ -212,10 +212,20 @@ Phase 22.15 added `large-edit-v1`, a frozen 30-file Lab batch-cancellation edit 
 
 The one demonstrated real Codex input saving is Task A: **86,515 -> 38,269** (-48,246, **55.8%**) with both answers correct. OAuth's forced-locator pair failed both sides' ambiguous TTL/skew contract (**78,925 -> 94,466**, +19.7%); the locator is not assigned that correctness failure. The correct/correct large-edit full-locator pair worsened input **363,533 -> 494,991** (+36.16%). The compact-anchor large-edit pair `20261002T172314Z-4e89870f` was a **TASK_FAILURE**: baseline correct, optimized timed out at 360 seconds, interactions **21 -> 32**, and optimized official input usage unavailable. It proves no anchor saving and does not establish that anchors caused the timeout. The broad full locator is not supported for write-task optimization, and candidate size alone is not a sufficient trigger.
 
-Local heuristic tokens size Middle_Man's prepared text; **Codex-reported input** measures an entire observed model conversation. They are not interchangeable. No universal, edit-task, billing, or quota saving is claimed. MCP remains available for interactive repository navigation, diagnostics, and explicit context workflows, but measured persistent-MCP Codex pairs do not make it the preferred token-saving path. The next roadmap phase is **Phase 23: Claude integration**; it is not implemented here. Details and frozen evidence are in [Codex benchmarks](docs/CODEX_BENCHMARKS.md#phase-22-final-status).
+Local heuristic tokens size Middle_Man's prepared text; **Codex-reported input** measures an entire observed model conversation. They are not interchangeable. No universal, edit-task, billing, or quota saving is claimed. MCP remains available for interactive repository navigation, diagnostics, and explicit context workflows, but measured persistent-MCP Codex pairs do not make it the preferred token-saving path. Phase 23 adds a local-only Claude Code integration preview, not a real Claude benchmark. Details and frozen evidence are in [Codex benchmarks](docs/CODEX_BENCHMARKS.md#phase-22-final-status).
+
+## Claude Code Preview (Phase 23)
+
+```bash
+python -m middle_man claude benchmark preflight
+python -m middle_man claude benchmark run preemption-v4 --dry-run --model sonnet
+python -m middle_man claude benchmark run large-edit-v1 --dry-run
+```
+
+The dry-run prepares clean, source-identical snapshots and previews the conservative offline AUTO policy: substantial read-only tasks may receive a source-free locator; edit tasks bypass with identical prompts and zero model-visible Middle_Man tokens. No Claude inference is enabled. The synthetic stream-json parser records provider usage only when observed and keeps it separate from Middle_Man heuristic sizes and cost. Snapshot/ancestor `CLAUDE.md` and `CLAUDE.local.md` cause preflight rejection; user-level Claude memory isolation still needs validation on an installed CLI. See [Claude integration](docs/CLAUDE_INTEGRATION.md).
 
 ## Scope
 
-Claude integration and provider adapters are not implemented. The local server does not call a model or provider API; the explicit Phase 22 harness invokes the installed Codex CLI. No provider token, billing, or plan-usage savings are claimed.
+Claude integration is a local dry-run/parser surface only; provider adapters are not implemented. The local server does not call a model or provider API; the explicit Phase 22 harness can invoke the installed Codex CLI. No Claude token-saving result or provider billing/plan-usage saving is claimed.
 
 Historical Task A v2 is frozen: both sides were infrastructure-valid but **FAIL/FAIL** under the exact structured evaluator, which rejected qualified/composite identifiers. Baseline/optimized Codex input was **84,350 / 122,094** tokens, so there was **no real token saving**. Optimized used one `middleman_context` call and resent zero MCP source, but its pack omitted relevant implementation evidence and Codex made six native fallback reads. The old artifacts are not rescored; see [Codex benchmarks](docs/CODEX_BENCHMARKS.md).

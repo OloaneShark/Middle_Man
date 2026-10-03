@@ -80,7 +80,7 @@ Once a request processes the reusable prefix, the cache retains references to it
 
 The suite preserves all 54 Phase 1-8 tests and adds workload, benchmark, determinism, failure, serialization, CLI, trace, and visualization coverage. Each completed benchmark case reports zero final KV blocks owned by its isolated memory manager.
 
-Agent Gateway indexing and relevance search are implemented through Phase 14, with local Context Packs, Git diff context, and output compaction through Phase 17. A local MCP server and Codex guidance are implemented in Phases 20-21. Claude integration, provider APIs, and real PyTorch execution are not implemented.
+Agent Gateway indexing and relevance search are implemented through Phase 14, with local Context Packs, Git diff context, and output compaction through Phase 17. A local MCP server and Codex guidance are implemented in Phases 20-21. Phase 23 adds a Claude Code dry-run/parser surface. Provider APIs and real PyTorch execution are not implemented.
 
 ## Phases 11-14: Local Agent Gateway
 
@@ -199,7 +199,7 @@ Task A v1 remains a frozen literal-marker evaluator. Its first infrastructure-va
 
 ## Current Boundary
 
-The Lab remains locked through Phase 10 and Gateway through Phase 19. Task A v2 has a frozen valid FAIL/FAIL pair. The first v3 pair is invalid because baseline began dirty; later frozen-corpus v3 pairs are infrastructure-valid but FAIL/FAIL. Phase 22.6 is local-only; no new real Codex pair has run since the Phase 22.5 budget-control changes. Claude/provider adapters, external LLM summarization, and Phase 23+ are not implemented.
+The Lab remains locked through Phase 10 and Gateway through Phase 19. Task A v2 has a frozen valid FAIL/FAIL pair. The first v3 pair is invalid because baseline began dirty; later frozen-corpus v3 pairs are infrastructure-valid but FAIL/FAIL. Later Phase 22 results are documented below. Phase 23 has local Claude Code preview/parser integration only; provider adapters, external LLM summarization, and real Claude inference are not implemented.
 
 ## Phase 22.2: Local Selection and Versioned Evaluation
 
@@ -337,4 +337,8 @@ The local benchmark result audit records delivery mode, anchor/prompt estimates,
 
 The locked real read-only Task A offline-locator pair is the sole demonstrated token-saving workload: both correct, Codex input **86,515 -> 38,269** (-55.8%), interactions **10 -> 3**. OAuth forced locator was **TASK_FAILURE** on both sides of an ambiguous TTL/skew contract, input **78,925 -> 94,466** (+19.7%); no causal correctness claim is made. Large-edit full locator was correct/correct but input rose **363,533 -> 494,991** (+36.16%), interactions **12 -> 22**. The later large-edit anchor run `20261002T172314Z-4e89870f` was a **TASK_FAILURE** despite an infrastructure-valid pair: baseline correct, optimized timed out at 360 seconds and did not finish the required edits, interactions **21 -> 32**. Optimized official input usage is unavailable, so there is no valid anchor efficiency comparison or attribution of its timeout to the hint.
 
-Local estimates such as a 66-token anchor or 98-token appended block count prepared text, whereas Codex-reported input counts the observed model conversation. Neither number is provider billing or quota. Proven: local preprocessing, mechanical source-free delivery, one task-specific read-only saving, and bypass with zero model-visible Middle_Man tokens. Not proven: universal, edit-task, anchor, billing, or quota savings. Broad edit locators, candidate size alone, and persistent MCP as a preferred Codex token-saving path are unsupported by the measured pairs. The next roadmap phase is **Phase 23: Claude integration**; no Phase 23 work is included here.
+Local estimates such as a 66-token anchor or 98-token appended block count prepared text, whereas Codex-reported input counts the observed model conversation. Neither number is provider billing or quota. Proven: local preprocessing, mechanical source-free delivery, one task-specific read-only saving, and bypass with zero model-visible Middle_Man tokens. Not proven: universal, edit-task, anchor, billing, or quota savings. Broad edit locators, candidate size alone, and persistent MCP as a preferred Codex token-saving path are unsupported by the measured pairs. Phase 23 builds on this policy locally; it does not change the frozen Phase 22 results.
+
+## Phase 23: Claude Code Integration (Local Only)
+
+`middle_man/gateway/claude_benchmark/` contains non-inference CLI discovery, snapshot/ancestor Claude-memory checks, a dry-run pair builder, Claude-specific stream-json models/parser, and tool-action classification. `middle_man/cli/claude_benchmark.py` adds `list`, `preflight`, `run --dry-run`, and `report`; non-dry runs are rejected even with confirmation. The local CLI was absent during implementation, so no installed permission or user-memory isolation flag has been verified. Prepared command arguments are emitted only after documented local-help flag discovery. Read-only previews whitelist Read/Glob/Grep; write previews retain ordinary edit tools. There is no Claude MCP token-saving route and no Claude inference result. See [Claude integration](CLAUDE_INTEGRATION.md) for the isolation and usage boundaries.
