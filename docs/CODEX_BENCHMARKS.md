@@ -1,6 +1,6 @@
 # Real Codex A/B Context Benchmark
 
-Phase 22 measures whether Middle_Man changes Codex's repository exploration **without lowering correctness**. Task A v1/v2 were tested against real Codex. The first v3 pair was infrastructure-invalid and diagnostic-only; later frozen-corpus v3 pairs were infrastructure-valid but failed correctness on both sides. Task A v4 has one infrastructure-valid, correctness-passing real pair; Phases 22.8 and 22.9 are local-only follow-ups. This benchmark is separate from simulated Lab benchmarks and local Context Pack quality fixtures; it does not measure plan quota or billing.
+Phase 22 is complete. It measured whether Middle_Man changes Codex's repository exploration **without lowering correctness**. Task A v1/v2 were tested against real Codex. The first v3 pair was infrastructure-invalid and diagnostic-only; later frozen-corpus v3 pairs were infrastructure-valid but failed correctness on both sides. Task A v4 has multiple frozen real pairs, but only its read-only offline-locator pair demonstrates lower Codex input with both answers correct. This benchmark is separate from simulated Lab benchmarks and local Context Pack quality fixtures; it does not measure plan quota or billing.
 
 ## Run It
 
@@ -14,6 +14,8 @@ Phase 22 measures whether Middle_Man changes Codex's repository exploration **wi
 .venv\Scripts\python.exe -m middle_man codex benchmark report <run-id> --repo . --json
 .venv\Scripts\python.exe -m middle_man codex benchmark overlap <run-id> --repo .
 ```
+
+These are research harness commands, not a Phase 22 continuation plan. Live Codex runs require separate explicit authorization. The CLI default `--optimized-mode mcp` does not silently select either forced offline hint mode.
 
 Live runs send repository-derived context to Codex's external service and require the explicit confirmation flag. Normal pytest and `--dry-run` never call Codex. The default invocation explicitly requests `gpt-6-sol` with high reasoning effort; the selected model/effort remain marked **not event-verified** unless a Codex event reports them. `codex exec --json` is the documented structured event surface, including `turn.completed.usage`: [OpenAI Codex non-interactive documentation](https://learn.chatgpt.com/docs/non-interactive-mode). Per-run `--ignore-user-config` is also documented there.
 
@@ -550,3 +552,31 @@ Preview without inference:
 ```
 
 This mode exists to test whether a few high-confidence starting points avoid the broad-checklist behavior seen in the former full-locator large-edit pair (**363,533 -> 494,991** input, **+36.16%**). No real anchor A/B ran in Phase 22.17; **no anchor token saving is claimed**. External execution requires separate authorization.
+
+## Phase 22 Final Status
+
+**Complete; no further selector or delivery experiment is required by this roadmap.** The final production-candidate policy is conservative `offline-auto`: read-only task **and** at least 10,000 estimated candidate-source tokens **and** nonempty selected paths permit the source-free full locator. Otherwise it bypasses with zero model-visible Middle_Man tokens and optimized prompt bytes identical to baseline. Task A uses the locator; OAuth, Upload, and large-edit bypass. The benchmark CLI's default `mcp` setting is a separate research baseline, not an automatic edit hint or the preferred token-saving recommendation. Explicit `offline-locator` and `offline-anchor` remain available for reproducibility and are experimental for write tasks.
+
+| Frozen real pair | Correctness | Codex-reported input | Observed interactions | Conclusion |
+| --- | --- | ---: | ---: | --- |
+| Read-only Task A full locator | PASS/PASS | 86,515 -> 38,269 (-48,246; -55.8%) | 10 -> 3 | Only demonstrated real token-saving workload |
+| OAuth forced locator | FAIL/FAIL | 78,925 -> 94,466 (+19.7%) | 6 -> 6 | Shared ambiguous TTL/skew failure; no locator-causation claim |
+| Large-edit full locator | PASS/PASS | 363,533 -> 494,991 (+131,458; +36.16%) | 12 -> 22 | Broad full locator unsupported for edit optimization |
+| Large-edit compact anchor, `20261002T172314Z-4e89870f` | Baseline pass; optimized task failure at 360s | 852,482 -> unavailable | 21 -> 32 | No valid input delta or anchor-saving claim; timeout cause unproven |
+
+The anchor pair was infrastructure-valid. Both sides passed the visible starting test and four independent acceptance tests after Codex, but optimized Codex timed out and did not modify the required metrics module or a test file, so the harness rejected completion. All four anchor paths were read; `metrics.py` was independently discovered. Optimized official input/cached/output usage was unavailable, so no percentage or billing inference follows. Historical sides are not mixed with this fresh pair.
+
+**Measurement boundary:** 66 heuristic tokens for anchor text and 98 for its prompt block are local sizes of prepared text. Codex-reported input is official usage for the entire observed conversation, including subsequent exploration and caching effects. Local payload size cannot be subtracted from Codex usage to explain a later change. None of these measurements establish universal, edit-task, anchor, billing, or quota savings. MCP remains useful for interactive repository navigation, diagnostics, and explicit context workflows, but measured persistent-MCP Codex pairs have not supported it as the preferred token-saving path. Candidate size alone is not enough to justify intervention.
+
+Permanent regression invariants remain distributed across the existing tests; no historical Phase 22 tests were deleted or consolidated:
+
+| Invariant | Tests |
+| --- | --- |
+| Deterministic canonical selection and source-free locator | `tests/test_phase_22_12.py`, `tests/test_phase_22_14.py`, `tests/test_phase_22_15.py` |
+| Read-only AUTO gate, write bypass, byte-identical bypass prompt | `tests/test_phase_22_14.py`, `tests/test_phase_22_16.py` |
+| No MCP or `AGENTS.md` in offline paths; explicit anchor isolation | `tests/test_phase_22_12.py`, `tests/test_phase_22_14.py`, `tests/test_phase_22_17.py` |
+| Hidden-test secrecy and frozen large-edit fixture/locator identity | `tests/test_phase_22_15.py`, `tests/test_phase_22_16.py`, `tests/test_phase_22_17.py` |
+
+Historical `result.json` artifacts are local ignored data, not a portable unit-test fixture. Their SHA-256 hashes were checked without modification at closure: Task A offline locator `EB46C76FB93BE4841B6C364F40E7E3043CB720A49B9BC5A6A81804F9B31C9B13`; OAuth `298F577535FDD596E953C9D424DCDD0CF0EC36798D7B7016456D89D3408B18AB`; large-edit full locator `F3140DD65D2A3D6EB46CB23A8E993995D8D80182EF4337F8E1A3CD22B8101BFE`; large-edit anchor `CD8D2BDA259DE21EE99B75F199A85CD6D909202CE0232CB059CD424AE69180F5`.
+
+The product objective remains the same engineering correctness with less unnecessary repository context. The next roadmap phase is **Phase 23: Claude integration**; it has not begun.
