@@ -184,3 +184,27 @@ def test_observed_receipt_is_not_raw_stream_or_benchmark_result():
     assert data["usage"]["input_tokens"] == 0
     assert data["cost_usd"] == 0.0 and data["tool_names"] == []
     assert "account" not in json.dumps(data).lower()
+
+
+def test_fresh_logged_in_receipt_keeps_unknown_error_unknown():
+    path = Path(__file__).parent / "fixtures" / "claude_runtime_logged_in_error_receipt.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert data["source"].endswith("not a raw stream")
+    assert data["error_category"] == "runtime_error"
+    assert data["event_types"] == ["assistant", "result", "system"]
+    assert data["tool_names"] == [] and data["usage"]["input_tokens"] == 0
+    assert not data["sentinel_returned"] and not data["forbidden_exists"]
+    assert data["cost_usd"] == 0.0
+
+
+def test_cli_exits_nonzero_after_failed_runtime_probe(monkeypatch, capsys, tmp_path):
+    from middle_man.cli import claude_benchmark
+
+    monkeypatch.setattr(claude_benchmark, "discover_cli", lambda: CLI)
+    monkeypatch.setattr(claude_benchmark, "run_runtime_probes",
+                        lambda *args, **kwargs: {"model_calls": 1, "probes": [{"status": "FAIL"}]})
+    with pytest.raises(SystemExit) as exc:
+        main(["claude", "benchmark", "runtime-probe", "--repo", str(tmp_path),
+              "--confirm-external-service"])
+    assert exc.value.code == 1
+    assert '"status": "FAIL"' in capsys.readouterr().out

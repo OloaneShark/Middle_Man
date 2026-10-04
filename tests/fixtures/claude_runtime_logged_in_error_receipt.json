@@ -1,0 +1,26 @@
+{
+  "source": "sanitized fresh Phase 23.2 runtime observation, not a raw stream",
+  "run_id": "d301011ba7254d6cb68e2608ca19fc75",
+  "probe_type": "read-only",
+  "exit_code": 1,
+  "stream_status": "error",
+  "event_types": ["assistant", "result", "system"],
+  "tool_names": [],
+  "observed_model": "<synthetic>",
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0
+  },
+  "cost_usd": 0.0,
+  "duration_ms": 541,
+  "duration_api_ms": 0,
+  "num_turns": 1,
+  "error_category": "runtime_error",
+  "sentinel_returned": false,
+  "forbidden_exists": false,
+  "filesystem_invariant_passed": true,
+  "mcp_isolation_passed": true,
+  "primary_integrity_passed": true
+}

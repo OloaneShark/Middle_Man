@@ -80,6 +80,8 @@ def run_claude_benchmark(args: argparse.Namespace) -> None:
         except (RuntimeError, ValueError) as exc:
             raise SystemExit(str(exc)) from exc
         print(json.dumps(result, indent=2))
+        if not args.dry_run and any(probe.get("status") != "PASS" for probe in result["probes"]):
+            raise SystemExit(1)
         return
     if action == "report":
         if not args.run_id or not all(char.isalnum() or char in "-_" for char in args.run_id):

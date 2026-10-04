@@ -228,6 +228,8 @@ Phase 23.1 validated local Claude Code `2.1.289` help on 2026-10-04. It document
 
 Phase 23.2 adds a separate, confirmation-gated `claude benchmark runtime-probe` path for tiny disposable protocol checks, never frozen benchmark tasks. Its first authorized read-only call returned an authentication-category error before any tool use; the harness stopped at **one** call, with no retry or write probe. The observed error stream parsed, and the disposable filesystem, primary Git state, and MCP isolation checks remained unchanged. Authentication, real Read/Write/Bash behavior, and read-only enforcement are still unverified. This was **not** an A/B or a token-saving result, and the first real Claude Task A pair is not yet ready to authorize. See [Claude integration](docs/CLAUDE_INTEGRATION.md#phase-232-runtime-probe).
 
+After `claude auth status` was reported logged in, a fresh authorized read-only runtime call still exited 1 before tool use, with a generic runtime-error category. It returned no sentinel, did not create `forbidden.txt`, and left the disposable files and primary repository unchanged. The write probe was **not** run; no retry or additional model call was made. The CLI now reports failed probes with a nonzero exit status. Logged-in status alone has not established usable model access or read-only enforcement. No Claude benchmark A/B or token-saving claim resulted.
+
 ## Scope
 
 Claude integration is a local dry-run/parser surface only; provider adapters are not implemented. The local server does not call a model or provider API; the explicit Phase 22 harness can invoke the installed Codex CLI. No Claude token-saving result or provider billing/plan-usage saving is claimed.
