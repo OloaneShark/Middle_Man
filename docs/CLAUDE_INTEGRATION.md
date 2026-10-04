@@ -1,6 +1,6 @@
-# Claude Code Integration (Phase 23.1)
+# Claude Code Integration (Phase 23.2)
 
-Phase 23 is local-only. The Claude benchmark command has no inference execution path, even with `--confirm-external-service`. No Claude A/B result or Claude token-saving claim exists.
+The Claude **benchmark** command remains dry-run-only, even with `--confirm-external-service`. Phase 23.2 adds a separate, confirmation-gated runtime protocol probe. It is not an A/B or token-efficiency test. No Claude A/B result or Claude token-saving claim exists.
 
 ## Commands
 
@@ -10,6 +10,7 @@ python -m middle_man claude benchmark preflight
 python -m middle_man claude benchmark run preemption-v4 --dry-run --model sonnet
 python -m middle_man claude benchmark run large-edit-v1 --dry-run --optimized-mode offline-auto
 python -m middle_man claude benchmark report <run-id>
+python -m middle_man claude benchmark runtime-probe --dry-run
 ```
 
 `preflight` looks for `claude` on PATH and, if found, calls only `claude --version` and `claude --help`. It records declared flags, documented option values, and the local Windows/shell environment. A missing CLI is reported cleanly; synthetic tests and previews remain usable. Command arguments are emitted only when help confirms the required flags and isolation semantics. Requested model is recorded; observed model remains unknown until a future real stream reports it.
@@ -20,7 +21,7 @@ Claude Code `2.1.289 (Claude Code)` was found at `%USERPROFILE%\.local\bin\claud
 
 The same help documents `--allowedTools`/`--allowed-tools`, `--disallowedTools`/`--disallowed-tools`, `--permission-mode` (acceptEdits, auto, bypassPermissions, manual, dontAsk, plan), `--permission-prompts`, `--mcp-config`, `--strict-mcp-config`, `--safe-mode`, `--restricted`, `--setting-sources` (user, project, local), and `--no-session-persistence`. It does **not** document `--max-turns` in this version. The builder accepts a configured turn limit only when a future installed help documents that flag; a requested limit currently fails closed. It never supplies an artificially small default.
 
-The validated construction shape is `claude -p <redacted prompt> --output-format stream-json --verbose --safe-mode --restricted --strict-mcp-config --no-session-persistence --model <configured model> --tools <profile>`. Both sides receive identical controls. No command of this shape has been executed. Neither `--dangerously-skip-permissions` nor a permission-mode value is used; help lists modes but does not explain enough runtime semantics to select one for the benchmark.
+The validated construction shape is `claude -p <redacted prompt> --output-format stream-json --verbose --safe-mode --restricted --strict-mcp-config --no-session-persistence --model <configured model> --tools <profile>`. Both benchmark preview sides receive identical controls. Phase 23.2 attempted one tiny read-only runtime call of this shape; the write call was not started after the read failed. Neither `--dangerously-skip-permissions` nor a permission-mode value is used; help lists modes but does not explain enough runtime semantics to select one for the benchmark.
 
 The read-only profile whitelists `Read,Glob,Grep`; it does not include Bash or edit tools. The workspace-write profile lists `Read,Glob,Grep,Edit,Write,Bash` under ordinary CLI permissions. `--restricted` confines file tools to working directories and removes code-running tools unless `--tools` names them; the write profile intentionally names Bash. These are documented CLI restrictions, **not** a proven OS sandbox or runtime permission test. A future live benchmark must separately validate that writes are blocked in the read-only profile and allowed appropriately in the edit profile.
 
@@ -42,4 +43,12 @@ The synthetic-fixture parser accepts Claude-style stream-json lines, tolerates u
 
 Tool-use blocks classify `Read`, `Grep`, `Glob`, `Edit`, `MultiEdit`, `Write`, and `Bash`; unknown tools remain `other`. Unique paths and repeated explicit `Read` calls are counted. Bash command text is not heuristically reclassified as file reads. These are observed native events, not Codex event assumptions.
 
-The next Phase 23 substep is a separately authorized, controlled validation of actual read-only/write permission behavior, tool availability, stream event shape, and any managed policy effects. The current harness remains dry-run-only and is **not yet safe enough to authorize a real Claude A/B** on local-help evidence alone. A real pair requires separate authorization. Phase 24 provider adapters are not started.
+## Phase 23.2 Runtime Probe
+
+`runtime-probe` is separate from frozen benchmark tasks. `--dry-run` constructs redacted commands without a model call; a non-dry invocation requires `--confirm-external-service`. The harness uses two independent temporary Git roots outside the primary repository, checks project/ancestor Claude memory, creates only a harmless sentinel, applies the same safe/restricted/strict-MCP controls, and has a 120-second process timeout. It caps a run at two model calls and stops after the first failed probe. Raw stdout is held only in memory for parsing. Persisted results contain sanitized event types, tool names, relative disposable paths, provider-reported usage, cost, status, and error category, not raw prompts or configuration contents. The primary repository must begin Git-clean and its HEAD, status, and four frozen Phase 22 hashes must remain unchanged around each call. These controls are tested with mocked Claude processes.
+
+The actual Phase 23.2 attempt used a disposable driver before tracked source edits, keeping the primary repository Git-clean during the call. Run ID `phase23-2-runtime-20261004` attempted **one** Claude model invocation. The read-only probe exited 1 after 0.797 seconds with an **authentication-category error**. The stream contained `system`, `assistant`, and `result` events and parsed as an error. It had no tool-use or tool-result events, no sentinel content returned, and no observed Read/Write/Edit/Bash action. The model field was `<synthetic>`, not verification of the requested `sonnet` model. The parser observed zeros for input, output, cache-creation, and cache-read usage, cost 0.0, duration 109 ms, API duration 0 ms, and one turn. These fields describe an unsuccessful request, not measured task usage or savings.
+
+`forbidden.txt` did not exist; the disposable source fingerprint and primary Git state stayed unchanged. No MCP server/tool event or configuration was observed. Project-memory checks passed. No managed-policy warning was observed, but silent policy effects remain possible. The workspace-write probe was **not run**, and there was no retry or second model call. A sanitized observation receipt is in `tests/fixtures/claude_runtime_auth_failure_receipt.json`; it is explicitly **not** a raw stream-json fixture. The existing parser handled the observed error-path fields without correction. Actual successful tool-result shape, Read/Write/Bash availability, permission enforcement, and authentication cause remain unverified.
+
+**Not ready for a real Task A Claude A/B.** Authentication did not complete, Read was not exercised, and the read-only filesystem invariant was not tested against actual tool use. A future runtime check and any real A/B require separate authorization; do not retry under the Phase 23.2 authorization. Phase 24 provider adapters are not started.

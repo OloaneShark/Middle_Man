@@ -13,6 +13,7 @@ from middle_man.gateway.claude_benchmark.infrastructure import (
     discover_cli, memory_contamination, user_memory_presence,
 )
 from middle_man.gateway.claude_benchmark.runner import MODES, preview_pair
+from middle_man.gateway.claude_benchmark.runtime_probe import run_runtime_probes
 from middle_man.gateway.codex_benchmark.tasks import TASKS
 
 
@@ -39,6 +40,10 @@ def add_claude_benchmark_commands(subparsers: argparse._SubParsersAction) -> Non
     report = actions.add_parser("report", help="read a saved local preview")
     report.add_argument("run_id")
     report.add_argument("--repo", type=Path, default=Path("."))
+    probe = actions.add_parser("runtime-probe", help="isolated protocol checks, never benchmark tasks")
+    probe.add_argument("--repo", type=Path, default=Path("."))
+    probe.add_argument("--dry-run", action="store_true")
+    probe.add_argument("--confirm-external-service", action="store_true")
 
 
 def run_claude_benchmark(args: argparse.Namespace) -> None:
@@ -64,6 +69,18 @@ def run_claude_benchmark(args: argparse.Namespace) -> None:
             raise SystemExit(1)
         return
     root = args.repo.resolve()
+    if action == "runtime-probe":
+        if not args.dry_run and not args.confirm_external_service:
+            raise SystemExit("Claude runtime probes call an external model; pass --confirm-external-service")
+        cli = discover_cli()
+        try:
+            result = run_runtime_probes(root, cli, confirmed=args.confirm_external_service,
+                                        dry_run=args.dry_run,
+                                        artifact_root=root / ".middle_man_cache" / "claude_runtime_probes")
+        except (RuntimeError, ValueError) as exc:
+            raise SystemExit(str(exc)) from exc
+        print(json.dumps(result, indent=2))
+        return
     if action == "report":
         if not args.run_id or not all(char.isalnum() or char in "-_" for char in args.run_id):
             raise SystemExit("invalid preview run ID")
