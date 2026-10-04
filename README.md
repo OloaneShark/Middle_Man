@@ -155,6 +155,8 @@ Handoffs are immutable versioned JSON records under `.middle_man_cache/handoffs/
 
 ## MCP and Codex
 
+For an ordinary repository task, the new **production-oriented Codex preview** is `middle-man codex run --repo . --read-only --dry-run "Explain this project"` or `middle-man codex run --repo . --workspace-write --dry-run "Fix a bug"`. It accepts arbitrary quoted task text, requires exactly one mode, preserves bypass prompts byte-for-byte, and currently makes **no external model call**. It reuses the locked source-free offline AUTO policy. See [Codex integration](docs/CODEX_INTEGRATION.md). This is separate from `middle-man codex benchmark ...`, which remains a frozen-snapshot research harness.
+
 Install the optional SDK and run the local stdio server for one repository:
 
 ```bash
@@ -215,6 +217,8 @@ The one demonstrated real Codex input saving is Task A: **86,515 -> 38,269** (-4
 Local heuristic tokens size Middle_Man's prepared text; **Codex-reported input** measures an entire observed model conversation. They are not interchangeable. No universal, edit-task, billing, or quota saving is claimed. MCP remains available for interactive repository navigation, diagnostics, and explicit context workflows, but measured persistent-MCP Codex pairs do not make it the preferred token-saving path. Phase 23 adds a local-only Claude Code integration preview, not a real Claude benchmark. Details and frozen evidence are in [Codex benchmarks](docs/CODEX_BENCHMARKS.md#phase-22-final-status).
 
 ## Claude Code Preview (Phase 23)
+
+**Paused:** Claude integration work is retained, but the available Console account currently has no funded model access. No Claude benchmark completed. The failed runtime probes do not establish Claude quality or token performance; no further Claude model calls are part of the current Codex productization work.
 
 ```bash
 python -m middle_man claude benchmark preflight

@@ -1,5 +1,7 @@
 # Claude Code Integration (Phase 23.2)
 
+**Paused:** the available Console account currently has no funded model access. Existing code and probe evidence are retained; no Claude benchmark completed. This account status does not explain the sanitized runtime-error category, and no Claude quality or token-performance claim is made.
+
 The Claude **benchmark** command remains dry-run-only, even with `--confirm-external-service`. Phase 23.2 adds a separate, confirmation-gated runtime protocol probe. It is not an A/B or token-efficiency test. No Claude A/B result or Claude token-saving claim exists.
 
 ## Commands

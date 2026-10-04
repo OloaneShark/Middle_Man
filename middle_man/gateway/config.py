@@ -23,6 +23,7 @@ class GatewayConfig:
     follow_symlinks: bool = False
     git_enabled: bool = True
     syntax_parsing: bool = True
+    cache_writes_enabled: bool = True
     max_search_results: int = 10
     minimum_score: float = 1.0
 

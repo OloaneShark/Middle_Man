@@ -189,7 +189,8 @@ class RepositoryIndexer:
                            files_deleted=counts["files_deleted"], files_unchanged=counts["files_unchanged"],
                            files_reparsed=counts["files_reparsed"], cache_hits=counts["cache_hits"], cache_misses=counts["cache_misses"],
                            ignored=counts["ignored"], parse_errors=counts["parse_errors"], index_duration_ms=(perf_counter() - start) * 1000)
-        self.cache.save(config.repository_root, files, parse_settings)
+        if config.cache_writes_enabled:
+            self.cache.save(config.repository_root, files, parse_settings)
         return RepositoryIndex(identity, files, relations, stats, changed)
 
     def _scan_file(self, path: Path, relative: str, cached: IndexedFile | None, counts: Counter[str]) -> IndexedFile:

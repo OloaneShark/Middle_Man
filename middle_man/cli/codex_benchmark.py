@@ -24,11 +24,13 @@ from middle_man.gateway.context_builder import ContextBuilder
 from middle_man.gateway.relevance import ContextQuery
 from middle_man.gateway.codex_benchmark.infrastructure import run_local_preflight
 from middle_man.mcp.benchmark_receipts import BenchmarkPolicy
+from middle_man.cli.codex_run import add_codex_run_command
 
 
 def add_codex_benchmark_commands(subparsers: argparse._SubParsersAction) -> None:
     codex = subparsers.add_parser("codex", help="real Codex integration measurements")
     codex_commands = codex.add_subparsers(dest="codex_action", required=True)
+    add_codex_run_command(codex_commands)
     benchmark = codex_commands.add_parser("benchmark", help="isolated Codex A/B context benchmark")
     actions = benchmark.add_subparsers(dest="benchmark_action", required=True)
     listing = actions.add_parser("list", help="list versioned benchmark tasks")
