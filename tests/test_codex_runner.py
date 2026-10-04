@@ -116,7 +116,7 @@ def test_codex_discovery_checks_documented_help(monkeypatch: pytest.MonkeyPatch)
             return SimpleNamespace(stdout="codex-cli 0.155.0\n")
         if command[-1] == "--help" and "exec" not in command:
             return SimpleNamespace(stdout="--no-daemon --ask-for-approval --strict-config")
-        return SimpleNamespace(stdout="--ignore-user-config --sandbox read-only workspace-write --cd --model --config --ephemeral")
+        return SimpleNamespace(stdout="--ignore-user-config --sandbox read-only workspace-write --cd --model --config --ephemeral --json")
 
     monkeypatch.setattr("middle_man.gateway.codex_runner.infrastructure.subprocess.run", fake_run)
     assert discover_codex().version == "codex-cli 0.155.0"

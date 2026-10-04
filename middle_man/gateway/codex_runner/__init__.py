@@ -1,1 +1,1 @@
-"""Local-only preview of the production Codex path."""
+"""Production Codex preview and confirmation-gated execution."""

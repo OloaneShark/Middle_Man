@@ -155,7 +155,7 @@ Handoffs are immutable versioned JSON records under `.middle_man_cache/handoffs/
 
 ## MCP and Codex
 
-For an ordinary repository task, the new **production-oriented Codex preview** is `middle-man codex run --repo . --read-only --dry-run "Explain this project"` or `middle-man codex run --repo . --workspace-write --dry-run "Fix a bug"`. It accepts arbitrary quoted task text, requires exactly one mode, preserves bypass prompts byte-for-byte, and currently makes **no external model call**. It reuses the locked source-free offline AUTO policy. See [Codex integration](docs/CODEX_INTEGRATION.md). This is separate from `middle-man codex benchmark ...`, which remains a frozen-snapshot research harness.
+For an ordinary repository task, `middle-man codex run --repo . --read-only --dry-run "Explain this project"` previews local source-free AUTO routing without an external call. Live execution is implemented behind `--confirm-external-service` instead of `--dry-run`; it runs at most one Codex process and remains **untested against the real service**. Read-only requires repository integrity after Codex; workspace-write permits changes to the real worktree. Bypass preserves the task bytes exactly. See [Codex integration](docs/CODEX_INTEGRATION.md). This is separate from `middle-man codex benchmark ...`, the frozen-snapshot research harness.
 
 Install the optional SDK and run the local stdio server for one repository:
 

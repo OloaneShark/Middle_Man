@@ -4,7 +4,7 @@ import argparse
 
 from middle_man.cli.benchmark import run_benchmark
 from middle_man.cli.codex_benchmark import add_codex_benchmark_commands, run_codex_benchmark
-from middle_man.cli.codex_run import run_codex_preview
+from middle_man.cli.codex_run import run_codex_command
 from middle_man.cli.claude_benchmark import add_claude_benchmark_commands, run_claude_benchmark
 from middle_man.cli.gateway import add_gateway_commands, run_gateway
 from middle_man.cli.state import add_state_commands, run_state
@@ -80,7 +80,7 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args.command == "codex":
         if args.codex_action == "run":
-            run_codex_preview(args)
+            run_codex_command(args)
         else:
             run_codex_benchmark(args)
         return
