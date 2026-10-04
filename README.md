@@ -222,7 +222,9 @@ python -m middle_man claude benchmark run preemption-v4 --dry-run --model sonnet
 python -m middle_man claude benchmark run large-edit-v1 --dry-run
 ```
 
-The dry-run prepares clean, source-identical snapshots and previews the conservative offline AUTO policy: substantial read-only tasks may receive a source-free locator; edit tasks bypass with identical prompts and zero model-visible Middle_Man tokens. No Claude inference is enabled. The synthetic stream-json parser records provider usage only when observed and keeps it separate from Middle_Man heuristic sizes and cost. Snapshot/ancestor `CLAUDE.md` and `CLAUDE.local.md` cause preflight rejection; user-level Claude memory isolation still needs validation on an installed CLI. See [Claude integration](docs/CLAUDE_INTEGRATION.md).
+The dry-run prepares clean, source-identical snapshots and previews the conservative offline AUTO policy: substantial read-only tasks may receive a source-free locator; edit tasks bypass with identical prompts and zero model-visible Middle_Man tokens. No Claude inference is enabled. The synthetic stream-json parser records provider usage only when observed and keeps it separate from Middle_Man heuristic sizes and cost. Snapshot/ancestor `CLAUDE.md` and `CLAUDE.local.md` cause preflight rejection.
+
+Phase 23.1 validated local Claude Code `2.1.289` help on 2026-10-04. It documents `stream-json`, comma-separated `--tools`, the `sonnet` model alias, and `--safe-mode --restricted --strict-mcp-config` isolation controls; it does not document `--max-turns`. Dry-run commands now include the validated isolation controls on both sides. User memory files were absent, while user settings existed but were not read; the CLI's restricted mode documents ignoring those settings. Runtime permission enforcement, managed policy, authentication, and real stream event behavior remain unverified. See [Claude integration](docs/CLAUDE_INTEGRATION.md).
 
 ## Scope
 

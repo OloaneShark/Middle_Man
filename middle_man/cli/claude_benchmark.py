@@ -9,7 +9,9 @@ from dataclasses import asdict
 from pathlib import Path
 from uuid import uuid4
 
-from middle_man.gateway.claude_benchmark.infrastructure import discover_cli, memory_contamination
+from middle_man.gateway.claude_benchmark.infrastructure import (
+    discover_cli, memory_contamination, user_memory_presence,
+)
 from middle_man.gateway.claude_benchmark.runner import MODES, preview_pair
 from middle_man.gateway.codex_benchmark.tasks import TASKS
 
@@ -32,7 +34,6 @@ def add_claude_benchmark_commands(subparsers: argparse._SubParsersAction) -> Non
     run.add_argument("--model", default="sonnet")
     run.add_argument("--optimized-mode", choices=MODES, default="offline-auto")
     run.add_argument("--max-turns", type=int)
-    run.add_argument("--setting-sources", help="pass only if documented by installed Claude help")
     run.add_argument("--dry-run", action="store_true")
     run.add_argument("--confirm-external-service", action="store_true")
     report = actions.add_parser("report", help="read a saved local preview")
@@ -53,7 +54,11 @@ def run_claude_benchmark(args: argparse.Namespace) -> None:
         print(json.dumps({**asdict(cli), "ready": cli.ready,
                           "snapshot_parent": str(parent),
                           "project_memory_paths": [str(path) for path in issues],
-                          "user_memory_isolation": "unresolved; no installed documented isolation verified",
+                          "user_memory_paths": user_memory_presence(Path.home()),
+                          "user_memory_isolation": "safe-mode disables CLAUDE.md discovery; "
+                                                   "restricted ignores user/project/local settings; "
+                                                   "managed policy and runtime enforcement remain unverified",
+                          "mcp_isolation": "safe-mode disables MCP; strict-mcp-config ignores inherited MCP",
                           "inference_enabled": False}, indent=2))
         if not cli.ready or issues:
             raise SystemExit(1)
@@ -73,17 +78,20 @@ def run_claude_benchmark(args: argparse.Namespace) -> None:
         raise SystemExit("model must be nonempty and max-turns must be positive if supplied")
     cli = discover_cli()
     task = next(item for item in _SUPPORTED if item.id == args.task)
-    with tempfile.TemporaryDirectory(prefix="middle-man-claude-preview-") as temporary:
-        preview = preview_pair(task, Path(temporary) / "pair", cli, model=args.model,
-                               mode=args.optimized_mode, max_turns=args.max_turns,
-                               setting_sources=args.setting_sources)
+    try:
+        with tempfile.TemporaryDirectory(prefix="middle-man-claude-preview-") as temporary:
+            preview = preview_pair(task, Path(temporary) / "pair", cli, model=args.model,
+                                   mode=args.optimized_mode, max_turns=args.max_turns)
+    except (RuntimeError, ValueError) as exc:
+        raise SystemExit(str(exc)) from exc
     run_id = uuid4().hex
     path = root / ".middle_man_cache" / "claude_benchmarks" / run_id / "preview.json"
     path.parent.mkdir(parents=True, exist_ok=False)
     data = {"run_id": run_id, "dry_run": True, "cli_version": cli.version, "cli_error": cli.error,
             "claude_invocation_shape": "claude -p <redacted prompt> --output-format stream-json --verbose "
-                                       "--model <configured model> --tools <permission profile>"
-                                       " [--max-turns N] [--setting-sources SOURCES]",
+                                       "--safe-mode --restricted --strict-mcp-config "
+                                       "[--no-session-persistence] --model <configured model> "
+                                       "--tools <permission profile> [--max-turns N]",
             **asdict(preview)}
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(data, indent=2))

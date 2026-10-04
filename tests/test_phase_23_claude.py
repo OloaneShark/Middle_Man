@@ -9,6 +9,7 @@ from middle_man.cli.main import main
 from middle_man.gateway.claude_benchmark.events import parse_stream_json
 from middle_man.gateway.claude_benchmark.infrastructure import (
     ClaudeCli, discover_cli, git_clean, memory_contamination, require_memory_isolation,
+    user_memory_presence,
 )
 from middle_man.gateway.claude_benchmark.runner import (
     READ_TOOLS, WRITE_TOOLS, build_invocation, preview_pair, prepare_snapshots,
@@ -18,8 +19,40 @@ from middle_man.gateway.codex_benchmark.tasks import TASKS
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FLAGS = ("-p", "--output-format", "--verbose", "--model", "--tools", "--max-turns",
-         "--setting-sources")
-CLI = ClaudeCli("claude", "synthetic", FLAGS, "os=nt", None)
+         "--setting-sources", "--safe-mode", "--restricted", "--strict-mcp-config",
+         "--no-session-persistence")
+CLI = ClaudeCli("claude", "synthetic", FLAGS, "os=nt", None, supports_stream_json=True,
+                supports_max_turns=True, supports_setting_sources=True,
+                setting_source_values=("user", "project", "local"), supports_tool_filtering=True,
+                supports_mcp_isolation=True, supports_safe_mode=True, supports_restricted_mode=True,
+                supports_no_session_persistence=True)
+HELP = """Usage: claude [options] [prompt]
+Options:
+  -p, --print                           Print response and exit
+  --output-format <format>              Choices: "text", "json", "stream-json"
+  --verbose                             Override verbose mode
+  --model <model>                       Alias 'sonnet' or full name
+  --tools <tools...>                    Specify the list of available tools from the built-in set.
+                                        Use "" to disable all tools, "default" to use all tools,
+                                        or specify tool names (e.g. "Bash,Edit,Read").
+  --max-turns <number>                  Maximum turns
+  --setting-sources <sources>           Comma-separated list of setting sources to load (user, project, local).
+  --permission-mode <mode>              Choices: "manual", "plan"
+  --allowedTools, --allowed-tools <tools...>
+                                        Comma or space-separated list of tool names to allow
+  --disallowedTools, --disallowed-tools <tools...>
+                                        Comma or space-separated list of tool names to deny
+  --mcp-config <configs...>             Load MCP servers
+  --strict-mcp-config                   Only use MCP servers from --mcp-config,
+                                        ignoring all other MCP configurations
+  --safe-mode                           Start with all customizations (CLAUDE.md, MCP servers)
+                                        disabled
+  --restricted                          Restricted mode: ignores user, project and local
+                                        settings files
+  --no-session-persistence              Disable session persistence
+Commands:
+  auth
+"""
 
 
 def task(name):
@@ -43,15 +76,22 @@ def test_cli_discovery_version_help_only(monkeypatch):
 
     def fake_run(args, **kwargs):
         calls.append(args[-1])
-        return type("Result", (), {"stdout": "2.0.0" if args[-1] == "--version" else
-                     "-p --output-format --verbose --model --tools --max-turns --setting-sources",
+        return type("Result", (), {"stdout": "test-release" if args[-1] == "--version" else HELP,
                      "stderr": ""})()
 
     monkeypatch.setattr("middle_man.gateway.claude_benchmark.infrastructure.subprocess.run", fake_run)
     found = discover_cli()
-    assert found.ready and found.version == "2.0.0"
+    assert found.ready and found.version == "test-release"
     assert calls == ["--version", "--help"]
-    assert "--setting-sources" in found.flags
+    assert found.supports_stream_json and found.stream_json_requires_verbose is None
+    assert found.supports_max_turns and found.supports_setting_sources
+    assert found.setting_source_values == ("user", "project", "local")
+    assert found.supports_tool_filtering and found.supports_permission_mode
+    assert found.permission_modes == ("manual", "plan")
+    assert found.supports_allowed_tools and found.supports_disallowed_tools
+    assert found.supports_mcp_config and found.supports_mcp_isolation
+    assert found.supports_safe_mode and found.supports_restricted_mode
+    assert found.supports_no_session_persistence and found.model_aliases == ("sonnet",)
 
 
 def test_discovery_fails_closed_on_missing_flags(monkeypatch):
@@ -61,6 +101,36 @@ def test_discovery_fails_closed_on_missing_flags(monkeypatch):
                         lambda args, **kwargs: type("Result", (), {"stdout": "1.0" if args[-1] == "--version" else
                                                                   "-p --verbose", "stderr": ""})())
     assert not discover_cli().ready
+
+
+def test_missing_isolation_or_stream_json_fails_closed(monkeypatch):
+    monkeypatch.setattr("middle_man.gateway.claude_benchmark.infrastructure.shutil.which",
+                        lambda _: "claude")
+
+    def inspect(help_text):
+        monkeypatch.setattr("middle_man.gateway.claude_benchmark.infrastructure.subprocess.run",
+                            lambda args, **kwargs: type("Result", (), {
+                                "stdout": "test-release" if args[-1] == "--version" else help_text,
+                                "stderr": ""})())
+        return discover_cli()
+
+    assert not inspect(HELP.replace("--strict-mcp-config", "--legacy-mcp-config")).ready
+    assert not inspect(HELP.replace('"stream-json"', '"jsonl"')).ready
+    assert not inspect(HELP.replace("Specify the list of available tools", "Tool option")).ready
+
+
+def test_optional_max_turns_absent_is_recorded_and_rejected(monkeypatch):
+    monkeypatch.setattr("middle_man.gateway.claude_benchmark.infrastructure.shutil.which",
+                        lambda _: "claude")
+    help_text = HELP.replace("  --max-turns <number>                  Maximum turns\n", "")
+    monkeypatch.setattr("middle_man.gateway.claude_benchmark.infrastructure.subprocess.run",
+                        lambda args, **kwargs: type("Result", (), {
+                            "stdout": "test-release" if args[-1] == "--version" else help_text,
+                            "stderr": ""})())
+    cli = discover_cli()
+    assert cli.ready and not cli.supports_max_turns
+    with pytest.raises(RuntimeError, match="max-turns"):
+        build_invocation(cli, model="sonnet", read_only=True, max_turns=10, prompt="task")
 
 
 def test_command_profiles_model_and_turns():
@@ -74,9 +144,15 @@ def test_command_profiles_model_and_turns():
     assert write[write.index("--model") + 1] == "custom-model"
     assert "--max-turns" not in write
     assert not any("dangerously" in part for part in readonly + write)
+    for flag in ("--safe-mode", "--restricted", "--strict-mcp-config", "--no-session-persistence"):
+        assert flag in readonly and flag in write
+    assert "--mcp-config" not in readonly and "--setting-sources" not in readonly
     isolated = build_invocation(CLI, model="sonnet", read_only=True, max_turns=None,
                                 prompt="task", setting_sources="project")
     assert isolated[-2:] == ("--setting-sources", "project")
+    with pytest.raises(ValueError, match="documented"):
+        build_invocation(CLI, model="sonnet", read_only=True, max_turns=None,
+                         prompt="task", setting_sources="machine")
 
 
 def test_command_requires_documented_flags_and_valid_turns():
@@ -150,6 +226,33 @@ def test_ancestor_memory_rejected(tmp_path, name):
         require_memory_isolation(child)
 
 
+def test_user_memory_audit_reads_existence_only(tmp_path, monkeypatch):
+    directory = tmp_path / ".claude"
+    directory.mkdir()
+    (directory / "settings.json").write_text("secret material", encoding="utf-8")
+    monkeypatch.setattr(Path, "read_text", lambda *args, **kwargs: pytest.fail("memory contents read"))
+    monkeypatch.setattr(Path, "read_bytes", lambda *args, **kwargs: pytest.fail("memory contents read"))
+    audit = user_memory_presence(tmp_path)
+    assert audit[str(directory / "settings.json")] is True
+    assert audit[str(directory / "CLAUDE.md")] is False
+    assert "secret material" not in str(audit)
+
+
+def test_preflight_reports_existence_not_memory_contents(tmp_path, monkeypatch, capsys):
+    from middle_man.cli import claude_benchmark
+
+    directory = tmp_path / ".claude"
+    directory.mkdir()
+    (directory / "settings.json").write_text("PRIVATE_TOKEN_VALUE", encoding="utf-8")
+    monkeypatch.setattr(claude_benchmark, "discover_cli", lambda: CLI)
+    monkeypatch.setattr(claude_benchmark, "user_memory_presence",
+                        lambda _: user_memory_presence(tmp_path))
+    main(["claude", "benchmark", "preflight", "--snapshot-root", str(tmp_path)])
+    output = capsys.readouterr().out
+    assert "PRIVATE_TOKEN_VALUE" not in output
+    assert json.loads(output)["user_memory_paths"][str(directory / "settings.json")] is True
+
+
 def test_snapshots_source_identical_committed_clean_and_without_mcp(tmp_path):
     baseline, optimized, fingerprint = prepare_snapshots(task("large-edit-v1"), tmp_path / "pair")
     assert fingerprint and git_clean(baseline) and git_clean(optimized)
@@ -172,6 +275,8 @@ def test_task_a_auto_locator_source_free_and_no_hidden_tests(tmp_path):
     assert "source-free locator" in value.optimized_command[2]
     assert "acceptance" not in value.optimized_command[2].lower()
     assert "middleman" not in " ".join(value.optimized_command)
+    assert all(flag in value.baseline_command and flag in value.optimized_command
+               for flag in ("--safe-mode", "--restricted", "--strict-mcp-config"))
 
 
 def test_large_edit_auto_bypass_exact_prompt_and_zero_tokens(tmp_path):

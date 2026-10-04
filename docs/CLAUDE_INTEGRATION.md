@@ -1,4 +1,4 @@
-# Claude Code Integration (Phase 23)
+# Claude Code Integration (Phase 23.1)
 
 Phase 23 is local-only. The Claude benchmark command has no inference execution path, even with `--confirm-external-service`. No Claude A/B result or Claude token-saving claim exists.
 
@@ -12,9 +12,17 @@ python -m middle_man claude benchmark run large-edit-v1 --dry-run --optimized-mo
 python -m middle_man claude benchmark report <run-id>
 ```
 
-`preflight` looks for `claude` on PATH and, if found, calls only `claude --version` and `claude --help`. It records observed flags and the local Windows/shell environment. A missing CLI is reported cleanly; synthetic tests and previews remain usable. The planned non-interactive shape is `claude -p <redacted prompt> --output-format stream-json --verbose --model <configured model> --tools <profile> [--max-turns N]`. Actual command arguments are emitted only when local help confirms all required flags. `--max-turns` has no implicit tiny default. Requested model is recorded; observed model remains unknown until a future real stream reports it. An optional `--setting-sources` argument is forwarded only if local help documents that flag. This is not proof that user memory has been isolated.
+`preflight` looks for `claude` on PATH and, if found, calls only `claude --version` and `claude --help`. It records declared flags, documented option values, and the local Windows/shell environment. A missing CLI is reported cleanly; synthetic tests and previews remain usable. Command arguments are emitted only when help confirms the required flags and isolation semantics. Requested model is recorded; observed model remains unknown until a future real stream reports it.
 
-The read-only profile whitelists `Read,Glob,Grep`; it does not include Bash or edit tools. The workspace-write profile lists `Read,Glob,Grep,Edit,Write,Bash` under ordinary CLI permissions. Neither profile uses `--dangerously-skip-permissions`. These are CLI tool restrictions, not an OS sandbox; a future live benchmark must validate the installed CLI and its permission behavior independently.
+### Local validation, 2026-10-04
+
+Claude Code `2.1.289 (Claude Code)` was found at `%USERPROFILE%\.local\bin\claude.exe` on native Windows. This is an observation of one installed CLI, not a permanent version requirement. Its help documents `-p`, `--output-format` with `stream-json`, `--verbose`, `--model` (including alias `sonnet`), and `--tools`. `--tools <tools...>` accepts a comma-separated built-in list such as `Bash,Edit,Read`; Middle_Man's `Read,Glob,Grep` and `Read,Glob,Grep,Edit,Write,Bash` strings match that format. Help does not enumerate every built-in tool name, so individual availability beyond its examples is not runtime-verified. Help does not state that `--verbose` is required for `stream-json`; the builder retains it.
+
+The same help documents `--allowedTools`/`--allowed-tools`, `--disallowedTools`/`--disallowed-tools`, `--permission-mode` (acceptEdits, auto, bypassPermissions, manual, dontAsk, plan), `--permission-prompts`, `--mcp-config`, `--strict-mcp-config`, `--safe-mode`, `--restricted`, `--setting-sources` (user, project, local), and `--no-session-persistence`. It does **not** document `--max-turns` in this version. The builder accepts a configured turn limit only when a future installed help documents that flag; a requested limit currently fails closed. It never supplies an artificially small default.
+
+The validated construction shape is `claude -p <redacted prompt> --output-format stream-json --verbose --safe-mode --restricted --strict-mcp-config --no-session-persistence --model <configured model> --tools <profile>`. Both sides receive identical controls. No command of this shape has been executed. Neither `--dangerously-skip-permissions` nor a permission-mode value is used; help lists modes but does not explain enough runtime semantics to select one for the benchmark.
+
+The read-only profile whitelists `Read,Glob,Grep`; it does not include Bash or edit tools. The workspace-write profile lists `Read,Glob,Grep,Edit,Write,Bash` under ordinary CLI permissions. `--restricted` confines file tools to working directories and removes code-running tools unless `--tools` names them; the write profile intentionally names Bash. These are documented CLI restrictions, **not** a proven OS sandbox or runtime permission test. A future live benchmark must separately validate that writes are blocked in the read-only profile and allowed appropriately in the edit profile.
 
 ## Offline Pair
 
@@ -24,7 +32,9 @@ The preview JSON saved under `.middle_man_cache/claude_benchmarks/<run-id>/previ
 
 ## Memory Isolation
 
-Before a disposable pair is committed, Phase 23 rejects `CLAUDE.md` and `CLAUDE.local.md` in either snapshot root or any ancestor directory. Preflight reports ancestor memory for the planned snapshot parent. This protects against project/ancestor instruction contamination only. The installed CLI was absent during Phase 23 implementation, so no documented user-setting source isolation could be verified; user-level Claude memory remains an unresolved blocker for a real A/B. Do not edit the user's Claude configuration to work around it.
+Before a disposable pair is committed, Phase 23 rejects `CLAUDE.md` and `CLAUDE.local.md` in either snapshot root or any ancestor directory. Preflight reports ancestor memory for the planned snapshot parent and existence only for `%USERPROFILE%\.claude\CLAUDE.md`, `CLAUDE.local.md`, `settings.json`, `settings.local.json`, plus home-root memory files. It does not read or print their contents. On 2026-10-04, the two `%USERPROFILE%\.claude\CLAUDE*.md` files and home-root memory files were absent; `%USERPROFILE%\.claude\settings.json` existed. No user file was opened or changed.
+
+Installed help says `--safe-mode` disables `CLAUDE.md` discovery, plugins, hooks, skills, and MCP customizations, while admin-managed policy still applies. `--restricted` ignores user/project/local settings, but managed settings and explicit `--settings` may still apply. The benchmark does not pass `--settings` or `--setting-sources`; the latter documents only `user,project,local`, not an empty-source value. `--strict-mcp-config` ignores inherited MCP and no `--mcp-config` is supplied. `--bare` was not selected because installed help says it requires API-key-style auth and avoids OAuth/keychain reads. An `auth status` subcommand was found in help but not run; authentication readiness is unresolved. Managed policy effects and runtime enforcement remain unverified. Do not edit the user's Claude configuration to work around them.
 
 ## Stream Parser
 
@@ -32,4 +42,4 @@ The synthetic-fixture parser accepts Claude-style stream-json lines, tolerates u
 
 Tool-use blocks classify `Read`, `Grep`, `Glob`, `Edit`, `MultiEdit`, `Write`, and `Bash`; unknown tools remain `other`. Unique paths and repeated explicit `Read` calls are counted. Bash command text is not heuristically reclassified as file reads. These are observed native events, not Codex event assumptions.
 
-The next Phase 23 substep is to install or locate Claude Code locally, inspect its documented flags and user-memory isolation behavior, and validate read-only permission enforcement without inference. A real Claude A/B needs separate authorization. Phase 24 provider adapters are not started.
+The next Phase 23 substep is a separately authorized, controlled validation of actual read-only/write permission behavior, tool availability, stream event shape, and any managed policy effects. The current harness remains dry-run-only and is **not yet safe enough to authorize a real Claude A/B** on local-help evidence alone. A real pair requires separate authorization. Phase 24 provider adapters are not started.

@@ -81,11 +81,18 @@ def build_invocation(cli: ClaudeCli, *, model: str, read_only: bool,
         raise ValueError("max_turns must be positive")
     if not cli.ready:
         raise RuntimeError(cli.error or "Claude CLI has unverified required flags")
-    if max_turns is not None and "--max-turns" not in cli.flags:
+    if max_turns is not None and not cli.supports_max_turns:
         raise RuntimeError("installed Claude CLI does not document --max-turns")
-    if setting_sources is not None and "--setting-sources" not in cli.flags:
+    if setting_sources is not None and not cli.supports_setting_sources:
         raise RuntimeError("installed Claude CLI does not document --setting-sources")
+    if setting_sources is not None:
+        values = setting_sources.split(",")
+        if not values or len(set(values)) != len(values) or any(
+                value not in cli.setting_source_values for value in values):
+            raise ValueError("setting sources must be documented comma-separated values")
     return (cli.executable or "claude", "-p", prompt, "--output-format", "stream-json", "--verbose",
+            "--safe-mode", "--restricted", "--strict-mcp-config",
+            *(("--no-session-persistence",) if cli.supports_no_session_persistence else ()),
             "--model", model, "--tools", READ_TOOLS if read_only else WRITE_TOOLS,
             *(("--max-turns", str(max_turns)) if max_turns is not None else ()),
             *(("--setting-sources", setting_sources) if setting_sources is not None else ()))
@@ -96,6 +103,10 @@ def preview_pair(task: TaskSpec, root: Path, cli: ClaudeCli, *, model: str = "so
                  setting_sources: str | None = None) -> ClaudePreview:
     if not model.strip() or max_turns is not None and max_turns < 1:
         raise ValueError("model must be nonempty and max_turns positive if supplied")
+    if setting_sources is not None:
+        raise ValueError("benchmark previews require isolated settings; do not load setting sources")
+    if cli.ready and max_turns is not None and not cli.supports_max_turns:
+        raise RuntimeError("installed Claude CLI does not document --max-turns")
     if mode not in MODES:
         raise ValueError("unsupported Claude offline mode")
     if task.id not in {"preemption-v4", "oauth-bug", "upload-feature", "large-edit-v1"}:
@@ -132,6 +143,6 @@ def preview_pair(task: TaskSpec, root: Path, cli: ClaudeCli, *, model: str = "so
                          decision.candidate_tokens, decision.selected_tokens, visible,
                          locator.sha256 if use_locator else None, fingerprint,
                          baseline_prompt == optimized_prompt, digest(baseline_prompt), digest(optimized_prompt),
-                         cli.ready, "read-only: Read/Glob/Grep only" if task.read_only else
-                         "workspace-write: Read/Glob/Grep/Edit/Write/Bash (normal CLI permissions)",
+                         cli.ready, "read-only: Read/Glob/Grep; safe/restricted/strict MCP" if task.read_only else
+                         "workspace-write: Read/Glob/Grep/Edit/Write/Bash; safe/restricted/strict MCP",
                          max_turns, setting_sources, baseline_command, optimized_command)
