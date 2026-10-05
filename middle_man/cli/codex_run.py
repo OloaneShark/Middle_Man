@@ -8,6 +8,7 @@ from pathlib import Path
 
 from middle_man.gateway.codex_runner.runner import DEFAULT_EFFORT, DEFAULT_MODEL, EFFORTS, preview_codex
 from middle_man.gateway.codex_runner.execution import DEFAULT_TIMEOUT, run_codex
+from middle_man.gateway.codex_runner.audit import save_audit
 
 
 def add_codex_run_command(actions: argparse._SubParsersAction) -> None:
@@ -26,6 +27,8 @@ def add_codex_run_command(actions: argparse._SubParsersAction) -> None:
     run.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT,
                      help="Codex process timeout in seconds (default: 360)")
     run.add_argument("--json", action="store_true", help="print source-free audit JSON")
+    run.add_argument("--save-audit", action="store_true",
+                     help="save sanitized production metadata under .middle_man_cache/codex_runs")
 
 
 def run_codex_preview(args: argparse.Namespace) -> None:
@@ -56,6 +59,8 @@ def run_codex_preview(args: argparse.Namespace) -> None:
 
 def run_codex_command(args: argparse.Namespace) -> None:
     if args.dry_run:
+        if args.save_audit:
+            raise SystemExit("--save-audit requires --confirm-external-service")
         run_codex_preview(args)
         return
     try:
@@ -65,10 +70,20 @@ def run_codex_command(args: argparse.Namespace) -> None:
                            model=args.model, effort=args.effort, timeout=args.timeout)
     except (ValueError, RuntimeError) as exc:
         raise SystemExit(str(exc)) from exc
+    audit_path = None
+    audit_error = None
+    if args.save_audit:
+        try:
+            audit_path = save_audit(result)
+        except (OSError, ValueError) as exc:
+            audit_error = str(exc)
     if args.json:
-        print(json.dumps({**result.audit_dict(), "final_message": result.final_message}, indent=2))
+        print(json.dumps({**result.audit_dict(), "final_message": result.final_message,
+                          "saved_audit_path": str(audit_path) if audit_path else None,
+                          "audit_error": audit_error}, indent=2))
     else:
         print("MIDDLE_MAN CODEX")
+        print(f"Run ID: {result.run_id}")
         print(f"Mode: {result.audit.task_mode}")
         print(f"AUTO: {result.audit.decision} ({result.audit.decision_reason})")
         print(f"Model-visible Middle_Man content: {result.audit.model_visible_middle_man_tokens:,} heuristic tokens")
@@ -81,10 +96,23 @@ def run_codex_command(args: argparse.Namespace) -> None:
         print(f"Native calls: {result.native_tool_calls}; explicit reads: {result.explicit_reads}; "
               f"unique files: {len(result.unique_files)}; rereads: {result.rereads}; "
               f"searches: {result.search_calls}; listings: {result.listing_calls}")
+        print(f"Content-producing searches: {result.content_search_calls}; "
+              f"file-targeted: {result.file_targeted_searches}; "
+              f"repository-wide: {result.repository_wide_searches}; "
+              f"file-listing searches: {result.file_listing_searches}")
+        if result.audit.decision == "LOCATOR USED":
+            total = len(result.audit.selected_paths)
+            print(f"Locator paths explicitly read: {len(result.locator_paths_explicitly_read)}/{total}; "
+                  f"targeted by searches: {len(result.locator_paths_searched)}/{total}; "
+                  f"non-locator search targets: {len(result.non_locator_paths_searched)}")
         print(f"Repository unchanged: {'YES' if result.repository_unchanged else 'NO'}")
+        if audit_path:
+            print(f"Audit: {audit_path}")
+        if audit_error:
+            print(f"Audit save failed: {audit_error}")
         if result.failure_reasons:
             print("Failure reasons: " + ", ".join(result.failure_reasons))
         print()
         print(result.final_message)
-    if result.status != "SUCCESS":
+    if result.status != "SUCCESS" or audit_error:
         raise SystemExit(1)

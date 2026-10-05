@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import hashlib
+import secrets
 import subprocess
 import time
 from dataclasses import asdict, dataclass, replace
+from datetime import datetime, timezone
 from pathlib import Path
 from subprocess import Popen as _Popen
 
@@ -24,6 +26,7 @@ DEFAULT_TIMEOUT = 360
 @dataclass(frozen=True, slots=True)
 class CodexRunResult:
     audit: CodexAudit
+    run_id: str
     status: str
     failure_reasons: tuple[str, ...]
     exit_code: int | None
@@ -41,6 +44,17 @@ class CodexRunResult:
     rereads: int
     search_calls: int
     listing_calls: int
+    content_search_calls: int
+    file_targeted_searches: int
+    repository_wide_searches: int
+    file_listing_searches: int
+    searched_paths: tuple[str, ...]
+    unique_searched_paths: int
+    git_inspections: int
+    unclassified_commands: int
+    locator_paths_explicitly_read: tuple[str, ...]
+    locator_paths_searched: tuple[str, ...]
+    non_locator_paths_searched: tuple[str, ...]
     git_head_before: str | None
     git_head_after: str | None
     git_status_before: tuple[str, ...]
@@ -82,6 +96,7 @@ def run_codex(root: Path, task: str, *, mode: str, confirm_external_service: boo
         raise ValueError("live Codex execution requires --confirm-external-service")
     if timeout <= 0:
         raise ValueError("--timeout must be positive")
+    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + secrets.token_hex(4)
     root = validate_repository(root)
     before = capture_repository_state(root)
     preview = preview_codex(root, task, mode=mode, model=model, effort=effort, cli=cli)
@@ -121,6 +136,11 @@ def run_codex(root: Path, task: str, *, mode: str, confirm_external_service: boo
         after = None
     events = parse_production_events(stdout or "", root)
     trace = events.parsed
+    searches = events.search_telemetry
+    locator_paths = set(preview.audit.selected_paths) if preview.audit.decision == "LOCATOR USED" else set()
+    explicitly_read = tuple(sorted(locator_paths.intersection(trace.native.unique_files)))
+    locator_searched = tuple(sorted(locator_paths.intersection(searches.searched_paths)))
+    non_locator_searched = tuple(path for path in searches.searched_paths if path not in locator_paths)
     unchanged = after is not None and after == before
     reasons: list[str] = []
     if after is None:
@@ -148,12 +168,17 @@ def run_codex(root: Path, task: str, *, mode: str, confirm_external_service: boo
     live_audit = replace(preview.audit, dry_run=False, external_calls=external_calls,
                          repository_unchanged=unchanged)
     return CodexRunResult(
-        live_audit, reasons[0] if reasons else "SUCCESS", tuple(reasons), exit_code,
+        live_audit, run_id, reasons[0] if reasons else "SUCCESS", tuple(reasons), exit_code,
         timed_out, elapsed, trace.final_message, trace.thread_id,
         trace.usage.input_tokens, trace.usage.cached_input_tokens,
         trace.usage.output_tokens, trace.usage.reasoning_output_tokens,
         trace.native.tool_calls, trace.native.file_reads, trace.native.unique_files,
         trace.native.rereads, trace.native.search_calls, trace.native.listing_calls,
+        searches.content_search_calls, searches.file_targeted_searches,
+        searches.repository_wide_searches, searches.file_listing_searches,
+        searches.searched_paths, searches.unique_searched_paths,
+        trace.native.git_inspections, trace.native.unclassified_commands,
+        explicitly_read, locator_searched, non_locator_searched,
         before.head, after.head if after else None, before.status,
         after.status if after else (), changed_paths(before, after) if after else (),
         unchanged, trace.event_count, events.malformed_lines, trace.mcp_calls,

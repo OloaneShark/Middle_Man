@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -264,6 +265,76 @@ def test_unreadable_post_run_state_is_structured(tmp_path: Path, monkeypatch: py
                                  confirm_external_service=True, cli=CLI)
     assert result.status == "POST_RUN_INTEGRITY_UNKNOWN"
     assert result.external_calls == 1 and not result.repository_unchanged
+
+
+def test_locator_reads_and_search_targets_stay_separate(tmp_path: Path,
+                                                        monkeypatch: pytest.MonkeyPatch) -> None:
+    root = _repo(tmp_path)
+    for name in ("a.py", "b.py", "c.py", "d.py"):
+        (root / name).write_text("foo = True\n", encoding="utf-8")
+    original_preview = execution.preview_codex
+
+    def locator_preview(*args, **kwargs):
+        preview = original_preview(*args, **kwargs)
+        prompt = append_offline_locator(preview.prompt, "- a.py:1-1\n- b.py:1-1\n- c.py:1-1")
+        audit = replace(preview.audit, decision="LOCATOR USED", selected_paths=("a.py", "b.py", "c.py"))
+        return replace(preview, audit=audit, prompt=prompt, invocation=(*preview.invocation[:-1], prompt))
+
+    monkeypatch.setattr(execution, "preview_codex", locator_preview)
+    commands = ["Get-Content a.py", "rg -n foo b.py", "rg -n foo d.py"]
+    lines = [json.dumps({"type": "item.completed", "item": {
+        "type": "command_execution", "command": command}}) for command in commands]
+    lines.extend(json.loads(line) for line in _events(commands=False).splitlines())
+    process = FakeProcess("\n".join(json.dumps(line) if isinstance(line, dict) else line for line in lines))
+    _fake_launch(monkeypatch, process)
+    result = execution.run_codex(root, "Explain foo", mode="read-only",
+                                 confirm_external_service=True, cli=CLI)
+    assert result.status == "SUCCESS"
+    assert result.explicit_reads == 1 and result.search_calls == 2
+    assert result.locator_paths_explicitly_read == ("a.py",)
+    assert result.locator_paths_searched == ("b.py",)
+    assert result.non_locator_paths_searched == ("d.py",)
+    assert result.searched_paths == ("b.py", "d.py")
+
+
+def test_opt_in_audit_omits_prompts_commands_and_final_answer(tmp_path: Path,
+                                                              monkeypatch: pytest.MonkeyPatch,
+                                                              capsys: pytest.CaptureFixture[str]) -> None:
+    root = _repo(tmp_path)
+    (root / ".gitignore").write_text(".middle_man_cache/\n", encoding="utf-8")
+    task = "PRIVATE_TASK_MARKER_8842 explain queue"
+    command = "rg -n PRIVATE_SEARCH_TERM_7722 queue.py"
+    lines = [json.dumps({"type": "item.completed", "item": {
+        "type": "command_execution", "command": command}})]
+    lines.extend(_events(answer="PRIVATE_FINAL_MARKER_1122", commands=False).splitlines())
+    _fake_launch(monkeypatch, FakeProcess("\n".join(lines)))
+    monkeypatch.setattr("middle_man.gateway.codex_runner.runner.discover_codex", lambda: CLI)
+    args = build_parser().parse_args(["codex", "run", "--repo", str(root), "--read-only",
+                                      "--confirm-external-service", "--save-audit", task])
+    run_codex_command(args)
+    capsys.readouterr()
+    receipts = list((root / ".middle_man_cache" / "codex_runs").glob("*/result.json"))
+    assert len(receipts) == 1
+    raw = receipts[0].read_text(encoding="utf-8")
+    data = json.loads(raw)
+    assert data["run_id"] == receipts[0].parent.name
+    assert data["content_search_calls"] == 1 and data["searched_paths"] == ["queue.py"]
+    assert data["external_calls"] == 1 and data["repository_unchanged"]
+    for forbidden in (task, "PRIVATE_SEARCH_TERM_7722", "PRIVATE_FINAL_MARKER_1122",
+                      command, str(root), "fake-codex", "final_message", "codex_executable"):
+        assert forbidden not in raw
+    assert not subprocess.run(["git", "-C", str(root), "status", "--porcelain=v1"],
+                              capture_output=True, text=True, check=True).stdout.startswith("?? .middle_man_cache")
+
+
+def test_save_audit_requires_live_confirmation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = _repo(tmp_path)
+    monkeypatch.setattr(execution, "_Popen", lambda *_args, **_kwargs: pytest.fail("Codex launched"))
+    args = build_parser().parse_args(["codex", "run", "--repo", str(root), "--read-only",
+                                      "--dry-run", "--save-audit", "task"])
+    with pytest.raises(SystemExit, match="requires --confirm-external-service"):
+        run_codex_command(args)
+    assert not (root / ".middle_man_cache").exists()
 
 
 def test_interrupt_kills_child_and_preserves_partial_usage(tmp_path: Path,
