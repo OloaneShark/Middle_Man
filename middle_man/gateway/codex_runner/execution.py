@@ -12,6 +12,7 @@ from pathlib import Path
 from subprocess import Popen as _Popen
 
 from middle_man.gateway.codex_runner.events import parse_production_events
+from middle_man.gateway.codex_runner.isolation import verify_isolation_command
 from middle_man.gateway.codex_runner.infrastructure import (
     CodexCLI, capture_repository_state, changed_paths, validate_repository,
 )
@@ -64,6 +65,7 @@ class CodexRunResult:
     event_count: int
     malformed_event_lines: tuple[int, ...]
     mcp_calls: tuple[tuple[str, str], ...]
+    external_tool_activity: tuple[tuple[str, str], ...]
     stderr_sha256: str | None
     stderr_length_bytes: int
     external_calls: int
@@ -104,6 +106,7 @@ def run_codex(root: Path, task: str, *, mode: str, confirm_external_service: boo
     if preprocessed != before:
         raise RuntimeError("repository changed during Middle_Man preprocessing; Codex was not started")
     command = (*preview.invocation[:-1], "--json", preview.prompt)
+    verify_isolation_command(command)
     if capture_repository_state(root) != before:
         raise RuntimeError("repository changed before Codex process creation; Codex was not started")
 
@@ -163,6 +166,8 @@ def run_codex(root: Path, task: str, *, mode: str, confirm_external_service: boo
         reasons.append("CODEX_EVENT_FAILURE")
     if not events.turn_completed or not trace.final_message.strip():
         reasons.append("MISSING_FINAL_RESULT")
+    if events.external_tool_activity:
+        reasons.append("UNEXPECTED_EXTERNAL_TOOL_ACTIVITY")
     if trace.mcp_calls:
         reasons.append("UNEXPECTED_MCP_ACTIVITY")
     live_audit = replace(preview.audit, dry_run=False, external_calls=external_calls,
@@ -182,6 +187,7 @@ def run_codex(root: Path, task: str, *, mode: str, confirm_external_service: boo
         before.head, after.head if after else None, before.status,
         after.status if after else (), changed_paths(before, after) if after else (),
         unchanged, trace.event_count, events.malformed_lines, trace.mcp_calls,
+        events.external_tool_activity,
         hashlib.sha256((stderr or "").encode("utf-8")).hexdigest() if stderr else None,
         len((stderr or "").encode("utf-8")), external_calls,
     )

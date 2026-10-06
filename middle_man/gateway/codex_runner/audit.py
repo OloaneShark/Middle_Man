@@ -79,6 +79,8 @@ def sanitized_receipt(result: CodexRunResult) -> dict[str, object]:
         "event_count": result.event_count,
         "malformed_event_lines": list(result.malformed_event_lines),
         "mcp_call_count": len(result.mcp_calls),
+        "external_tool_activity_count": len(result.external_tool_activity),
+        "external_tool_activity": [list(activity) for activity in result.external_tool_activity],
         "stderr_sha256": result.stderr_sha256,
         "stderr_length_bytes": result.stderr_length_bytes,
         "external_calls": result.external_calls,

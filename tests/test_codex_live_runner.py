@@ -77,6 +77,7 @@ def _fake_launch(monkeypatch: pytest.MonkeyPatch, process: FakeProcess):
         assert command[0] == "fake-codex"  # Installed Codex must never be reached.
         assert command.count("exec") == 1 and command.count("--json") == 1
         assert "--no-daemon" in command and "--ignore-user-config" in command
+        assert "features.apps=false" in command and "features.plugins=false" in command
         assert "mcp_servers" not in " ".join(command)
         assert "benchmark working copy" not in command[-1]
         calls.append((command, kwargs))
@@ -364,8 +365,36 @@ def test_unexpected_mcp_event_invalidates_product_run(tmp_path: Path,
     _fake_launch(monkeypatch, FakeProcess("\n".join(lines)))
     result = execution.run_codex(root, "Explain queue", mode="read-only",
                                  confirm_external_service=True, cli=CLI)
-    assert result.status == "UNEXPECTED_MCP_ACTIVITY"
+    assert result.status == "UNEXPECTED_EXTERNAL_TOOL_ACTIVITY"
+    assert "UNEXPECTED_MCP_ACTIVITY" in result.failure_reasons
     assert result.mcp_calls == (("middle-man", "middleman_context"),)
+
+
+@pytest.mark.parametrize("item", [
+    {"type": "mcp_tool_call", "server": "codex_apps", "tool": "github_search"},
+    {"type": "mcp_resource_list", "server": "codex_apps"},
+    {"type": "mcp_resource_read", "server": "codex_apps"},
+    {"type": "connector_tool_call", "provider": "github"},
+    {"type": "plugin_tool_call", "server": "plugin-server"},
+])
+def test_external_activity_invalidates_even_without_native_reads(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch, item: dict[str, str]) -> None:
+    root = _repo(tmp_path)
+    lines = _events(commands=False).splitlines()
+    lines.insert(-1, json.dumps({"type": "item.started", "item": item}))
+    _fake_launch(monkeypatch, FakeProcess("\n".join(lines)))
+    result = execution.run_codex(root, "Explain queue", mode="read-only",
+                                 confirm_external_service=True, cli=CLI)
+    assert result.status == "UNEXPECTED_EXTERNAL_TOOL_ACTIVITY"
+    assert result.external_tool_activity and result.native_tool_calls == 0
+
+
+def test_native_search_is_not_external_activity(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = _repo(tmp_path)
+    _fake_launch(monkeypatch, FakeProcess(_events()))
+    result = execution.run_codex(root, "Explain queue", mode="read-only",
+                                 confirm_external_service=True, cli=CLI)
+    assert result.status == "SUCCESS" and result.external_tool_activity == ()
 
 
 def test_live_cli_prints_summary_and_final_answer(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,

@@ -40,6 +40,9 @@ def discover_codex() -> CodexCLI:
                                    timeout=10, check=True).stdout
         exec_help = subprocess.run([executable, "exec", "--help"], capture_output=True, text=True,
                                    timeout=10, check=True).stdout
+        features = subprocess.run([executable, "-c", "features.apps=false", "-c",
+                                   "features.plugins=false", "features", "list"],
+                                  capture_output=True, text=True, timeout=10, check=True).stdout
     except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as exc:
         raise RuntimeError("Could not inspect Codex CLI") from exc
     if not version:
@@ -51,6 +54,10 @@ def discover_codex() -> CodexCLI:
     missing += [flag for flag in required_exec if flag not in exec_help]
     if missing:
         raise RuntimeError("Installed Codex CLI lacks required documented options: " + ", ".join(missing))
+    states = {parts[0]: parts[-1] for line in features.splitlines()
+              if len(parts := line.split()) >= 3}
+    if states.get("apps") != "false" or states.get("plugins") != "false":
+        raise RuntimeError("Installed Codex CLI cannot verify per-process Apps and plugins isolation")
     return CodexCLI(executable, version)
 
 

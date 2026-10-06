@@ -1,4 +1,4 @@
-"""Production Codex prompt preparation. External execution is intentionally absent."""
+"""Production Codex prompt preparation and isolated invocation construction."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from middle_man.gateway.codex_runner.infrastructure import CodexCLI, discover_codex, repository_state, validate_repository
+from middle_man.gateway.codex_runner.isolation import isolation_arguments, verify_isolation_command
 from middle_man.gateway.config import GatewayConfig
 from middle_man.gateway.context_builder import ContextBuilder
 from middle_man.gateway.relevance import ContextQuery
@@ -65,9 +66,11 @@ def build_invocation(cli: CodexCLI, root: Path, prompt: str, *, mode: str,
         raise ValueError("model must be nonempty")
     if effort not in EFFORTS:
         raise ValueError("unsupported reasoning effort")
-    return (cli.executable, "--no-daemon", "-a", "never", "exec", "--ignore-user-config",
-            "--strict-config", "-C", str(root), "-s", mode, "--ephemeral", "-m", model,
-            "-c", f'model_reasoning_effort="{effort}"', prompt)
+    command = (cli.executable, "--no-daemon", "-a", "never", "exec", "--ignore-user-config",
+               "--strict-config", *isolation_arguments(), "-C", str(root), "-s", mode,
+               "--ephemeral", "-m", model, "-c", f'model_reasoning_effort="{effort}"', prompt)
+    verify_isolation_command(command)
+    return command
 
 
 def preview_codex(root: Path, task: str, *, mode: str, model: str = DEFAULT_MODEL,

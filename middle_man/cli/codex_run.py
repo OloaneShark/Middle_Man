@@ -9,9 +9,13 @@ from pathlib import Path
 from middle_man.gateway.codex_runner.runner import DEFAULT_EFFORT, DEFAULT_MODEL, EFFORTS, preview_codex
 from middle_man.gateway.codex_runner.execution import DEFAULT_TIMEOUT, run_codex
 from middle_man.gateway.codex_runner.audit import save_audit
+from middle_man.gateway.codex_runner.infrastructure import discover_codex
+from middle_man.gateway.codex_runner.isolation import PRODUCTION_EXTERNAL_TOOL_POLICY, verify_isolation_command
+from middle_man.gateway.codex_runner.runner import build_invocation
 
 
 def add_codex_run_command(actions: argparse._SubParsersAction) -> None:
+    actions.add_parser("isolation-preflight", help="verify local production isolation flags without inference")
     run = actions.add_parser("run", help="prepare or run one Codex task in the current repository")
     run.add_argument("task", help="quoted user task; preserved exactly in the Codex prompt")
     run.add_argument("--repo", type=Path, default=Path("."))
@@ -29,6 +33,24 @@ def add_codex_run_command(actions: argparse._SubParsersAction) -> None:
     run.add_argument("--json", action="store_true", help="print source-free audit JSON")
     run.add_argument("--save-audit", action="store_true",
                      help="save sanitized production metadata under .middle_man_cache/codex_runs")
+
+
+def run_isolation_preflight() -> None:
+    try:
+        cli = discover_codex()
+        command = build_invocation(cli, Path("."), "<REDACTED_TASK>", mode="read-only",
+                                   model=DEFAULT_MODEL, effort=DEFAULT_EFFORT)
+        verify_isolation_command(command)
+    except RuntimeError as exc:
+        raise SystemExit(f"Isolation contract: FAIL ({exc})") from exc
+    print(f"Codex version: {cli.version}")
+    print("Apps disabled: YES")
+    print("Plugins disabled: YES")
+    print("codex_apps explicitly disabled: UNVERIFIED (key not passed)")
+    print("orchestrator MCP disabled: UNVERIFIED (key not passed)")
+    print("User config ignored: YES")
+    print("Middle_Man MCP configured: NO")
+    print(f"Isolation contract: PASS ({PRODUCTION_EXTERNAL_TOOL_POLICY}; command-level only)")
 
 
 def run_codex_preview(args: argparse.Namespace) -> None:

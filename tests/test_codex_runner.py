@@ -10,11 +10,13 @@ from types import SimpleNamespace
 import pytest
 
 from middle_man.cli.main import build_parser
-from middle_man.cli.codex_run import run_codex_preview
+from middle_man.cli.codex_run import run_codex_preview, run_isolation_preflight
 from middle_man.gateway.codex_benchmark.offline_locator import append_offline_locator, build_offline_locator
 from middle_man.gateway.context_builder import ContextBuilder
 from middle_man.gateway.codex_runner.infrastructure import CodexCLI, discover_codex, repository_state
 from middle_man.gateway.codex_runner.runner import preview_codex
+from middle_man.gateway.codex_runner.runner import build_invocation
+from middle_man.gateway.codex_runner.isolation import verify_isolation_command
 from middle_man.gateway.config import GatewayConfig
 from middle_man.gateway.offline_navigation import decide_offline_locator as shared_decision
 from middle_man.gateway.codex_benchmark.offline_auto import decide_offline_locator as benchmark_decision
@@ -84,11 +86,29 @@ def test_command_has_no_benchmark_or_mcp_injection(tmp_path: Path, mode: str) ->
     assert "--no-daemon" in command and "--ignore-user-config" in command
     assert command[command.index("-s") + 1] == mode
     assert "benchmark working copy" not in result.prompt
+    assert "features.apps=false" in command and "features.plugins=false" in command
     assert "mcp_servers" not in " ".join(command)
     assert "AGENTS.md" not in " ".join(command)
     assert "Arbitrary user task" not in " ".join(result.redacted_command_shape)
     assert result.audit.external_calls == 0 and result.audit.dry_run
     assert "task" not in result.audit.as_dict()  # Hash/length only, never full text.
+
+
+@pytest.mark.parametrize("mode", ["read-only", "workspace-write"])
+def test_shared_baseline_command_uses_identical_isolation(tmp_path: Path, mode: str) -> None:
+    root = _small_repo(tmp_path)
+    preview = preview_codex(root, "Arbitrary user task", mode=mode, cli=CLI)
+    baseline = build_invocation(CLI, root, "Arbitrary user task", mode=mode,
+                                model=preview.audit.requested_model, effort=preview.audit.requested_effort)
+    assert baseline == preview.invocation
+    verify_isolation_command(baseline)
+    for missing in ("features.apps=false", "features.plugins=false", "--ignore-user-config"):
+        with pytest.raises(RuntimeError, match="isolation"):
+            verify_isolation_command(tuple(part for part in baseline if part != missing))
+    with pytest.raises(RuntimeError, match="isolation"):
+        verify_isolation_command((*baseline[:-1], "-c", "features.apps=true", baseline[-1]))
+    with pytest.raises(RuntimeError, match="isolation"):
+        verify_isolation_command((*baseline[:-1], "-c", "mcp_servers.custom.enabled=true", baseline[-1]))
 
 
 @pytest.mark.parametrize("options", [[], ["--read-only", "--workspace-write"]])
@@ -116,14 +136,44 @@ def test_codex_discovery_checks_documented_help(monkeypatch: pytest.MonkeyPatch)
             return SimpleNamespace(stdout="codex-cli 0.155.0\n")
         if command[-1] == "--help" and "exec" not in command:
             return SimpleNamespace(stdout="--no-daemon --ask-for-approval --strict-config")
+        if command[-1] == "list":
+            return SimpleNamespace(stdout="apps stable false\nplugins stable false\n")
         return SimpleNamespace(stdout="--ignore-user-config --sandbox read-only workspace-write --cd --model --config --ephemeral --json")
 
     monkeypatch.setattr("middle_man.gateway.codex_runner.infrastructure.subprocess.run", fake_run)
     assert discover_codex().version == "codex-cli 0.155.0"
-    assert calls == [["/bin/codex", "--version"], ["/bin/codex", "--help"], ["/bin/codex", "exec", "--help"]]
+    assert calls == [["/bin/codex", "--version"], ["/bin/codex", "--help"],
+                     ["/bin/codex", "exec", "--help"], ["/bin/codex", "-c", "features.apps=false",
+                     "-c", "features.plugins=false", "features", "list"]]
     monkeypatch.setattr("middle_man.gateway.codex_runner.infrastructure.shutil.which", lambda _: None)
     with pytest.raises(RuntimeError, match="not found"):
         discover_codex()
+
+
+def test_feature_probe_fails_closed_when_apps_remain_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("middle_man.gateway.codex_runner.infrastructure.shutil.which", lambda _: "/bin/codex")
+
+    def fake_run(command, **_kwargs):
+        if command[-1] == "--version":
+            return SimpleNamespace(stdout="codex-cli synthetic")
+        if command[-1] == "list":
+            return SimpleNamespace(stdout="apps stable true\nplugins stable false\n")
+        return SimpleNamespace(stdout="--no-daemon --ask-for-approval --strict-config --ignore-user-config "
+                                      "--sandbox read-only workspace-write --cd --model --config --ephemeral --json")
+
+    monkeypatch.setattr("middle_man.gateway.codex_runner.infrastructure.subprocess.run", fake_run)
+    with pytest.raises(RuntimeError, match="cannot verify"):
+        discover_codex()
+
+
+def test_isolation_preflight_never_launches_model(monkeypatch: pytest.MonkeyPatch,
+                                                  capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr("middle_man.cli.codex_run.discover_codex", lambda: CLI)
+    run_isolation_preflight()
+    output = capsys.readouterr().out
+    assert "Apps disabled: YES" in output and "Plugins disabled: YES" in output
+    assert "command-level only" in output and "UNVERIFIED" in output
+    assert build_parser().parse_args(["codex", "isolation-preflight"]).codex_action == "isolation-preflight"
 
 
 def test_repository_validation_and_task_validation(tmp_path: Path) -> None:
