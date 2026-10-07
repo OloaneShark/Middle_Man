@@ -1,0 +1,138 @@
+{
+  "schema_version": 1,
+  "result_status": "FROZEN_HISTORICAL_BATCH_1",
+  "preregistration": {
+    "commit": "ee15a1856839b0de407b8fda3c2613e2a67a7562",
+    "manifest_path": "docs/locator_quality_prospective_plan.json",
+    "manifest_sha256": "1641c097ef879a1cb97cba431cbdbd794d3936ef8bfc90fcfb2d56b73f19e599",
+    "plan_path": "docs/LOCATOR_QUALITY_PROSPECTIVE_PLAN.md",
+    "plan_sha256": "68d86c6e65a05af4ce34f6c1fe57d0dfa48c67ed8c51fee89ea18e7025375178"
+  },
+  "source": {
+    "commit": "db187e0f48f54222dd250502a2e40b7f1fb16401",
+    "tree": "c597226461db5975ffafd50a769404e03442fda6",
+    "content_fingerprint": "1a91d487a2629d4c82cbae7072ac873e8fcb516597fe954d53f74b649c4241fa",
+    "selector_fingerprint": "3a4213e19944220c02b1897e1a05a584d61bbd00e91cbf5a9e38cc07976bf555"
+  },
+  "execution": {
+    "cli_version": "codex-cli 0.162.0-alpha.2",
+    "model": "gpt-6-sol",
+    "reasoning_effort": "high",
+    "timeout_seconds": 360,
+    "isolation_preflight": "PASS_COMMAND_LEVEL",
+    "external_codex_processes_started": 4,
+    "retries": 0,
+    "claude_calls": 0
+  },
+  "pairs": [
+    {
+      "task_id": "M01",
+      "task_sha256": "380ce2cdd99f2d2ea66a2b9c4dfa417af8227b1af4402c51387d45fb9d13531d",
+      "arm_order": ["MIDDLE_MAN", "BASELINE"],
+      "validity": "VALID",
+      "shadow_expectation": "BYPASS",
+      "directional_interpretation": "CONTRADICTS_BYPASS",
+      "input_delta_middle_man_minus_baseline": -8219,
+      "input_delta_percent_of_baseline": -2.353510507612614,
+      "middle_man": {
+        "runtime": "PASS",
+        "semantic": "PASS",
+        "isolation": "PASS",
+        "repository_integrity": "PASS",
+        "usage": {"input_tokens": 341004, "cached_input_tokens": 276352, "output_tokens": 3237, "reasoning_output_tokens": 738},
+        "diagnostic_input_minus_cached": 64652,
+        "elapsed_seconds": 59.324,
+        "telemetry": {
+          "native_tool_calls": 24, "explicit_reads": 0, "unique_explicit_read_files": 0, "rereads": 0,
+          "search_calls": 23, "listing_calls": 0, "content_search_calls": 1,
+          "file_targeted_searches": 1, "repository_wide_searches": 0, "file_listing_searches": 0,
+          "git_inspections": 1, "unclassified_commands": 0, "event_count": 54,
+          "malformed_event_lines": 0, "external_tool_activity": [], "mcp_calls": []
+        },
+        "locator": {
+          "auto_decision": "LOCATOR USED", "auto_reason": "candidate_source_at_least_10000",
+          "candidate_source_tokens_estimate": 138885, "selected_source_tokens_estimate": 5999,
+          "locator_tokens_estimate": 227, "model_visible_tokens_estimate": 276,
+          "selected_path_count": 14,
+          "locator_sha256": "dbcba1d8d1737aac82f481643149283344a871a96d374ccc46dd2443e4c684c1",
+          "locator_paths_explicitly_read": [],
+          "locator_paths_searched": ["middle_man/gateway/source.py"],
+          "non_locator_paths_searched": ["middle_man/gateway/config.py", "middle_man/gateway/indexer.py"]
+        }
+      },
+      "baseline": {
+        "runtime": "PASS", "semantic": "PASS", "isolation": "PASS", "repository_integrity": "PASS",
+        "usage": {"input_tokens": 349223, "cached_input_tokens": 283776, "output_tokens": 4215, "reasoning_output_tokens": 1032},
+        "diagnostic_input_minus_cached": 65447,
+        "elapsed_seconds": 74.688,
+        "telemetry": {
+          "native_tool_calls": 25, "explicit_reads": 0, "unique_explicit_read_files": 0, "rereads": 0,
+          "search_calls": 22, "listing_calls": 2, "content_search_calls": 3,
+          "file_targeted_searches": 3, "repository_wide_searches": 0, "file_listing_searches": 1,
+          "git_inspections": 1, "unclassified_commands": 0, "event_count": 57,
+          "malformed_event_lines": 0, "external_tool_activity": [], "mcp_calls": []
+        }
+      },
+      "integrity": {
+        "head_before_after": "db187e0f48f54222dd250502a2e40b7f1fb16401",
+        "porcelain_status_before_after": [],
+        "content_digest_before_after": "f226940999a24a4729b2a2e612cfad4e36213b1226f425c9d0111cfcf47a39f1",
+        "changed_paths": []
+      }
+    },
+    {
+      "task_id": "M02",
+      "task_sha256": "99e572ef26121c9f2260a6d16994cb68bef999c41be79981405056b22cf109a8",
+      "arm_order": ["BASELINE", "MIDDLE_MAN"],
+      "validity": "INVALID_PAIR",
+      "invalidity_reasons": ["BASELINE_SEMANTIC_FAIL", "MIDDLE_MAN_RESULT_PRESERVATION_FAILURE"],
+      "shadow_expectation": "PASS",
+      "directional_interpretation": null,
+      "input_delta_middle_man_minus_baseline": null,
+      "input_delta_percent_of_baseline": null,
+      "baseline": {
+        "runtime": "SUCCESS", "semantic": "FAIL", "isolation": "PASS", "repository_integrity": "PASS",
+        "semantic_missing_facts": ["task/error-text redaction", "explicit source confinement", "delivery warnings and token estimates"],
+        "usage": {"input_tokens": 345861, "cached_input_tokens": 263424, "output_tokens": 2520, "reasoning_output_tokens": 456},
+        "diagnostic_input_minus_cached": 82437,
+        "elapsed_seconds": 50.568,
+        "telemetry": {
+          "native_tool_calls": 21, "explicit_reads": 0, "unique_explicit_read_files": 0, "rereads": 0,
+          "search_calls": 19, "listing_calls": 2, "content_search_calls": 1,
+          "file_targeted_searches": 1, "repository_wide_searches": 0, "file_listing_searches": 2,
+          "git_inspections": 0, "unclassified_commands": 0, "event_count": 48,
+          "malformed_event_lines": 0, "external_tool_activity": [], "mcp_calls": []
+        }
+      },
+      "middle_man": {
+        "process_started": true,
+        "returned_to_helper": true,
+        "result_preserved": false,
+        "result_preservation_failure": "UnicodeEncodeError during console rendering after the Codex child returned",
+        "runtime": null,
+        "semantic": null,
+        "usage": null,
+        "elapsed_seconds": null,
+        "telemetry": null,
+        "locator_coverage": null
+      },
+      "integrity": {
+        "head_before_after": "db187e0f48f54222dd250502a2e40b7f1fb16401",
+        "porcelain_status_before_after": [],
+        "content_digest_before_after": "f226940999a24a4729b2a2e612cfad4e36213b1226f425c9d0111cfcf47a39f1",
+        "changed_paths": []
+      }
+    }
+  ],
+  "conclusion": {
+    "valid_pairs": 1,
+    "total_pairs": 2,
+    "candidate_policy": "coherence_and_exact_symbol_ambiguity",
+    "candidate_policy_status": "SHADOW_DIAGNOSTIC_ONLY_REJECTED_FOR_PRODUCTION_ENABLEMENT",
+    "basis": "The valid M01 pair contradicted its preregistered BYPASS direction; M02 is invalid and has no interpreted delta.",
+    "batch_2": "NOT_AUTHORIZED_NOT_RUN",
+    "not_billing_or_quota_evidence": true,
+    "not_universal_savings_evidence": true,
+    "limitations": ["provider cache state", "cross-run cache warmth", "stochastic model behavior", "execution order", "one valid pair only"]
+  }
+}

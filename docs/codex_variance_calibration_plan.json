@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "design_status": "PREREGISTERED_NO_MODEL_RUN",
+  "authorization": {
+    "model_processes_authorized_now": 0,
+    "maximum_future_model_processes_with_separate_authorization": 4,
+    "no_retries": true
+  },
+  "purpose": "Estimate same-task run-to-run variation before choosing another locator-quality gate or effect threshold.",
+  "historical_result_excluded_from_sample": {
+    "artifact": "docs/locator_quality_batch1_result.json",
+    "task_id": "M01",
+    "observed_input_delta_percent": -2.353510507612614
+  },
+  "source": {
+    "commit": "db187e0f48f54222dd250502a2e40b7f1fb16401",
+    "tree": "c597226461db5975ffafd50a769404e03442fda6",
+    "content_fingerprint": "1a91d487a2629d4c82cbae7072ac873e8fcb516597fe954d53f74b649c4241fa",
+    "selector_fingerprint": "3a4213e19944220c02b1897e1a05a584d61bbd00e91cbf5a9e38cc07976bf555"
+  },
+  "task": {
+    "task_id": "M01",
+    "task_source": "tests/fixtures/locator_shadow_corpus.json",
+    "task_sha256": "380ce2cdd99f2d2ea66a2b9c4dfa417af8227b1af4402c51387d45fb9d13531d",
+    "semantic_rubric_source": "docs/locator_quality_prospective_plan.json#tasks/M01/semantic_rubric"
+  },
+  "execution": {
+    "expected_codex_cli_version": "codex-cli 0.162.0-alpha.2",
+    "model": "gpt-6-sol",
+    "reasoning_effort": "high",
+    "timeout_seconds": 360,
+    "mode": "read-only",
+    "baseline_prompt": "Exact original M01 task bytes; no preprocessing or locator.",
+    "middle_man_prompt": "Exact original M01 task passed through unchanged production AUTO; only its normal source-free locator may be appended.",
+    "required_controls": ["features.apps=false", "features.plugins=false", "--ignore-user-config", "--strict-config", "--no-daemon", "--ephemeral", "-a never", "-s read-only", "--json"],
+    "mcp_registration_allowed": false
+  },
+  "schedule": [
+    {"call": 1, "arm": "BASELINE", "replicate": "A"},
+    {"call": 2, "arm": "MIDDLE_MAN", "replicate": "A"},
+    {"call": 3, "arm": "MIDDLE_MAN", "replicate": "B"},
+    {"call": 4, "arm": "BASELINE", "replicate": "B"}
+  ],
+  "snapshot_rule": "Four independent clean, committed, source-identical pinned repositories outside the primary working tree; verify HEAD, tree, content fingerprint, and porcelain before any process and after each arm. No benchmark AGENTS.md.",
+  "validity": {
+    "each_arm": [
+      "pinned source and exact M01 task hash",
+      "locked CLI/model/effort/timeout and equal production isolation",
+      "zero exit, parsed nonempty final result, no malformed or failed turn",
+      "no external-tool or MCP activity",
+      "unchanged read-only repository HEAD/status/Git-visible content",
+      "semantic PASS under the unchanged M01 rubric"
+    ],
+    "stop_after_runtime_or_infrastructure_failure": true,
+    "continue_after_semantic_failure_if_runtime_valid": true,
+    "interpret_means_only_if_all_four_valid": true,
+    "missing_result_is_invalid_not_zero": true
+  },
+  "metrics_per_arm": [
+    "input_tokens", "cached_input_tokens", "output_tokens", "reasoning_output_tokens",
+    "elapsed_seconds", "native_tool_calls", "explicit_reads", "unique_explicit_read_files",
+    "rereads", "search_calls", "listing_calls", "content_search_calls",
+    "file_targeted_searches", "repository_wide_searches", "file_listing_searches",
+    "git_inspections", "unclassified_commands", "event_count", "malformed_event_lines",
+    "external_tool_activity", "mcp_calls", "repository_integrity", "semantic_result",
+    "locator_metadata_for_middle_man"
+  ],
+  "analysis": {
+    "baseline_within_arm_signed_difference": "B_input - A_input",
+    "middle_man_within_arm_signed_difference": "B_input - A_input",
+    "within_arm_magnitude": "absolute value of each signed difference, also express relative to that arm's two-run mean",
+    "baseline_mean_input": "(baseline_A_input + baseline_B_input) / 2",
+    "middle_man_mean_input": "(middle_man_A_input + middle_man_B_input) / 2",
+    "between_arm_mean_delta": "middle_man_mean_input - baseline_mean_input",
+    "between_arm_mean_delta_percent": "100 * between_arm_mean_delta / baseline_mean_input",
+    "all_four_input_range": "max(input observations) - min(input observations)",
+    "diagnostics": ["cached-input variation", "elapsed variation", "native-call variation", "search-count variation"],
+    "historical_comparison": "Describe whether the historical 2.35% magnitude appears smaller than, comparable to, or larger than observed same-arm variation; do not predefine the answer.",
+    "no_winner_claim": true,
+    "no_statistical_significance_claim_from_two_per_arm": true,
+    "no_billing_or_quota_claim": true,
+    "no_retroactive_threshold": true,
+    "future_band_requires_new_prospective_plan": true
+  }
+}
