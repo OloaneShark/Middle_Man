@@ -44,10 +44,45 @@ def verify_snapshot(root: Path, pin: SourcePin):
     tree = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD^{tree}"],
                           check=True, capture_output=True, text=True, timeout=15).stdout.strip()
     if (state.head != pin.commit or state.status or tree != pin.tree
-            or source_fingerprint(root) != pin.content_fingerprint
-            or (root / "AGENTS.md").exists()):
+            or source_fingerprint(root) != pin.content_fingerprint):
         raise RuntimeError("experiment snapshot differs from the clean pinned source")
+    _verify_guidance(root)
+    if capture_repository_state(root) != state:
+        raise RuntimeError("experiment snapshot changed during validation")
     return state
+
+
+def _verify_guidance(root: Path) -> None:
+    entries = subprocess.run(["git", "-C", str(root), "ls-tree", "-r", "-z", "HEAD"],
+                             check=True, capture_output=True, timeout=30).stdout
+    committed = {}
+    for entry in entries.split(b"\0"):
+        if not entry:
+            continue
+        metadata, relative = entry.split(b"\t", 1)
+        if Path(relative.decode("utf-8", "surrogateescape")).name.casefold() == "agents.md":
+            mode, kind, blob = metadata.split()
+            committed[relative.decode("utf-8", "surrogateescape")] = (mode, kind, blob)
+    present = {path.relative_to(root).as_posix(): path for path in root.rglob("*")
+               if path.name.casefold() == "agents.md"}
+    if present.keys() != committed.keys():
+        raise RuntimeError("experiment guidance differs from the committed tree")
+    for relative, (mode, kind, blob) in committed.items():
+        path = present[relative]
+        if kind != b"blob":
+            raise RuntimeError("experiment guidance is not a committed blob")
+        expected = subprocess.run(["git", "-C", str(root), "cat-file", "blob", blob.decode("ascii")],
+                                  check=True, capture_output=True, timeout=15).stdout
+        if mode == b"120000":
+            if not path.is_symlink():
+                raise RuntimeError("experiment guidance symlink differs from the committed tree")
+            actual = os.readlink(path).encode("utf-8", "surrogateescape")
+        else:
+            if path.is_symlink() or not path.is_file():
+                raise RuntimeError("experiment guidance type differs from the committed tree")
+            actual = path.read_bytes()
+        if actual != expected:
+            raise RuntimeError("experiment guidance bytes differ from the committed blob")
 
 
 def _details(events) -> dict[str, object]:

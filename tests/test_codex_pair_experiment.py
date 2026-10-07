@@ -26,6 +26,7 @@ ANSWER = "\u2713 \u2192 \u65e5\u672c\u8a9e \u00e9 \U0001f680"
 def pinned(tmp_path: Path) -> tuple[Path, codex_pair.SourcePin]:
     root = tmp_path / "source"
     subprocess.run(["git", "init", "-q", str(root)], check=True)
+    subprocess.run(["git", "-C", str(root), "config", "core.autocrlf", "false"], check=True)
     (root / "queue.py").write_text("def state():\n    return 'ready'\n", encoding="utf-8")
     subprocess.run(["git", "-C", str(root), "add", "queue.py"], check=True)
     subprocess.run(["git", "-C", str(root), "-c", "user.name=Experiment Test",
@@ -33,6 +34,96 @@ def pinned(tmp_path: Path) -> tuple[Path, codex_pair.SourcePin]:
     head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
     tree = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD^{tree}"], text=True).strip()
     return root, codex_pair.SourcePin(head, tree, source_fingerprint(root))
+
+
+@pytest.fixture
+def tracked_guidance(pinned) -> tuple[Path, codex_pair.SourcePin, str]:
+    root, _pin = pinned
+    (root / "AGENTS.md").write_bytes(b"# Committed repository guidance\n")
+    subprocess.run(["git", "-C", str(root), "add", "AGENTS.md"], check=True)
+    subprocess.run(["git", "-C", str(root), "-c", "user.name=Experiment Test",
+                    "-c", "user.email=test@example.invalid", "commit", "-q", "-m", "guidance"], check=True)
+    head = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD"], text=True).strip()
+    tree = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD^{tree}"], text=True).strip()
+    blob = subprocess.check_output(["git", "-C", str(root), "rev-parse", "HEAD:AGENTS.md"], text=True).strip()
+    return root, codex_pair.SourcePin(head, tree, source_fingerprint(root)), blob
+
+
+def test_tracked_guidance_matches_committed_blob_without_generating_files(tracked_guidance) -> None:
+    root, pin, blob = tracked_guidance
+    before = (root / "AGENTS.md").read_bytes()
+    assert codex_pair.verify_snapshot(root, pin).head == pin.commit
+    assert subprocess.check_output(["git", "-C", str(root), "hash-object", "--no-filters",
+                                    "AGENTS.md"], text=True).strip() == blob
+    assert (root / "AGENTS.md").read_bytes() == before
+    assert list(root.glob("**/AGENTS.md")) == [root / "AGENTS.md"]
+    assert not subprocess.check_output(["git", "-C", str(root), "status", "--porcelain=v1"]).strip()
+
+
+def test_snapshot_without_committed_guidance_remains_supported(pinned) -> None:
+    root, pin = pinned
+    assert not (root / "AGENTS.md").exists()
+    assert codex_pair.verify_snapshot(root, pin).head == pin.commit
+    assert not (root / "AGENTS.md").exists()
+
+
+@pytest.mark.parametrize("change", ["modify", "delete"])
+def test_guidance_bytes_and_presence_checked_even_if_status_is_stale(
+        tracked_guidance, monkeypatch: pytest.MonkeyPatch, change: str) -> None:
+    root, pin, _blob = tracked_guidance
+    original_state = codex_pair.capture_repository_state(root)
+    if change == "modify":
+        (root / "AGENTS.md").write_bytes(b"# Altered guidance\n")
+    else:
+        (root / "AGENTS.md").unlink()
+    monkeypatch.setattr(codex_pair, "capture_repository_state", lambda _root: original_state)
+    with pytest.raises(RuntimeError, match="guidance"):
+        codex_pair.verify_snapshot(root, pin)
+
+
+def test_unexpected_ignored_guidance_is_rejected(pinned) -> None:
+    root, pin = pinned
+    (root / ".git/info/exclude").write_text("AGENTS.md\n", encoding="ascii")
+    (root / "AGENTS.md").write_text("experiment-specific instructions\n", encoding="ascii")
+    assert not subprocess.check_output(["git", "-C", str(root), "status", "--porcelain=v1"]).strip()
+    with pytest.raises(RuntimeError, match="guidance differs"):
+        codex_pair.verify_snapshot(root, pin)
+
+
+@pytest.mark.parametrize("bad_pin", ["head", "tree", "fingerprint"])
+def test_incorrect_source_pin_is_rejected(pinned, bad_pin: str) -> None:
+    root, pin = pinned
+    replacement = {
+        "head": codex_pair.SourcePin("0" * 40, pin.tree, pin.content_fingerprint),
+        "tree": codex_pair.SourcePin(pin.commit, "0" * 40, pin.content_fingerprint),
+        "fingerprint": codex_pair.SourcePin(pin.commit, pin.tree, "0" * 64),
+    }[bad_pin]
+    with pytest.raises(RuntimeError, match="pinned source"):
+        codex_pair.verify_snapshot(root, replacement)
+
+
+def test_dirty_snapshot_is_rejected(pinned) -> None:
+    root, pin = pinned
+    (root / "queue.py").write_text("changed\n", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="pinned source"):
+        codex_pair.verify_snapshot(root, pin)
+
+
+def test_two_independent_arms_keep_identical_pinned_guidance(
+        tracked_guidance, tmp_path: Path) -> None:
+    root, pin, blob = tracked_guidance
+    checked = []
+    for arm in ("baseline", "middle-man"):
+        snapshot = tmp_path / arm
+        subprocess.run(["git", "clone", "-c", "core.autocrlf=false", "--no-hardlinks",
+                        "--no-checkout", "-q", str(root), str(snapshot)], check=True)
+        subprocess.run(["git", "-C", str(snapshot), "checkout", "--detach", "-q",
+                        pin.commit], check=True)
+        assert codex_pair.verify_snapshot(snapshot, pin).head == pin.commit
+        checked.append((snapshot / "AGENTS.md").read_bytes())
+        assert subprocess.check_output(["git", "-C", str(snapshot), "rev-parse",
+                                        "HEAD:AGENTS.md"], text=True).strip() == blob
+    assert checked[0] == checked[1] == (root / "AGENTS.md").read_bytes()
 
 
 def events(answer: str = ANSWER, *, malformed: bool = False, external: bool = False) -> str:
