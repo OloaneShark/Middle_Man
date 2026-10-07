@@ -19,6 +19,9 @@ GRAPH_SIGNALS = frozenset({
 })
 SIGNAL_KINDS = tuple(WEIGHTS)
 SELECTION_PHASES = ("REQUIRED", "COVERAGE", "DEPTH", "REPAIR")
+SPECIFICITY_CATEGORIES = (
+    "VERY_STRONG", "STRONG", "AMBIGUOUS_DIRECT", "WEAK", "GRAPH", "NONE",
+)
 
 
 def _ratio(numerator: int | float, denominator: int | float) -> float:
@@ -87,8 +90,10 @@ def diagnose_locator(pack: ContextPack, index: RepositoryIndex, *,
     direct_terms: set[str] = set()
     symbols: set[str] = set()
     direct_count = graph_expanded = weak_only = no_novel = 0
-    unique_symbol_paths = ambiguous_only_symbol_paths = 0
+    unique_symbol_paths = ambiguous_only_symbol_paths = ambiguous_symbol_paths = 0
     exact_symbol_names: set[str] = set()
+    newly_covered_terms: set[str] = set()
+    specificity_counts = Counter()
     scores = []
     directories = Counter()
     for path in selected_paths:
@@ -104,6 +109,7 @@ def diagnose_locator(pack: ContextPack, index: RepositoryIndex, *,
                               if signal.kind in DIRECT_SIGNALS and signal.term in useful}
         covered = diagnostic.covered_signals if diagnostic else ()
         novel = _novel_terms(covered, useful)
+        newly_covered_terms.update(novel)
         phases = tuple(dict.fromkeys(item.phase for item in
                                      (diagnostic.selected_range_phases if diagnostic else ())))
         for phase in phases:
@@ -137,8 +143,23 @@ def diagnose_locator(pack: ContextPack, index: RepositoryIndex, *,
         exact_symbol_names.update(exact_names)
         if unique_names:
             unique_symbol_paths += 1
-        elif ambiguous_names:
+        if ambiguous_names:
+            ambiguous_symbol_paths += 1
+        if ambiguous_names and not unique_names:
             ambiguous_only_symbol_paths += 1
+        if {"explicit_path", "trace_path"}.intersection(direct) or unique_names:
+            specificity = "VERY_STRONG"
+        elif {"filename_term", "symbol_term"}.intersection(direct):
+            specificity = "STRONG"
+        elif ambiguous_names:
+            specificity = "AMBIGUOUS_DIRECT"
+        elif weak:
+            specificity = "WEAK"
+        elif graph:
+            specificity = "GRAPH"
+        else:
+            specificity = "NONE"
+        specificity_counts[specificity] += 1
         directory = str(PurePosixPath(path).parent)
         directories[directory] += 1
         path_rows.append({
@@ -152,6 +173,7 @@ def diagnose_locator(pack: ContextPack, index: RepositoryIndex, *,
             "exact_symbol_path_frequency": symbol_frequencies,
             "unique_exact_symbols": unique_names,
             "ambiguous_exact_symbols": ambiguous_names,
+            "strongest_evidence_category": specificity,
             "direct_signals": direct,
             "weak_signals": weak,
             "graph_signals": graph,
@@ -188,7 +210,16 @@ def diagnose_locator(pack: ContextPack, index: RepositoryIndex, *,
         "selected_matched_query_terms": tuple(sorted(supported_terms)),
         "selected_matched_symbols": tuple(sorted(symbols)),
         "unique_exact_symbol_paths": unique_symbol_paths,
+        "ambiguous_exact_symbol_paths": ambiguous_symbol_paths,
         "ambiguous_only_exact_symbol_paths": ambiguous_only_symbol_paths,
+        "ambiguous_exact_symbol_pressure": _ratio(ambiguous_symbol_paths, count),
+        "ambiguous_only_exact_symbol_ratio": _ratio(ambiguous_only_symbol_paths, count),
+        "evidence_specificity_path_counts": {
+            name: specificity_counts[name] for name in SPECIFICITY_CATEGORIES
+        },
+        "evidence_specificity_path_ratios": {
+            name: _ratio(specificity_counts[name], count) for name in SPECIFICITY_CATEGORIES
+        },
         "exact_symbol_path_frequency": {
             name: len({symbol.path for symbol in index.find_symbol(name)})
             for name in sorted(exact_symbol_names)
@@ -198,6 +229,9 @@ def diagnose_locator(pack: ContextPack, index: RepositoryIndex, *,
         "useful_query_term_coverage_ratio": _ratio(len(supported_terms), len(useful)),
         "direct_query_term_coverage_ratio": _ratio(len(direct_terms), len(useful)),
         "selected_paths_without_novel_query_terms": no_novel,
+        "distinct_newly_covered_useful_query_terms": len(newly_covered_terms),
+        "novel_coverage_efficiency": _ratio(len(newly_covered_terms), count),
+        "novel_coverage_path_ratio": _ratio(count - no_novel, count),
         "signal_counts": {name: signal_counts[name] for name in SIGNAL_KINDS},
         "direct_evidence_paths": direct_count,
         "direct_evidence_ratio": _ratio(direct_count, count),
@@ -207,6 +241,7 @@ def diagnose_locator(pack: ContextPack, index: RepositoryIndex, *,
         "graph_expanded_related_ratio": _ratio(graph_expanded, count),
         "top_candidate_score": top_score,
         "median_selected_candidate_score": median(scores) if scores else 0.0,
+        "median_to_top_score_ratio": _ratio(median(scores), top_score) if scores else 0.0,
         "minimum_selected_candidate_score": min(scores, default=0.0),
         "selected_score_within_top_fraction": {
             "50_percent": _ratio(sum(score >= top_score * 0.5 for score in scores), count),
@@ -220,5 +255,7 @@ def diagnose_locator(pack: ContextPack, index: RepositoryIndex, *,
         "selected_directory_counts": dict(sorted(directories.items())),
         "selected_induced_graph_cluster_count": len(clusters),
         "selected_induced_graph_cluster_sizes": clusters,
+        "largest_cluster_share": _ratio(clusters[0], count) if clusters else 0.0,
+        "required_phase_path_ratio": _ratio(path_phases["REQUIRED"], count),
         "selected_paths": tuple(path_rows),
     }

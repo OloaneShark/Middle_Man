@@ -94,6 +94,16 @@ def test_mixed_direct_weak_graph_test_and_phase_metrics_are_deterministic() -> N
     assert report["direct_supported_query_terms"] == ("controller", "runner")
     assert report["weak_only_supported_query_terms"] == ("routing",)
     assert report["selected_induced_graph_cluster_sizes"] == (2, 2, 1)
+    assert report["largest_cluster_share"] == 0.4
+    assert report["median_to_top_score_ratio"] == 0.1
+    assert report["required_phase_path_ratio"] == 0.2
+    assert report["distinct_newly_covered_useful_query_terms"] == 2
+    assert report["novel_coverage_efficiency"] == 0.4
+    assert report["novel_coverage_path_ratio"] == 0.4
+    assert report["evidence_specificity_path_counts"] == {
+        "VERY_STRONG": 1, "STRONG": 1, "AMBIGUOUS_DIRECT": 0,
+        "WEAK": 1, "GRAPH": 2, "NONE": 0,
+    }
     assert report["selected_directory_count"] == 2
     assert report["selected_to_candidate_source_ratio"] == 0.1
     assert report["locator_to_selected_source_ratio"] == 0.2
@@ -116,6 +126,7 @@ def test_dispersed_paths_are_separate_without_import_or_test_edges() -> None:
     assert report["selected_directory_count"] == 3
     assert report["directory_dispersion"] == 1.0
     assert report["selected_induced_graph_cluster_sizes"] == (1, 1, 1)
+    assert report["largest_cluster_share"] == 0.3333
     assert report["selected_score_within_top_fraction"] == {
         "50_percent": 1.0, "75_percent": 1.0, "90_percent": 1.0,
     }
@@ -128,6 +139,10 @@ def test_empty_selection_has_zero_ratios_and_no_paths() -> None:
     assert report["direct_evidence_ratio"] == 0.0
     assert report["useful_query_term_coverage_ratio"] == 0.0
     assert report["selected_induced_graph_cluster_count"] == 0
+    assert report["largest_cluster_share"] == 0.0
+    assert report["median_to_top_score_ratio"] == 0.0
+    assert report["required_phase_path_ratio"] == 0.0
+    assert report["novel_coverage_efficiency"] == 0.0
     assert report["selected_paths"] == ()
     with pytest.raises(ValueError, match="nonnegative"):
         diagnose_locator(_pack("no matches", (), (), ()), _index(()), locator_tokens=-1)
@@ -140,7 +155,9 @@ def test_repeated_exact_symbols_are_distinguished_from_unique_evidence() -> None
     })
     candidates = tuple(RelevanceCandidate(
         path, 95, "PRIMARY", (), (f"exact symbol: {name}",), (),
-        (MatchSignal("exact_symbol", f"symbol:{name}", 95, "exact symbol", None),),
+        (MatchSignal("exact_symbol", f"symbol:{name}", 95, "exact symbol", None),) +
+        ((MatchSignal("symbol_term", "term:task", 28, "symbol term", "task"),)
+         if path == paths[1] else ()),
     ) for path, name in zip(paths, ("SpecificPolicy", "TASK", "TASK")))
     diagnostics = tuple(_diagnostic(candidate, "REQUIRED") for candidate in candidates)
     report = diagnose_locator(_pack("SpecificPolicy TASK", candidates, diagnostics, paths),
@@ -148,6 +165,12 @@ def test_repeated_exact_symbols_are_distinguished_from_unique_evidence() -> None
     assert report["direct_evidence_ratio"] == 1.0
     assert report["unique_exact_symbol_paths"] == 1
     assert report["ambiguous_only_exact_symbol_paths"] == 2
+    assert report["ambiguous_exact_symbol_paths"] == 2
+    assert report["ambiguous_exact_symbol_pressure"] == 0.6667
+    assert report["ambiguous_only_exact_symbol_ratio"] == 0.6667
     assert report["exact_symbol_path_frequency"] == {"SpecificPolicy": 1, "TASK": 2}
     assert report["selected_paths"][0]["unique_exact_symbols"] == ("SpecificPolicy",)
     assert report["selected_paths"][1]["ambiguous_exact_symbols"] == ("TASK",)
+    assert tuple(row["strongest_evidence_category"] for row in report["selected_paths"]) == (
+        "VERY_STRONG", "STRONG", "AMBIGUOUS_DIRECT",
+    )

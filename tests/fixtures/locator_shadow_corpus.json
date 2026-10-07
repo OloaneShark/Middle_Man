@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "source_commit": "0680a1cb8812d35b17ebd628de7ffba95798da7f",
+  "source_tree_sha": "6276b4a959bc93df8bb82cdde0bfc371d2c99770",
+  "selector_fingerprint": "3a4213e19944220c02b1897e1a05a584d61bbd00e91cbf5a9e38cc07976bf555",
+  "mode": "balanced",
+  "max_context_tokens": 6000,
+  "tasks": [
+    {
+      "task_id": "N01",
+      "task": "How does prefix-cache block ownership work when a second request reuses a prompt prefix, and when are those blocks released?",
+      "sha256": "ba9f0f3ce57838e0631919297ff9f4e7590a69323b832d6e674786ddf376b955",
+      "archetype": "NARROW_COMPONENT",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "N02",
+      "task": "What does the memory controller do when a planned work item needs more KV blocks than are free?",
+      "sha256": "879de2268091f8b6d56513fd80158ecf8b2169cac33dd5ec184b057e82825b40",
+      "archetype": "NARROW_COMPONENT",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "N03",
+      "task": "How does the virtual clock advance during simulation when no request is currently runnable?",
+      "sha256": "dadb41fa18508e333e35365435ae170f425a3f2d1ca64e377f32843f42426acc",
+      "archetype": "NARROW_COMPONENT",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "N04",
+      "task": "How does secret redaction protect source excerpts before context is returned to a caller?",
+      "sha256": "7fc7a5ad7c9293a6f2f9da146b6a7ec32f5e1743e2b520868256446e3a3f74da",
+      "archetype": "NARROW_COMPONENT",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "M01",
+      "task": "Trace a read-only production Codex request from the CLI through local context selection, isolated execution, event parsing, audit creation, and repository integrity checks.",
+      "sha256": "380ce2cdd99f2d2ea66a2b9c4dfa417af8227b1af4402c51387d45fb9d13531d",
+      "archetype": "MULTI_COMPONENT_ARCHITECTURE",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "M02",
+      "task": "Explain the Agent Gateway context flow from an MCP request through indexing, relevance ranking, source selection, and response delivery.",
+      "sha256": "99e572ef26121c9f2260a6d16994cb68bef999c41be79981405056b22cf109a8",
+      "archetype": "MULTI_COMPONENT_ARCHITECTURE",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "M03",
+      "task": "How is a Context Pack built from a task query, and how are source ranges chosen and redacted before delivery?",
+      "sha256": "6df91574448444f787a1dfd4ad25dd59b000ba04e3241f70eaac73226093f611",
+      "archetype": "MULTI_COMPONENT_ARCHITECTURE",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "M04",
+      "task": "Trace the Claude runtime probe from workspace preparation through tool restrictions, stream event parsing, and filesystem validation.",
+      "sha256": "d8f887465114535ec4517f0b3ff946142d74059907b5acfe66baaa7295b8566b",
+      "archetype": "MULTI_COMPONENT_ARCHITECTURE",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "C01",
+      "task": "How are project memory facts recorded and carried into a later session handoff without replacing source verification?",
+      "sha256": "aee80a5a89bda32ec5c108bc1e16dc15f0611d82c37e6a0431c4105528442a9a",
+      "archetype": "CROSS_CUTTING_FEATURE",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "C02",
+      "task": "How do indexed imports and tests influence relevance candidates and the final selection of context ranges?",
+      "sha256": "1b7259c528792a6d94ffd0fc36f693e40345efbff3c2a380c8f6f51ec85faa82",
+      "archetype": "CROSS_CUTTING_FEATURE",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "C03",
+      "task": "How do index caching and source hashing prevent stale repository content from being delivered as current context?",
+      "sha256": "300e89cc451be33e27914873e056e06d5597f795a0bc84bb7f23c2831ae4f820",
+      "archetype": "CROSS_CUTTING_FEATURE",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "C04",
+      "task": "Trace how the Codex CLI preview, execution, and audit stages preserve the original task and read-only repository state.",
+      "sha256": "e761cec05a70a415e0c695c1be858cecdbaae0574da28df10a97892a74a35b9b",
+      "archetype": "CROSS_CUTTING_FEATURE",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "T01",
+      "task": "Which tests demonstrate prefix-cache reference counting and release, and what implementation paths do they exercise?",
+      "sha256": "16acf6b01a978be176b2c2ce5560f144c55fac5960fc90edf21df93a4ac91c0b",
+      "archetype": "TEST_FOCUSED",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "T02",
+      "task": "Which tests prove chunked prefill progresses across iterations before decode, and where is that behavior implemented?",
+      "sha256": "a3f048e0fbffc3f3cab4db9eb9b12cfc122692dab589642b30e78ccdddd8c296",
+      "archetype": "TEST_FOCUSED",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "T03",
+      "task": "Which tests validate read-only Codex isolation and rejection of repository mutations, and how do those checks work?",
+      "sha256": "249495e619f0a94db0c9fa1283072e6dacc97ae616822a491ea21f88b7c39cc2",
+      "archetype": "TEST_FOCUSED",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "T04",
+      "task": "Which tests cover repository path confinement and secret redaction for context delivery?",
+      "sha256": "d9d45ac2bb2b774d411021650cf53d69be1115df9d94dcf2896a0250f85d8cec",
+      "archetype": "TEST_FOCUSED",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "G01",
+      "task": "Explain the major parts of Middle_Man and how its simulation and repository-context tools fit together.",
+      "sha256": "047a26fdda5901333c45fe1a0655fcaaa833259ec2007cfbde2a7889f6427fec",
+      "archetype": "GENERIC_BROAD",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "G02",
+      "task": "How does Middle_Man decide what repository context is relevant to a user's question?",
+      "sha256": "174c3ad3b862523f367c1bc452fda5eb2250fa2da731a1f386caf13cac6b51e1",
+      "archetype": "GENERIC_BROAD",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "G03",
+      "task": "What safeguards keep repository context requests from exposing sensitive or out-of-root files?",
+      "sha256": "ab601e83def8fe1230627c1b197cf5e86cc31cbb25df3de4b9c99288c2bfb3a8",
+      "archetype": "GENERIC_BROAD",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "G04",
+      "task": "How does the project measure and report simulator behavior and benchmark comparisons?",
+      "sha256": "89b8827390c274d2c7bfade1248a5de0b4f5050aa1a4976725628bcb685ec673",
+      "archetype": "GENERIC_BROAD",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "E01",
+      "task": "In middle_man/lab/preemption.py, explain how LargestPrivateOwnerPolicy.choose_victim chooses a request under KV pressure.",
+      "sha256": "456e5fe78c3aca95a1a8657bf366be9b5dd82ce97786267d290537b5d5ff1d12",
+      "archetype": "EXPLICIT_ANCHOR",
+      "explicit_paths_supplied": true,
+      "explicit_symbols_supplied": true
+    },
+    {
+      "task_id": "E02",
+      "task": "Trace build_offline_locator in middle_man/gateway/codex_benchmark/offline_locator.py and explain how its hints are assembled.",
+      "sha256": "c78f2b2a0a06f07e2a7c148d2b41355bbc95cc865fab356ceff44b32b5bef358",
+      "archetype": "EXPLICIT_ANCHOR",
+      "explicit_paths_supplied": true,
+      "explicit_symbols_supplied": true
+    },
+    {
+      "task_id": "E03",
+      "task": "In middle_man/lab/prefix_cache.py, how are shared prefix blocks retained and released?",
+      "sha256": "c311d3ff29358c0d96004d6336c2c7e528c3296c985f171cf316c1a95ef3a545",
+      "archetype": "EXPLICIT_ANCHOR",
+      "explicit_paths_supplied": true,
+      "explicit_symbols_supplied": false
+    },
+    {
+      "task_id": "E04",
+      "task": "How does RepositoryIndexer.index collect symbols and import relationships for later context queries?",
+      "sha256": "1088492088aac44ff4d6489137e7c554591a9879d37a06ef11b832cb00e48458",
+      "archetype": "EXPLICIT_ANCHOR",
+      "explicit_paths_supplied": false,
+      "explicit_symbols_supplied": true
+    }
+  ]
+}
