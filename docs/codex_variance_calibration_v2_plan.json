@@ -1,0 +1,104 @@
+{
+  "schema_version": 2,
+  "design_status": "PREREGISTERED_NO_MODEL_RUN",
+  "authorization": {
+    "model_processes_authorized_now": 0,
+    "maximum_future_model_processes_with_separate_authorization": 4,
+    "calibration_calls_completed": 0,
+    "no_retries": true
+  },
+  "purpose": "Describe natural same-task Codex input-token variation under the explicitly selected unelevated research backend; not a policy gate or winner-selection benchmark.",
+  "source": {
+    "commit": "db187e0f48f54222dd250502a2e40b7f1fb16401",
+    "tree": "c597226461db5975ffafd50a769404e03442fda6",
+    "content_fingerprint": "1a91d487a2629d4c82cbae7072ac873e8fcb516597fe954d53f74b649c4241fa",
+    "selector_fingerprint": "3a4213e19944220c02b1897e1a05a584d61bbd00e91cbf5a9e38cc07976bf555",
+    "tracked_agents_blob": "0c8baf10e4f781c6b9eaa03c38a24b40d4e1978c"
+  },
+  "task": {
+    "task_id": "M01",
+    "task_source": "tests/fixtures/locator_shadow_corpus.json",
+    "task_sha256": "380ce2cdd99f2d2ea66a2b9c4dfa417af8227b1af4402c51387d45fb9d13531d",
+    "semantic_rubric_source": "docs/locator_quality_prospective_plan.json#tasks/M01/semantic_rubric",
+    "evaluator_facts_in_model_prompt": false
+  },
+  "execution": {
+    "runner": "scripts/run_codex_pair_experiment.py",
+    "arm_runner": "middle_man/experiments/codex_pair.py",
+    "expected_codex_cli_version": "codex-cli 0.162.0-alpha.2",
+    "model": "gpt-6-sol",
+    "reasoning_effort": "high",
+    "timeout_seconds": 360,
+    "mode": "read-only",
+    "windows_sandbox": "unelevated",
+    "baseline_prompt": "Exact original M01 task bytes; no preprocessing and no locator.",
+    "middle_man_prompt": "Exact original M01 task passed through unchanged production AUTO; only its normal source-free locator may be appended.",
+    "required_controls": [
+      "features.apps=false", "features.plugins=false", "--ignore-user-config",
+      "--strict-config", "--no-daemon", "--ephemeral", "-a never",
+      "-s read-only", "--json"
+    ],
+    "mcp_registration_allowed": false,
+    "both_arms_share_backend": true,
+    "production_windows_sandbox_default_unchanged": true,
+    "unelevated_security_equivalence_to_elevated_established": false
+  },
+  "schedule": [
+    {"call": 1, "arm": "BASELINE", "replicate": "A"},
+    {"call": 2, "arm": "MIDDLE_MAN", "replicate": "A"},
+    {"call": 3, "arm": "MIDDLE_MAN", "replicate": "B"},
+    {"call": 4, "arm": "BASELINE", "replicate": "B"}
+  ],
+  "snapshot_rule": "Prepare four independent, clean, committed, source-identical pinned repositories outside the primary working tree; preserve tracked AGENTS.md at the pinned blob and add no benchmark AGENTS.md; verify all four before call 1 and each again after its arm; never reuse a snapshot.",
+  "validity": {
+    "each_arm": [
+      "pinned source commit, tree, content fingerprint, selector fingerprint, clean snapshot, and unchanged tracked AGENTS.md",
+      "exact original M01 task bytes and task SHA-256",
+      "locked CLI, model, effort, timeout, unelevated backend, read-only isolation, and zero MCP registration",
+      "zero process exit and parsed nonempty final answer; no malformed JSONL or failed turn",
+      "no unexpected external-tool or MCP activity",
+      "unchanged repository HEAD, porcelain status, and Git-visible content after execution",
+      "semantic PASS under the unchanged original M01 rubric",
+      "completed sanitized observation preserved"
+    ],
+    "stop_after_runtime_or_infrastructure_failure": true,
+    "record_semantic_failure_without_substitution_or_retry": true,
+    "semantic_failure_does_not_authorize_schedule_change": true,
+    "analyze_full_four_run_only_if_all_four_valid": true,
+    "missing_result_is_invalid_not_zero": true
+  },
+  "metrics_per_arm": [
+    "input_tokens", "cached_input_tokens", "output_tokens", "reasoning_output_tokens",
+    "elapsed_seconds", "native_tool_calls", "explicit_reads", "unique_explicit_read_files",
+    "rereads", "search_calls", "listing_calls", "content_search_calls",
+    "file_targeted_searches", "repository_wide_searches", "file_listing_searches",
+    "git_inspections", "unclassified_commands", "malformed_event_lines",
+    "external_tool_activity_count", "mcp_call_count", "repository_integrity",
+    "semantic_result", "windows_sandbox", "output_rendering",
+    "locator_metadata_for_middle_man"
+  ],
+  "analysis": {
+    "baseline_within_arm_signed_input_difference": "B_B - B_A",
+    "middle_man_within_arm_signed_input_difference": "M_B - M_A",
+    "within_arm_absolute_difference": "abs(signed difference) for each arm",
+    "within_arm_percent_of_mean": "100 * abs(signed difference) / that arm's two-run input mean",
+    "baseline_mean_input": "(B_A + B_B) / 2",
+    "middle_man_mean_input": "(M_A + M_B) / 2",
+    "middle_man_minus_baseline_mean_input_delta": "middle_man_mean_input - baseline_mean_input",
+    "mean_delta_percent_of_baseline": "100 * mean delta / baseline_mean_input",
+    "all_four_input_range": "max(B_A, B_B, M_A, M_B) - min(B_A, B_B, M_A, M_B)",
+    "cached_input_variation": "Report both within-arm cached-input differences separately.",
+    "input_minus_cached": "For each observation report input_tokens - cached_input_tokens; DIAGNOSTIC ONLY - NOT BILLING OR QUOTA.",
+    "other_replicate_comparisons": ["elapsed_seconds", "native_tool_calls", "search_calls"],
+    "heuristic_estimates_separate_from_codex_usage": true,
+    "no_significance_claim_from_two_per_arm": true,
+    "no_winner_or_locator_quality_rule": true,
+    "no_retroactive_threshold": true
+  },
+  "historical_exclusions": {
+    "v1_stopped_incomplete": "One runtime-successful but semantically failed baseline; calls 2-4 were not started. Exclude from V2 sample.",
+    "prior_valid_m01": "Middle_Man minus baseline input was -8219 tokens (-2.3535%) under a different backend; directional context only, not a V2 replicate.",
+    "pool_historical_observations_with_v2": false,
+    "change_rejected_shadow_policy": false
+  }
+}

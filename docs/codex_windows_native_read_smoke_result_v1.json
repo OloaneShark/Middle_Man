@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "kind": "HISTORICAL_NATIVE_READ_SMOKE_NOT_CALIBRATION",
+  "source_receipt": {
+    "basename": "middle_man_native_read_smoke_20261008_4d8b_receipt.json",
+    "sha256": "35aa3f3be56719285c79dee3c4456bd6573b58f4ad53314371a26e5fb0231a7d",
+    "verified_from_sanitized_receipt": true
+  },
+  "observed": {
+    "source_commit": "db187e0f48f54222dd250502a2e40b7f1fb16401",
+    "source_tree": "c597226461db5975ffafd50a769404e03442fda6",
+    "source_content_fingerprint": "1a91d487a2629d4c82cbae7072ac873e8fcb516597fe954d53f74b649c4241fa",
+    "task_sha256": "2e3be1b58d63d7a95095a54654dad28a61a42d41d4726b287963f415f70b24aa",
+    "cli_version": "codex-cli 0.162.0-alpha.2",
+    "model": "gpt-6-sol",
+    "effort": "high",
+    "windows_sandbox": "unelevated",
+    "timeout_seconds": 360,
+    "arm": "BASELINE",
+    "process_started": true,
+    "exit_code": 0,
+    "status": "SUCCESS",
+    "output_rendering": "RENDERED",
+    "native_tool_calls": 1,
+    "successful_hash_commands": 1,
+    "native_output_matched_all_three_targets": true,
+    "final_answer_matched_all_three_targets": true,
+    "post_run_target_hashes_match": true,
+    "repository_unchanged": true,
+    "mcp_call_count": 0,
+    "external_tool_activity_count": 0,
+    "input_tokens": 26273,
+    "cached_input_tokens": 12800,
+    "output_tokens": 363,
+    "reasoning_output_tokens": 27,
+    "elapsed_seconds": 8.968
+  },
+  "evidence_limit": "The receipt supports one started process and its result; the separate zero-retry assertion is not independently established by this receipt alone.",
+  "token_savings_evidence": false,
+  "v2_calibration_observation": false
+}
