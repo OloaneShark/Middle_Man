@@ -93,20 +93,26 @@ def _finish_stopped(process) -> tuple[str, str]:
 
 def run_codex(root: Path, task: str, *, mode: str, confirm_external_service: bool = False,
               model: str = DEFAULT_MODEL, effort: str = DEFAULT_EFFORT,
-              timeout: int = DEFAULT_TIMEOUT, cli: CodexCLI | None = None) -> CodexRunResult:
+              timeout: int = DEFAULT_TIMEOUT, cli: CodexCLI | None = None,
+              research_windows_sandbox: str | None = None,
+              research_baseline: bool = False) -> CodexRunResult:
     if not confirm_external_service:
         raise ValueError("live Codex execution requires --confirm-external-service")
     if timeout <= 0:
         raise ValueError("--timeout must be positive")
+    if research_baseline and research_windows_sandbox is None:
+        raise ValueError("research baseline requires an explicit Windows backend")
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + secrets.token_hex(4)
     root = validate_repository(root)
     before = capture_repository_state(root)
-    preview = preview_codex(root, task, mode=mode, model=model, effort=effort, cli=cli)
+    preview = preview_codex(root, task, mode=mode, model=model, effort=effort, cli=cli,
+                            research_windows_sandbox=research_windows_sandbox,
+                            research_baseline=research_baseline)
     preprocessed = capture_repository_state(root)
     if preprocessed != before:
         raise RuntimeError("repository changed during Middle_Man preprocessing; Codex was not started")
     command = (*preview.invocation[:-1], "--json", preview.prompt)
-    verify_isolation_command(command)
+    verify_isolation_command(command, research_windows_sandbox=research_windows_sandbox)
     if capture_repository_state(root) != before:
         raise RuntimeError("repository changed before Codex process creation; Codex was not started")
 

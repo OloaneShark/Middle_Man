@@ -59,26 +59,36 @@ class CodexPreview:
 
 
 def build_invocation(cli: CodexCLI, root: Path, prompt: str, *, mode: str,
-                     model: str, effort: str) -> tuple[str, ...]:
+                     model: str, effort: str,
+                     research_windows_sandbox: str | None = None) -> tuple[str, ...]:
     if mode not in {"read-only", "workspace-write"}:
         raise ValueError("invalid task mode")
     if not model or not model.strip():
         raise ValueError("model must be nonempty")
     if effort not in EFFORTS:
         raise ValueError("unsupported reasoning effort")
+    if research_windows_sandbox is not None and (
+            mode != "read-only" or research_windows_sandbox not in {"elevated", "unelevated"}):
+        raise ValueError("research Windows backend requires read-only mode and a supported selector")
+    backend = (("-c", f'windows.sandbox="{research_windows_sandbox}"')
+               if research_windows_sandbox is not None else ())
     command = (cli.executable, "--no-daemon", "-a", "never", "exec", "--ignore-user-config",
-               "--strict-config", *isolation_arguments(), "-C", str(root), "-s", mode,
+               "--strict-config", *isolation_arguments(), *backend, "-C", str(root), "-s", mode,
                "--ephemeral", "-m", model, "-c", f'model_reasoning_effort="{effort}"', prompt)
-    verify_isolation_command(command)
+    verify_isolation_command(command, research_windows_sandbox=research_windows_sandbox)
     return command
 
 
 def preview_codex(root: Path, task: str, *, mode: str, model: str = DEFAULT_MODEL,
-                  effort: str = DEFAULT_EFFORT, cli: CodexCLI | None = None) -> CodexPreview:
+                  effort: str = DEFAULT_EFFORT, cli: CodexCLI | None = None,
+                  research_windows_sandbox: str | None = None,
+                  research_baseline: bool = False) -> CodexPreview:
     if not task or not task.strip():
         raise ValueError("task must be nonempty")
     if mode not in {"read-only", "workspace-write"}:
         raise ValueError("exactly one task mode is required")
+    if research_baseline and (research_windows_sandbox is None or mode != "read-only"):
+        raise ValueError("research baseline requires an explicit read-only Windows backend")
     root = validate_repository(root)
     cli = cli or discover_codex()
     original = task.encode("utf-8")
@@ -90,25 +100,29 @@ def preview_codex(root: Path, task: str, *, mode: str, model: str = DEFAULT_MODE
     reason = "workspace_write_not_validated_for_full_locator"
     decision = "BYPASSED"
     try:
-        config = GatewayConfig(root, cache_writes_enabled=False)
-        query = ContextQuery(task)
-        pack = ContextBuilder(config).build(query, mode="balanced", max_context_tokens=6000)
-        locator = build_offline_locator(config, query)
-        if locator.pack_fingerprint != pack.fingerprint:
-            raise RuntimeError("repository changed during context selection")
-        auto = decide_offline_locator(pack, locator, read_only=(mode == "read-only"))
-        candidate = auto.candidate_tokens
-        selected = auto.selected_tokens
-        selected_paths = locator.selected_paths
-        selector_fingerprint = locator.selector_fingerprint
-        reason = auto.reason
-        if auto.use_locator:
-            prompt = append_offline_locator(task, locator.text)
-            decision = "LOCATOR USED"
-            locator_tokens = locator.estimated_tokens
-            visible_tokens = HeuristicTokenEstimator().estimate(prompt[len(task):])
-            locator_hash = locator.sha256
-        invocation = build_invocation(cli, root, prompt, mode=mode, model=model, effort=effort)
+        if research_baseline:
+            reason = "research_baseline"
+        else:
+            config = GatewayConfig(root, cache_writes_enabled=False)
+            query = ContextQuery(task)
+            pack = ContextBuilder(config).build(query, mode="balanced", max_context_tokens=6000)
+            locator = build_offline_locator(config, query)
+            if locator.pack_fingerprint != pack.fingerprint:
+                raise RuntimeError("repository changed during context selection")
+            auto = decide_offline_locator(pack, locator, read_only=(mode == "read-only"))
+            candidate = auto.candidate_tokens
+            selected = auto.selected_tokens
+            selected_paths = locator.selected_paths
+            selector_fingerprint = locator.selector_fingerprint
+            reason = auto.reason
+            if auto.use_locator:
+                prompt = append_offline_locator(task, locator.text)
+                decision = "LOCATOR USED"
+                locator_tokens = locator.estimated_tokens
+                visible_tokens = HeuristicTokenEstimator().estimate(prompt[len(task):])
+                locator_hash = locator.sha256
+        invocation = build_invocation(cli, root, prompt, mode=mode, model=model, effort=effort,
+                                      research_windows_sandbox=research_windows_sandbox)
     finally:
         after = repository_state(root)
         if after != before:

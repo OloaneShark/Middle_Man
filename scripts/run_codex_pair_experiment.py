@@ -33,6 +33,10 @@ def main(argv: list[str] | None = None) -> int:
     if receipt.is_relative_to(snapshot) or receipt.exists():
         parser.error("receipt must be a new path outside the source snapshot")
     plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    execution = plan["execution"]
+    windows_sandbox = execution.get("windows_sandbox")
+    if windows_sandbox not in {"elevated", "unelevated"}:
+        parser.error("a new experiment plan must select an explicit Windows sandbox backend")
     if "schedule" in plan:
         schedule = plan["schedule"]
         if args.call_number is None or not 1 <= args.call_number <= len(schedule):
@@ -53,6 +57,7 @@ def main(argv: list[str] | None = None) -> int:
                     or completed.get("source_commit") != plan["source"]["commit"]
                     or completed.get("source_tree") != plan["source"]["tree"]
                     or completed.get("cli_version") != plan["execution"]["expected_codex_cli_version"]
+                    or completed.get("windows_sandbox") != windows_sandbox
                     or completed.get("repository", {}).get("unchanged") is not True
                     or completed.get("metrics", {}).get("external_tool_activity_count") != 0
                     or completed.get("metrics", {}).get("mcp_call_count") != 0):
@@ -66,11 +71,11 @@ def main(argv: list[str] | None = None) -> int:
     if spec["task_sha256"] != task_hash:
         raise RuntimeError("task differs from the preregistered fixture")
     source = plan["source"]
-    execution = plan["execution"]
     observation = run_arm(
         snapshot, task, arm=args.arm,
         pin=SourcePin(source["commit"], source["tree"], source["content_fingerprint"]),
         cli=discover_codex(), expected_cli_version=execution["expected_codex_cli_version"],
+        windows_sandbox=windows_sandbox,
         timeout=execution["timeout_seconds"], model=execution["model"],
         effort=execution["reasoning_effort"])
     rendering = record_and_render(observation, receipt, sys.stdout)

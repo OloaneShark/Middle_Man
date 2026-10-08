@@ -169,16 +169,14 @@ def fake_launch(monkeypatch: pytest.MonkeyPatch, process: FakeProcess, *, arm: s
         assert command[-1].startswith(TASK)
         assert "--json" in command and "--ignore-user-config" in command
         assert "features.apps=false" in command and "features.plugins=false" in command
+        assert command.count('windows.sandbox="unelevated"') == 1
         assert "mcp_servers." not in " ".join(command)
         if arm == "BASELINE":
             assert command[-1] == TASK
         calls.append(command)
         return process
 
-    if arm == "BASELINE":
-        monkeypatch.setattr(codex_pair, "_Popen", launch)
-    else:
-        monkeypatch.setattr(execution, "_Popen", launch)
+    monkeypatch.setattr(execution, "_Popen", launch)
     return calls
 
 
@@ -188,12 +186,14 @@ def test_unicode_observation_survives_ascii_console_and_sanitized_receipt(
     root, pin = pinned
     calls = fake_launch(monkeypatch, FakeProcess(events()), arm=arm)
     observation = codex_pair.run_arm(root, TASK, arm=arm, pin=pin, cli=CLI,
-                                     expected_cli_version=CLI.version)
+                                     expected_cli_version=CLI.version,
+                                     windows_sandbox="unelevated")
     assert len(calls) == 1 and observation.final_answer == ANSWER
     assert observation.receipt["status"] == "SUCCESS"
     assert observation.receipt["metrics"]["input_tokens"] == 101
     assert observation.receipt["metrics"]["cached_input_tokens"] == 20
     assert observation.receipt["semantic_review"] is None
+    assert observation.receipt["windows_sandbox"] == "unelevated"
     stream = io.StringIO()
     receipt = tmp_path / "results" / "arm.json"
     assert codex_pair.record_and_render(observation, receipt, stream) == "RENDERED"
@@ -206,12 +206,42 @@ def test_unicode_observation_survives_ascii_console_and_sanitized_receipt(
     assert "synthetic stderr" not in persisted and "fake-codex" not in persisted
 
 
+def test_both_research_arms_share_process_and_event_path(
+        pinned, monkeypatch: pytest.MonkeyPatch) -> None:
+    root, pin = pinned
+    launched = []
+    def launch(command, **_kwargs):
+        launched.append(command)
+        return FakeProcess(events())
+    monkeypatch.setattr(execution, "_Popen", launch)
+    for arm in ("BASELINE", "MIDDLE_MAN"):
+        observation = codex_pair.run_arm(root, TASK, arm=arm, pin=pin, cli=CLI,
+                                         expected_cli_version=CLI.version,
+                                         windows_sandbox="unelevated")
+        assert observation.receipt["status"] == "SUCCESS"
+        assert observation.receipt["metrics"]["input_tokens"] == 101
+    assert len(launched) == 2
+    assert launched[0][:-1] == launched[1][:-1]
+    assert launched[0][-1] == TASK
+
+
+@pytest.mark.parametrize("backend", ["", "unknown", None])
+def test_missing_or_unsupported_backend_never_launches(
+        pinned, monkeypatch: pytest.MonkeyPatch, backend: str | None) -> None:
+    root, pin = pinned
+    monkeypatch.setattr(execution, "_Popen", lambda *_args, **_kwargs: pytest.fail("launched"))
+    with pytest.raises(ValueError, match="explicit supported Windows backend"):
+        codex_pair.run_arm(root, TASK, arm="BASELINE", pin=pin, cli=CLI,
+                           expected_cli_version=CLI.version, windows_sandbox=backend)
+
+
 def test_render_failure_is_separate_from_captured_model_result(
         pinned, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     root, pin = pinned
     fake_launch(monkeypatch, FakeProcess(events()), arm="BASELINE")
     observation = codex_pair.run_arm(root, TASK, arm="BASELINE", pin=pin,
-                                     cli=CLI, expected_cli_version=CLI.version)
+                                     cli=CLI, expected_cli_version=CLI.version,
+                                     windows_sandbox="unelevated")
 
     class BrokenConsole:
         def write(self, _value):
@@ -247,7 +277,8 @@ def test_baseline_failure_modes_preserve_metrics_without_real_codex(
         if kind == "mutation" else None)
     calls = fake_launch(monkeypatch, process, arm="BASELINE")
     observation = codex_pair.run_arm(root, TASK, arm="BASELINE", pin=pin,
-                                     cli=CLI, expected_cli_version=CLI.version, timeout=3)
+                                     cli=CLI, expected_cli_version=CLI.version,
+                                     windows_sandbox="unelevated", timeout=3)
     assert len(calls) == 1 and reason in observation.receipt["failure_reasons"]
     assert observation.receipt["metrics"]["input_tokens"] == 101
     assert observation.final_answer == ANSWER
@@ -257,10 +288,10 @@ def test_baseline_failure_modes_preserve_metrics_without_real_codex(
 
 def test_version_mismatch_prevents_any_launch(pinned, monkeypatch: pytest.MonkeyPatch) -> None:
     root, pin = pinned
-    monkeypatch.setattr(codex_pair, "_Popen", lambda *_args, **_kwargs: pytest.fail("launched"))
+    monkeypatch.setattr(execution, "_Popen", lambda *_args, **_kwargs: pytest.fail("launched"))
     with pytest.raises(RuntimeError, match="CLI version"):
         codex_pair.run_arm(root, TASK, arm="BASELINE", pin=pin, cli=CLI,
-                           expected_cli_version="different")
+                           expected_cli_version="different", windows_sandbox="unelevated")
 
 
 def test_script_requires_confirmation_and_locked_schedule_before_discovery(
@@ -293,7 +324,8 @@ def test_receipt_refuses_overwrite(pinned, tmp_path: Path, monkeypatch: pytest.M
     root, pin = pinned
     fake_launch(monkeypatch, FakeProcess(events()), arm="BASELINE")
     observation = codex_pair.run_arm(root, TASK, arm="BASELINE", pin=pin,
-                                     cli=CLI, expected_cli_version=CLI.version)
+                                     cli=CLI, expected_cli_version=CLI.version,
+                                     windows_sandbox="unelevated")
     receipt = tmp_path / "arm.json"
     assert codex_pair.record_and_render(observation, receipt, io.StringIO()) == "RENDERED"
     with pytest.raises(FileExistsError, match="already exists"):

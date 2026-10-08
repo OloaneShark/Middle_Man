@@ -87,6 +87,7 @@ def test_command_has_no_benchmark_or_mcp_injection(tmp_path: Path, mode: str) ->
     assert command[command.index("-s") + 1] == mode
     assert "benchmark working copy" not in result.prompt
     assert "features.apps=false" in command and "features.plugins=false" in command
+    assert not any(part.startswith("windows.sandbox=") for part in command)
     assert "mcp_servers" not in " ".join(command)
     assert "AGENTS.md" not in " ".join(command)
     assert "Arbitrary user task" not in " ".join(result.redacted_command_shape)
@@ -109,6 +110,35 @@ def test_shared_baseline_command_uses_identical_isolation(tmp_path: Path, mode: 
         verify_isolation_command((*baseline[:-1], "-c", "features.apps=true", baseline[-1]))
     with pytest.raises(RuntimeError, match="isolation"):
         verify_isolation_command((*baseline[:-1], "-c", "mcp_servers.custom.enabled=true", baseline[-1]))
+
+
+def test_research_backend_keeps_production_isolation(tmp_path: Path) -> None:
+    root = _small_repo(tmp_path)
+    command = build_invocation(CLI, root, "Task", mode="read-only", model="gpt-6-sol",
+                               effort="high", research_windows_sandbox="unelevated")
+    assert command.count('windows.sandbox="unelevated"') == 1
+    assert "--ignore-user-config" in command and "--strict-config" in command
+    assert "--no-daemon" in command and "--ephemeral" in command
+    assert "features.apps=false" in command and "features.plugins=false" in command
+    verify_isolation_command(command, research_windows_sandbox="unelevated")
+    for extra in ("features.apps=true", "mcp_servers.unexpected.command=python",
+                  'windows.sandbox="elevated"'):
+        with pytest.raises(RuntimeError):
+            verify_isolation_command((*command[:-1], "-c", extra, command[-1]),
+                                     research_windows_sandbox="unelevated")
+    with pytest.raises(RuntimeError):
+        verify_isolation_command(command)
+    for flag in ("-a", "-s"):
+        index = command.index(flag)
+        altered = (*command[:index], *command[index + 2:])
+        with pytest.raises(RuntimeError):
+            verify_isolation_command(altered, research_windows_sandbox="unelevated")
+    with pytest.raises(ValueError, match="supported selector"):
+        build_invocation(CLI, root, "Task", mode="read-only", model="gpt-6-sol",
+                         effort="high", research_windows_sandbox="unknown")
+    with pytest.raises(ValueError, match="read-only"):
+        build_invocation(CLI, root, "Task", mode="workspace-write", model="gpt-6-sol",
+                         effort="high", research_windows_sandbox="unelevated")
 
 
 @pytest.mark.parametrize("options", [[], ["--read-only", "--workspace-write"]])
