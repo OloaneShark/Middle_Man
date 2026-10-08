@@ -10,6 +10,7 @@ from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from subprocess import Popen as _Popen
+from typing import Callable
 
 from middle_man.gateway.codex_runner.events import parse_production_events
 from middle_man.gateway.codex_runner.isolation import verify_isolation_command
@@ -69,11 +70,13 @@ class CodexRunResult:
     stderr_sha256: str | None
     stderr_length_bytes: int
     external_calls: int
+    research_evidence: dict[str, object] | None = None
 
     def audit_dict(self) -> dict[str, object]:
         """Serializable local metadata; excludes prompts, source, and final answer."""
         data = asdict(self)
         data.pop("final_message")
+        data.pop("research_evidence")
         return data
 
 
@@ -95,13 +98,16 @@ def run_codex(root: Path, task: str, *, mode: str, confirm_external_service: boo
               model: str = DEFAULT_MODEL, effort: str = DEFAULT_EFFORT,
               timeout: int = DEFAULT_TIMEOUT, cli: CodexCLI | None = None,
               research_windows_sandbox: str | None = None,
-              research_baseline: bool = False) -> CodexRunResult:
+              research_baseline: bool = False,
+              research_event_inspector: Callable[[str, Path], dict[str, object]] | None = None) -> CodexRunResult:
     if not confirm_external_service:
         raise ValueError("live Codex execution requires --confirm-external-service")
     if timeout <= 0:
         raise ValueError("--timeout must be positive")
     if research_baseline and research_windows_sandbox is None:
         raise ValueError("research baseline requires an explicit Windows backend")
+    if research_event_inspector is not None and research_windows_sandbox is None:
+        raise ValueError("research event inspection requires an explicit Windows backend")
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + secrets.token_hex(4)
     root = validate_repository(root)
     before = capture_repository_state(root)
@@ -144,6 +150,12 @@ def run_codex(root: Path, task: str, *, mode: str, confirm_external_service: boo
     except RuntimeError:
         after = None
     events = parse_production_events(stdout or "", root)
+    research_evidence = None
+    if research_event_inspector is not None:
+        try:
+            research_evidence = research_event_inspector(stdout or "", root)
+        except Exception:
+            research_evidence = {"valid": False, "failure": "EVIDENCE_INSPECTION_ERROR"}
     trace = events.parsed
     searches = events.search_telemetry
     locator_paths = set(preview.audit.selected_paths) if preview.audit.decision == "LOCATOR USED" else set()
@@ -195,5 +207,5 @@ def run_codex(root: Path, task: str, *, mode: str, confirm_external_service: boo
         unchanged, trace.event_count, events.malformed_lines, trace.mcp_calls,
         events.external_tool_activity,
         hashlib.sha256((stderr or "").encode("utf-8")).hexdigest() if stderr else None,
-        len((stderr or "").encode("utf-8")), external_calls,
+        len((stderr or "").encode("utf-8")), external_calls, research_evidence,
     )

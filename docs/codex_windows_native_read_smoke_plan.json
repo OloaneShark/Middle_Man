@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "status": "PREREGISTERED_NO_MODEL_RUN",
+  "model_processes_authorized_by_this_phase": 0,
+  "maximum_processes_per_authorized_run": 1,
+  "purpose": "Validate native shell access to pinned working-tree files; not a token benchmark or calibration.",
+  "source": {
+    "commit": "db187e0f48f54222dd250502a2e40b7f1fb16401",
+    "tree": "c597226461db5975ffafd50a769404e03442fda6",
+    "content_fingerprint": "1a91d487a2629d4c82cbae7072ac873e8fcb516597fe954d53f74b649c4241fa",
+    "agents_blob": "0c8baf10e4f781c6b9eaa03c38a24b40d4e1978c"
+  },
+  "task": {
+    "text": "Using native shell execution, calculate the SHA-256 hash of the working-tree file bytes for README.md, AGENTS.md, and middle_man/gateway/codex_runner/runner.py. Return each repository-relative path and its lowercase 64-character SHA-256 digest. Do not quote source text. Do not use MCP, external tools, or GitHub.",
+    "utf8_bytes": 313,
+    "utf8_sha256": "2e3be1b58d63d7a95095a54654dad28a61a42d41d4726b287963f415f70b24aa"
+  },
+  "expected_worktree_sha256": {
+    "README.md": "3345c3e9483b4902b3705e7cf05936853a4af1cf6bee8f16a2d81a1b5647eaad",
+    "AGENTS.md": "58c4007ff26ce14caa7497db511d2751e8f9189091e0896998ff02a5fcd6574d",
+    "middle_man/gateway/codex_runner/runner.py": "1ba4f0f58a7525332d2ee84ae19586572ad54e2ca95da47561404b3d49ce03db"
+  },
+  "execution": {
+    "cli_version": "codex-cli 0.162.0-alpha.2",
+    "model": "gpt-6-sol",
+    "effort": "high",
+    "timeout_seconds": 360,
+    "sandbox": "read-only",
+    "windows_backend": "unelevated",
+    "arm": "BASELINE",
+    "apps": "disabled",
+    "plugins": "disabled",
+    "user_config": "ignored",
+    "strict_config": true,
+    "no_daemon": true,
+    "ephemeral": true,
+    "mcp_registered": false
+  },
+  "validity_rules": [
+    "pinned_clean_source_and_tracked_guidance",
+    "explicit_unelevated_read_only_isolation",
+    "successful_native_hash_command_with_worktree_output_for_all_targets",
+    "all_three_lowercase_final_hashes_match_independent_worktree_sha256",
+    "zero_mcp_or_unexpected_external_tool_activity",
+    "successful_parsed_final_result_and_zero_process_exit",
+    "unchanged_head_status_git_visible_content_and_target_hashes",
+    "sanitized_receipt_saved_before_console_rendering"
+  ]
+}

@@ -9,7 +9,7 @@ import subprocess
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TextIO
+from typing import Callable, TextIO
 
 from middle_man.gateway.codex_benchmark.tasks import source_fingerprint
 from middle_man.gateway.codex_runner.execution import run_codex
@@ -80,7 +80,8 @@ def _verify_guidance(root: Path) -> None:
 
 def run_arm(root: Path, task: str, *, arm: str, pin: SourcePin, cli: CodexCLI,
             expected_cli_version: str, windows_sandbox: str, timeout: int = 360,
-            model: str = "gpt-6-sol", effort: str = "high") -> ArmObservation:
+            model: str = "gpt-6-sol", effort: str = "high",
+            research_event_inspector: Callable[[str, Path], dict[str, object]] | None = None) -> ArmObservation:
     """Run one authorized arm; the caller controls authorization and arm order."""
     if arm not in {"BASELINE", "MIDDLE_MAN"} or timeout <= 0:
         raise ValueError("invalid experiment arm or timeout")
@@ -96,7 +97,8 @@ def run_arm(root: Path, task: str, *, arm: str, pin: SourcePin, cli: CodexCLI,
     result = run_codex(root, task, mode="read-only", confirm_external_service=True,
                        model=model, effort=effort, timeout=timeout, cli=cli,
                        research_windows_sandbox=windows_sandbox,
-                       research_baseline=(arm == "BASELINE"))
+                       research_baseline=(arm == "BASELINE"),
+                       research_event_inspector=research_event_inspector)
     try:
         after = capture_repository_state(root)
     except RuntimeError:
@@ -187,6 +189,8 @@ def run_arm(root: Path, task: str, *, arm: str, pin: SourcePin, cli: CodexCLI,
             "unchanged": after == before,
         },
     }
+    if research_event_inspector is not None:
+        receipt["research_evidence"] = result.research_evidence
     return ArmObservation(receipt, answer)
 
 
