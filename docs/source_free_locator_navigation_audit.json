@@ -1,0 +1,2335 @@
+{
+  "context_budget": 6000,
+  "corpus_sha256": "6b1be495325413f5fc5e1e4bd53cbfc93a784c8f0365515e8f6a3e6d2ad803b5",
+  "mode": "balanced",
+  "model_calls": 0,
+  "reference_dataset_sha256": "ef000d32fb4e7d2344fd0461dc3a95be763771588acea71295a8ea08a1fc9317",
+  "schema_version": 1,
+  "scope": "DEVELOPMENT_ONLY",
+  "selector_fingerprint": "3a4213e19944220c02b1897e1a05a584d61bbd00e91cbf5a9e38cc07976bf555",
+  "source_commit": "0680a1cb8812d35b17ebd628de7ffba95798da7f",
+  "source_fingerprint": "6f360e98d7d87339129d0fde8725b6e26a03fcdf0f16f9a24d8c7a3f6a3db340",
+  "source_tree": "6276b4a959bc93df8bb82cdde0bfc371d2c99770",
+  "structural_navigation_proxy_only": true,
+  "tasks": [
+    {
+      "areas": [
+        {
+          "id": "reuse",
+          "locator_ranges_fully_cover": true,
+          "navigable": true,
+          "options": [
+            {
+              "locator_ranges_fully_cover": true,
+              "navigable": true,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [
+                    [
+                      1,
+                      81
+                    ]
+                  ],
+                  "diagnosis": "NAVIGABLE",
+                  "locator_range_fully_covers_citation": true,
+                  "navigable": true,
+                  "path": "middle_man/lab/prefix_cache.py",
+                  "path_targeted": true,
+                  "range_intersects": true,
+                  "reference_lines": [
+                    39,
+                    52
+                  ],
+                  "reference_symbol": "PrefixCache.acquire",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ownership",
+          "locator_ranges_fully_cover": true,
+          "navigable": true,
+          "options": [
+            {
+              "locator_ranges_fully_cover": true,
+              "navigable": true,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [
+                    [
+                      1,
+                      130
+                    ]
+                  ],
+                  "diagnosis": "NAVIGABLE",
+                  "locator_range_fully_covers_citation": true,
+                  "navigable": true,
+                  "path": "middle_man/lab/memory.py",
+                  "path_targeted": true,
+                  "range_intersects": true,
+                  "reference_lines": [
+                    112,
+                    130
+                  ],
+                  "reference_symbol": "KVBlockManager.release_request / _release_block_ref",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cache_lifetime",
+          "locator_ranges_fully_cover": true,
+          "navigable": true,
+          "options": [
+            {
+              "locator_ranges_fully_cover": true,
+              "navigable": true,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [
+                    [
+                      1,
+                      81
+                    ]
+                  ],
+                  "diagnosis": "NAVIGABLE",
+                  "locator_range_fully_covers_citation": true,
+                  "navigable": true,
+                  "path": "middle_man/lab/prefix_cache.py",
+                  "path_targeted": true,
+                  "range_intersects": true,
+                  "reference_lines": [
+                    54,
+                    81
+                  ],
+                  "reference_symbol": "PrefixCache.publish / clear / evict_unused",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "areas_locator_ranges_fully_cover": 3,
+      "areas_navigable": 3,
+      "areas_total": 3,
+      "auto_reason": "candidate_source_at_least_10000",
+      "auto_used": true,
+      "broad_hints": 5,
+      "hints": [
+        {
+          "path": "tests/test_phase_8_prefix_cache.py",
+          "range": [
+            1,
+            102
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "test_partial_prefix_shares_only_complete_blocks"
+        },
+        {
+          "path": "middle_man/lab/prefix_cache.py",
+          "range": [
+            1,
+            81
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "PrefixCache"
+        },
+        {
+          "path": "middle_man/lab/request.py",
+          "range": [
+            1,
+            159
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "InferenceRequest"
+        },
+        {
+          "path": "middle_man/lab/memory.py",
+          "range": [
+            1,
+            130
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "KVBlockManager"
+        },
+        {
+          "path": "middle_man/lab/engine.py",
+          "range": [
+            7,
+            13
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/lab/engine.py",
+          "range": [
+            34,
+            34
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "SimulationEngine"
+        },
+        {
+          "path": "middle_man/lab/engine.py",
+          "range": [
+            232,
+            244
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "SimulationEngine._release_request"
+        },
+        {
+          "path": "middle_man/lab/memory_control.py",
+          "range": [
+            10,
+            18
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "PreparedWork"
+        },
+        {
+          "path": "middle_man/lab/metrics.py",
+          "range": [
+            9,
+            9
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/lab/metrics.py",
+          "range": [
+            28,
+            44
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "RequestMetrics"
+        },
+        {
+          "path": "middle_man/lab/metrics.py",
+          "range": [
+            89,
+            89
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MetricsCollector"
+        },
+        {
+          "path": "middle_man/lab/metrics.py",
+          "range": [
+            158,
+            177
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MetricsCollector._request_metrics"
+        },
+        {
+          "path": "tests/test_phase_8_recovery.py",
+          "range": [
+            1,
+            36
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "test_preempted_partial_prefix_resumes_after_shared_prefix_boundary"
+        },
+        {
+          "path": "middle_man/lab/workloads.py",
+          "range": [
+            7,
+            7
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/lab/work.py",
+          "range": [
+            4,
+            22
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "WorkItem"
+        }
+      ],
+      "internal_candidate_source_tokens": 83746,
+      "internal_selected_source_tokens": 5970,
+      "locator_characters": 715,
+      "locator_estimated_tokens": 179,
+      "locator_sha256": "acef90deb24869c4432d47c2954f4ed65ecc04320da35dd40cde8612e017ebc7",
+      "model_visible_appendix_characters": 911,
+      "model_visible_appendix_estimated_tokens": 228,
+      "pack_fingerprint": "e7be523656e9abb96393ed4c342354814dd9fc34c8ab17ba3cc95c97d7628328",
+      "reference_path_diagnostics": [
+        {
+          "candidate": true,
+          "path": "middle_man/lab/memory.py",
+          "selected": true,
+          "status": "SELECTED"
+        },
+        {
+          "candidate": true,
+          "path": "middle_man/lab/prefix_cache.py",
+          "selected": true,
+          "status": "SELECTED"
+        }
+      ],
+      "referenced_paths_missing": [],
+      "references_path_targeted": 3,
+      "references_range_intersects": 3,
+      "references_symbol_match": 0,
+      "selected_paths": [
+        "tests/test_phase_8_prefix_cache.py",
+        "middle_man/lab/prefix_cache.py",
+        "middle_man/lab/request.py",
+        "middle_man/lab/memory.py",
+        "middle_man/lab/engine.py",
+        "middle_man/lab/memory_control.py",
+        "middle_man/lab/metrics.py",
+        "tests/test_phase_8_recovery.py",
+        "middle_man/lab/workloads.py",
+        "middle_man/lab/work.py"
+      ],
+      "specific_hints": 10,
+      "targeted_references_without_symbol_match": 3,
+      "task_id": "N01",
+      "task_sha256": "ba9f0f3ce57838e0631919297ff9f4e7590a69323b832d6e674786ddf376b955",
+      "wrong_range_or_symbol": []
+    },
+    {
+      "areas": [
+        {
+          "id": "entry",
+          "locator_ranges_fully_cover": true,
+          "navigable": true,
+          "options": [
+            {
+              "locator_ranges_fully_cover": true,
+              "navigable": true,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "NAVIGABLE",
+                  "locator_range_fully_covers_citation": true,
+                  "navigable": true,
+                  "path": "middle_man/mcp/gateway.py",
+                  "path_targeted": true,
+                  "range_intersects": true,
+                  "reference_lines": [
+                    266,
+                    320
+                  ],
+                  "reference_symbol": "MCPGateway.context",
+                  "symbol_match": true
+                }
+              ]
+            },
+            {
+              "locator_ranges_fully_cover": true,
+              "navigable": true,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "NAVIGABLE",
+                  "locator_range_fully_covers_citation": true,
+                  "navigable": true,
+                  "path": "middle_man/mcp/server.py",
+                  "path_targeted": true,
+                  "range_intersects": true,
+                  "reference_lines": [
+                    84,
+                    90
+                  ],
+                  "reference_symbol": "middleman_context",
+                  "symbol_match": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "index",
+          "locator_ranges_fully_cover": false,
+          "navigable": false,
+          "options": [
+            {
+              "locator_ranges_fully_cover": false,
+              "navigable": false,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "BEYOND_CANDIDATE_CAP",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "middle_man/gateway/indexer.py",
+                  "path_targeted": false,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    147,
+                    194
+                  ],
+                  "reference_symbol": "RepositoryIndexer.index",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ranking",
+          "locator_ranges_fully_cover": false,
+          "navigable": false,
+          "options": [
+            {
+              "locator_ranges_fully_cover": false,
+              "navigable": false,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "ALLOCATION_OMISSION",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "middle_man/gateway/relevance.py",
+                  "path_targeted": false,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    74,
+                    182
+                  ],
+                  "reference_symbol": "RelevanceEngine.find",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "selection_delivery",
+          "locator_ranges_fully_cover": false,
+          "navigable": false,
+          "options": [
+            {
+              "locator_ranges_fully_cover": false,
+              "navigable": false,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "ALLOCATION_OMISSION",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "middle_man/gateway/context_builder.py",
+                  "path_targeted": false,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    129,
+                    289
+                  ],
+                  "reference_symbol": "ContextBuilder._assemble",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "areas_locator_ranges_fully_cover": 1,
+      "areas_navigable": 1,
+      "areas_total": 4,
+      "auto_reason": "candidate_source_at_least_10000",
+      "auto_used": true,
+      "broad_hints": 3,
+      "hints": [
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            7,
+            8
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            28,
+            30
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MAX_CONTEXT_TOKENS"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            52,
+            52
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            265,
+            321
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway.context"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            439,
+            458
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway.changed_context"
+        },
+        {
+          "path": "tests/test_phase_22_v4.py",
+          "range": [
+            134,
+            134
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_pinned_v4_source_contract"
+        },
+        {
+          "path": "tests/test_phase_22_v4.py",
+          "range": [
+            140,
+            143
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_pinned_v4_source_contract.source"
+        },
+        {
+          "path": "middle_man/gateway/context_models.py",
+          "range": [
+            6,
+            21
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "ContextMode"
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            6,
+            6
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            33,
+            33
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "create_server"
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            75,
+            91
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "create_server.middleman_context"
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            98,
+            103
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "create_server.middleman_changed_context"
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            108,
+            115
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "create_server.middleman_context_stats"
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/runner.py",
+          "range": [
+            5,
+            8
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/runner.py",
+          "range": [
+            14,
+            15
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/runner.py",
+          "range": [
+            34,
+            34
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "range": [
+            9,
+            14
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/mcp/benchmark_receipts.py",
+          "range": [
+            22,
+            22
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "BenchmarkPolicy"
+        },
+        {
+          "path": "middle_man/mcp/benchmark_receipts.py",
+          "range": [
+            43,
+            47
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "BenchmarkPolicy.delivery_mode"
+        },
+        {
+          "path": "tests/test_gateway_context_packs.py",
+          "range": [
+            4,
+            14
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_gateway_context_packs.py",
+          "range": [
+            125,
+            131
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_local_quality_benchmarks_preserve_required_context"
+        },
+        {
+          "path": "middle_man/gateway/selection.py",
+          "range": [
+            9,
+            24
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "SelectionEntry"
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/infrastructure.py",
+          "range": [
+            14,
+            16
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/infrastructure.py",
+          "range": [
+            87,
+            98
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "_snapshot_mcp_call"
+        },
+        {
+          "path": "middle_man/cli/mcp.py",
+          "range": [
+            1,
+            70
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "add_mcp_commands"
+        },
+        {
+          "path": "middle_man/mcp/delivery.py",
+          "range": [
+            1,
+            82
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "DeliveryLedger"
+        },
+        {
+          "path": "middle_man/gateway/locator_diagnostics.py",
+          "range": [
+            20,
+            22
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "SELECTION_PHASES"
+        },
+        {
+          "path": "middle_man/gateway/source.py",
+          "range": [
+            1,
+            60
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "SourceFile"
+        },
+        {
+          "path": "middle_man/cli/main.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/offline_auto.py",
+          "range": [
+            10,
+            12
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MIN_CANDIDATE_SOURCE_TOKENS"
+        },
+        {
+          "path": "middle_man/gateway/handoff.py",
+          "range": [
+            43,
+            52
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "ContextReference"
+        }
+      ],
+      "internal_candidate_source_tokens": 130898,
+      "internal_selected_source_tokens": 5967,
+      "locator_characters": 1391,
+      "locator_estimated_tokens": 348,
+      "locator_sha256": "452929883a8a0614fa22198d8d968b129067513862438b1bf553a6b2bc2cdd9f",
+      "model_visible_appendix_characters": 1587,
+      "model_visible_appendix_estimated_tokens": 397,
+      "pack_fingerprint": "4152ee4309a7ca60871ae7f3eeebef811db09a0214082fa866f2e3125a5592c6",
+      "reference_path_diagnostics": [
+        {
+          "candidate": true,
+          "path": "middle_man/gateway/context_builder.py",
+          "selected": false,
+          "status": "ALLOCATION_OMISSION"
+        },
+        {
+          "candidate": false,
+          "path": "middle_man/gateway/indexer.py",
+          "selected": false,
+          "status": "BEYOND_CANDIDATE_CAP"
+        },
+        {
+          "candidate": true,
+          "path": "middle_man/gateway/relevance.py",
+          "selected": false,
+          "status": "ALLOCATION_OMISSION"
+        },
+        {
+          "candidate": true,
+          "path": "middle_man/mcp/gateway.py",
+          "selected": true,
+          "status": "SELECTED"
+        },
+        {
+          "candidate": true,
+          "path": "middle_man/mcp/server.py",
+          "selected": true,
+          "status": "SELECTED"
+        }
+      ],
+      "referenced_paths_missing": [
+        "middle_man/gateway/context_builder.py",
+        "middle_man/gateway/indexer.py",
+        "middle_man/gateway/relevance.py"
+      ],
+      "references_path_targeted": 2,
+      "references_range_intersects": 2,
+      "references_symbol_match": 2,
+      "selected_paths": [
+        "middle_man/mcp/gateway.py",
+        "tests/test_phase_22_v4.py",
+        "middle_man/gateway/context_models.py",
+        "middle_man/mcp/server.py",
+        "middle_man/gateway/codex_benchmark/runner.py",
+        "middle_man/gateway/codex_benchmark/preemption_v3.py",
+        "middle_man/mcp/benchmark_receipts.py",
+        "tests/test_gateway_context_packs.py",
+        "middle_man/gateway/selection.py",
+        "middle_man/gateway/codex_benchmark/infrastructure.py",
+        "middle_man/cli/mcp.py",
+        "middle_man/mcp/delivery.py",
+        "middle_man/gateway/locator_diagnostics.py",
+        "middle_man/gateway/source.py",
+        "middle_man/cli/main.py",
+        "middle_man/gateway/codex_benchmark/offline_auto.py",
+        "middle_man/gateway/handoff.py"
+      ],
+      "specific_hints": 28,
+      "targeted_references_without_symbol_match": 0,
+      "task_id": "M02",
+      "task_sha256": "99e572ef26121c9f2260a6d16994cb68bef999c41be79981405056b22cf109a8",
+      "wrong_range_or_symbol": []
+    },
+    {
+      "areas": [
+        {
+          "id": "relationships",
+          "locator_ranges_fully_cover": false,
+          "navigable": false,
+          "options": [
+            {
+              "locator_ranges_fully_cover": false,
+              "navigable": false,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "ALLOCATION_OMISSION",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "middle_man/gateway/indexer.py",
+                  "path_targeted": false,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    114,
+                    138
+                  ],
+                  "reference_symbol": "_relationships",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "candidates",
+          "locator_ranges_fully_cover": true,
+          "navigable": true,
+          "options": [
+            {
+              "locator_ranges_fully_cover": true,
+              "navigable": true,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [
+                    [
+                      1,
+                      182
+                    ]
+                  ],
+                  "diagnosis": "NAVIGABLE",
+                  "locator_range_fully_covers_citation": true,
+                  "navigable": true,
+                  "path": "middle_man/gateway/relevance.py",
+                  "path_targeted": true,
+                  "range_intersects": true,
+                  "reference_lines": [
+                    133,
+                    145
+                  ],
+                  "reference_symbol": "RelevanceEngine.find",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ranges",
+          "locator_ranges_fully_cover": false,
+          "navigable": false,
+          "options": [
+            {
+              "locator_ranges_fully_cover": false,
+              "navigable": false,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "ALLOCATION_OMISSION",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "middle_man/gateway/context_builder.py",
+                  "path_targeted": false,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    190,
+                    236
+                  ],
+                  "reference_symbol": "ContextBuilder._assemble",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "areas_locator_ranges_fully_cover": 1,
+      "areas_navigable": 1,
+      "areas_total": 3,
+      "auto_reason": "candidate_source_at_least_10000",
+      "auto_used": true,
+      "broad_hints": 1,
+      "hints": [
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            7,
+            8
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            28,
+            30
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MAX_CONTEXT_TOKENS"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            52,
+            52
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            265,
+            321
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway.context"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            376,
+            390
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway.context_pack"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            439,
+            458
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway.changed_context"
+        },
+        {
+          "path": "middle_man/gateway/relevance.py",
+          "range": [
+            1,
+            182
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "ContextQuery"
+        },
+        {
+          "path": "middle_man/gateway/context_models.py",
+          "range": [
+            6,
+            21
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "ContextMode"
+        },
+        {
+          "path": "tests/test_phase_22_11.py",
+          "range": [
+            60,
+            64
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "_mapped_ranges"
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            6,
+            6
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            33,
+            33
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "create_server"
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            75,
+            91
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "create_server.middleman_context"
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            98,
+            103
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "create_server.middleman_changed_context"
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            108,
+            115
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "create_server.middleman_context_stats"
+        },
+        {
+          "path": "middle_man/gateway/selection.py",
+          "range": [
+            9,
+            24
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "SelectionEntry"
+        },
+        {
+          "path": "middle_man/gateway/selection.py",
+          "range": [
+            33,
+            57
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "SelectionDiagnostic"
+        },
+        {
+          "path": "middle_man/gateway/locator_diagnostics.py",
+          "range": [
+            20,
+            22
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "SELECTION_PHASES"
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/runner.py",
+          "range": [
+            15,
+            15
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/runner.py",
+          "range": [
+            34,
+            34
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_gateway_context_packs.py",
+          "range": [
+            4,
+            4
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_gateway_context_packs.py",
+          "range": [
+            8,
+            9
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_gateway_context_packs.py",
+          "range": [
+            13,
+            13
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_gateway_context_packs.py",
+          "range": [
+            37,
+            51
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_complete_method_import_class_and_test_context"
+        },
+        {
+          "path": "tests/test_gateway_context_packs.py",
+          "range": [
+            125,
+            131
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_local_quality_benchmarks_preserve_required_context"
+        },
+        {
+          "path": "middle_man/gateway/handoff.py",
+          "range": [
+            10,
+            15
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/handoff.py",
+          "range": [
+            43,
+            52
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "ContextReference"
+        },
+        {
+          "path": "middle_man/gateway/handoff.py",
+          "range": [
+            130,
+            147
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "context_reference"
+        },
+        {
+          "path": "middle_man/gateway/quality.py",
+          "range": [
+            6,
+            12
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/models.py",
+          "range": [
+            85,
+            85
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "RepositoryIndex"
+        },
+        {
+          "path": "middle_man/gateway/models.py",
+          "range": [
+            128,
+            131
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "RepositoryIndex.imports_for"
+        }
+      ],
+      "internal_candidate_source_tokens": 131807,
+      "internal_selected_source_tokens": 5936,
+      "locator_characters": 1159,
+      "locator_estimated_tokens": 290,
+      "locator_sha256": "3a68f62cf2b49e698d628b1b544b696405aae53be89c1e9b512d52962f436dcb",
+      "model_visible_appendix_characters": 1355,
+      "model_visible_appendix_estimated_tokens": 339,
+      "pack_fingerprint": "c20d8a23f5c6885a871f980fca0f13c1cf9ebffdc6ab63392ad5d3e5dda2e460",
+      "reference_path_diagnostics": [
+        {
+          "candidate": true,
+          "path": "middle_man/gateway/context_builder.py",
+          "selected": false,
+          "status": "ALLOCATION_OMISSION"
+        },
+        {
+          "candidate": true,
+          "path": "middle_man/gateway/indexer.py",
+          "selected": false,
+          "status": "ALLOCATION_OMISSION"
+        },
+        {
+          "candidate": true,
+          "path": "middle_man/gateway/relevance.py",
+          "selected": true,
+          "status": "SELECTED"
+        }
+      ],
+      "referenced_paths_missing": [
+        "middle_man/gateway/context_builder.py",
+        "middle_man/gateway/indexer.py"
+      ],
+      "references_path_targeted": 1,
+      "references_range_intersects": 1,
+      "references_symbol_match": 0,
+      "selected_paths": [
+        "middle_man/mcp/gateway.py",
+        "middle_man/gateway/relevance.py",
+        "middle_man/gateway/context_models.py",
+        "tests/test_phase_22_11.py",
+        "middle_man/mcp/server.py",
+        "middle_man/gateway/selection.py",
+        "middle_man/gateway/locator_diagnostics.py",
+        "middle_man/gateway/codex_benchmark/runner.py",
+        "tests/test_gateway_context_packs.py",
+        "middle_man/gateway/handoff.py",
+        "middle_man/gateway/quality.py",
+        "middle_man/gateway/models.py"
+      ],
+      "specific_hints": 29,
+      "targeted_references_without_symbol_match": 1,
+      "task_id": "C02",
+      "task_sha256": "1b7259c528792a6d94ffd0fc36f693e40345efbff3c2a380c8f6f51ec85faa82",
+      "wrong_range_or_symbol": []
+    },
+    {
+      "areas": [
+        {
+          "id": "refcount_test",
+          "locator_ranges_fully_cover": false,
+          "navigable": false,
+          "options": [
+            {
+              "locator_ranges_fully_cover": false,
+              "navigable": false,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "OUTSIDE_TASK_CLUSTER",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "tests/test_phase_8_prefix_cache.py",
+                  "path_targeted": false,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    8,
+                    21
+                  ],
+                  "reference_symbol": "test_shared_block_references_survive_individual_releases",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "reuse_test",
+          "locator_ranges_fully_cover": false,
+          "navigable": false,
+          "options": [
+            {
+              "locator_ranges_fully_cover": false,
+              "navigable": false,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "OUTSIDE_TASK_CLUSTER",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "tests/test_phase_8_prefix_cache.py",
+                  "path_targeted": false,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    33,
+                    54
+                  ],
+                  "reference_symbol": "test_second_request_reuses_prefix_work_and_physical_blocks",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "implementation",
+          "locator_ranges_fully_cover": false,
+          "navigable": false,
+          "options": [
+            {
+              "locator_ranges_fully_cover": false,
+              "navigable": false,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "OUTSIDE_TASK_CLUSTER",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "middle_man/lab/memory.py",
+                  "path_targeted": false,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    89,
+                    118
+                  ],
+                  "reference_symbol": "KVBlockManager.retain_cache_blocks / attach_shared / release_request",
+                  "symbol_match": false
+                },
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "OUTSIDE_TASK_CLUSTER",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "middle_man/lab/prefix_cache.py",
+                  "path_targeted": false,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    39,
+                    66
+                  ],
+                  "reference_symbol": "PrefixCache.acquire / publish",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "areas_locator_ranges_fully_cover": 0,
+      "areas_navigable": 0,
+      "areas_total": 3,
+      "auto_reason": "candidate_source_at_least_10000",
+      "auto_used": true,
+      "broad_hints": 0,
+      "hints": [
+        {
+          "path": "tests/test_phase_22_6.py",
+          "range": [
+            4,
+            5
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_6.py",
+          "range": [
+            9,
+            9
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_6.py",
+          "range": [
+            13,
+            13
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_6.py",
+          "range": [
+            23,
+            39
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "CORE_TOOLS"
+        },
+        {
+          "path": "tests/test_phase_22_6.py",
+          "range": [
+            58,
+            58
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_stdio_schema_and_two_context_delta_sequence"
+        },
+        {
+          "path": "tests/test_phase_22_6.py",
+          "range": [
+            73,
+            98
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_stdio_schema_and_two_context_delta_sequence.exercise"
+        },
+        {
+          "path": "tests/test_phase_22_1.py",
+          "range": [
+            5,
+            5
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_1.py",
+          "range": [
+            13,
+            13
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_1.py",
+          "range": [
+            24,
+            24
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_1.py",
+          "range": [
+            141,
+            141
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_snapshot_package_cannot_shadow_current_mcp_server"
+        },
+        {
+          "path": "tests/test_phase_22_1.py",
+          "range": [
+            147,
+            157
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_snapshot_package_cannot_shadow_current_mcp_server.exercise"
+        },
+        {
+          "path": "tests/test_phase_22_10_1.py",
+          "range": [
+            7,
+            7
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_10_1.py",
+          "range": [
+            13,
+            16
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_10_1.py",
+          "range": [
+            28,
+            35
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "POLICY"
+        },
+        {
+          "path": "tests/test_phase_22_10_1.py",
+          "range": [
+            162,
+            162
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_official_progressive_stdio_and_selected_path"
+        },
+        {
+          "path": "tests/test_phase_22_10_1.py",
+          "range": [
+            166,
+            183
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_official_progressive_stdio_and_selected_path.exercise"
+        },
+        {
+          "path": "tests/test_phase_22_11.py",
+          "range": [
+            7,
+            7
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_11.py",
+          "range": [
+            12,
+            12
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_11.py",
+          "range": [
+            16,
+            16
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_11.py",
+          "range": [
+            35,
+            42
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "ACTUAL_QUERY"
+        },
+        {
+          "path": "tests/test_phase_22_11.py",
+          "range": [
+            234,
+            254
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "test_official_locator_stdio_and_selected_path"
+        },
+        {
+          "path": "tests/test_phase_22_10.py",
+          "range": [
+            8,
+            8
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_phase_22_10.py",
+          "range": [
+            41,
+            46
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "RELEASE"
+        },
+        {
+          "path": "tests/test_phase_22_10.py",
+          "range": [
+            70,
+            82
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "_recovery_paths"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            52,
+            52
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            129,
+            136
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway._paths"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            161,
+            165
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway._cache_stats"
+        },
+        {
+          "path": "middle_man/gateway/indexer.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/native_reads.py",
+          "range": [
+            6,
+            13
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "_FALLBACK"
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/native_reads.py",
+          "range": [
+            24,
+            41
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "explicit_read_paths"
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/runner.py",
+          "range": [
+            370,
+            373
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "_changed_paths"
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/tasks.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/events.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/cli/main.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        }
+      ],
+      "internal_candidate_source_tokens": 112630,
+      "internal_selected_source_tokens": 5936,
+      "locator_characters": 1303,
+      "locator_estimated_tokens": 326,
+      "locator_sha256": "0e5df267394b4893370bfc098b7e1f9a2367d0949e78734c0315ab86d5221338",
+      "model_visible_appendix_characters": 1499,
+      "model_visible_appendix_estimated_tokens": 375,
+      "pack_fingerprint": "00b15e123846f8e146a4935b251fe017f6dbcb24aebbc43256ffe826354ec103",
+      "reference_path_diagnostics": [
+        {
+          "candidate": true,
+          "path": "middle_man/lab/memory.py",
+          "selected": false,
+          "status": "OUTSIDE_TASK_CLUSTER"
+        },
+        {
+          "candidate": true,
+          "path": "middle_man/lab/prefix_cache.py",
+          "selected": false,
+          "status": "OUTSIDE_TASK_CLUSTER"
+        },
+        {
+          "candidate": true,
+          "path": "tests/test_phase_8_prefix_cache.py",
+          "selected": false,
+          "status": "OUTSIDE_TASK_CLUSTER"
+        }
+      ],
+      "referenced_paths_missing": [
+        "middle_man/lab/memory.py",
+        "middle_man/lab/prefix_cache.py",
+        "tests/test_phase_8_prefix_cache.py"
+      ],
+      "references_path_targeted": 0,
+      "references_range_intersects": 0,
+      "references_symbol_match": 0,
+      "selected_paths": [
+        "tests/test_phase_22_6.py",
+        "tests/test_phase_22_1.py",
+        "tests/test_phase_22_10_1.py",
+        "tests/test_phase_22_11.py",
+        "tests/test_phase_22_10.py",
+        "middle_man/mcp/gateway.py",
+        "middle_man/gateway/indexer.py",
+        "middle_man/gateway/codex_benchmark/native_reads.py",
+        "middle_man/gateway/codex_benchmark/runner.py",
+        "middle_man/gateway/codex_benchmark/tasks.py",
+        "middle_man/gateway/codex_benchmark/events.py",
+        "middle_man/cli/main.py",
+        "middle_man/mcp/server.py",
+        "middle_man/gateway/codex_benchmark/preemption_v3.py"
+      ],
+      "specific_hints": 36,
+      "targeted_references_without_symbol_match": 0,
+      "task_id": "T01",
+      "task_sha256": "16acf6b01a978be176b2c2ce5560f144c55fac5960fc90edf21df93a4ac91c0b",
+      "wrong_range_or_symbol": []
+    },
+    {
+      "areas": [
+        {
+          "id": "query_relevance",
+          "locator_ranges_fully_cover": false,
+          "navigable": false,
+          "options": [
+            {
+              "locator_ranges_fully_cover": false,
+              "navigable": false,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "UNRELATED_RANGE_OR_SYMBOL",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "middle_man/gateway/relevance.py",
+                  "path_targeted": true,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    74,
+                    182
+                  ],
+                  "reference_symbol": "RelevanceEngine.find",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "range_selection",
+          "locator_ranges_fully_cover": false,
+          "navigable": false,
+          "options": [
+            {
+              "locator_ranges_fully_cover": false,
+              "navigable": false,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "ALLOCATION_OMISSION",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "middle_man/gateway/context_builder.py",
+                  "path_targeted": false,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    129,
+                    289
+                  ],
+                  "reference_symbol": "ContextBuilder._assemble",
+                  "symbol_match": false
+                }
+              ]
+            },
+            {
+              "locator_ranges_fully_cover": false,
+              "navigable": false,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [],
+                  "diagnosis": "ALLOCATION_OMISSION",
+                  "locator_range_fully_covers_citation": false,
+                  "navigable": false,
+                  "path": "middle_man/gateway/selection.py",
+                  "path_targeted": false,
+                  "range_intersects": false,
+                  "reference_lines": [
+                    175,
+                    326
+                  ],
+                  "reference_symbol": "allocate",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "areas_locator_ranges_fully_cover": 0,
+      "areas_navigable": 0,
+      "areas_total": 2,
+      "auto_reason": "candidate_source_at_least_10000",
+      "auto_used": true,
+      "broad_hints": 1,
+      "hints": [
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            7,
+            8
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            28,
+            30
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MAX_CONTEXT_TOKENS"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            52,
+            52
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            265,
+            321
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway.context"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            376,
+            390
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway.context_pack"
+        },
+        {
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            439,
+            458
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MCPGateway.changed_context"
+        },
+        {
+          "path": "middle_man/gateway/context_models.py",
+          "range": [
+            6,
+            21
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "ContextMode"
+        },
+        {
+          "path": "middle_man/gateway/context_models.py",
+          "range": [
+            37,
+            89
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "ChangedContext"
+        },
+        {
+          "path": "middle_man/gateway/context_output.py",
+          "range": [
+            1,
+            52
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "_FENCES"
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/runner.py",
+          "range": [
+            15,
+            15
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/runner.py",
+          "range": [
+            34,
+            34
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/runner.py",
+          "range": [
+            285,
+            336
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "validate_initial_context_budgets"
+        },
+        {
+          "path": "tests/test_phase_22_11.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/offline_auto.py",
+          "range": [
+            7,
+            11
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MIN_CANDIDATE_SOURCE_TOKENS"
+        },
+        {
+          "path": "middle_man/gateway/codex_runner/runner.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "scripts/measure_large_edit_v1.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/handoff.py",
+          "range": [
+            10,
+            15
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/handoff.py",
+          "range": [
+            43,
+            52
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "ContextReference"
+        },
+        {
+          "path": "middle_man/gateway/quality.py",
+          "range": [
+            6,
+            12
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            6,
+            6
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/mcp/server.py",
+          "range": [
+            33,
+            33
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "create_server"
+        },
+        {
+          "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/gateway/relevance.py",
+          "range": [
+            39,
+            47
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "ContextQuery"
+        },
+        {
+          "path": "tests/test_gateway_context_packs.py",
+          "range": [
+            4,
+            4
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_gateway_context_packs.py",
+          "range": [
+            8,
+            9
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "tests/test_gateway_context_packs.py",
+          "range": [
+            13,
+            13
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        }
+      ],
+      "internal_candidate_source_tokens": 123482,
+      "internal_selected_source_tokens": 5935,
+      "locator_characters": 955,
+      "locator_estimated_tokens": 239,
+      "locator_sha256": "abc2606e39fbae6c0aed5a6eb884e93a3c6571595a2571b899938228e8d7c5d2",
+      "model_visible_appendix_characters": 1151,
+      "model_visible_appendix_estimated_tokens": 288,
+      "pack_fingerprint": "771d793459590db6e9e0c85d6605851c7ea4ed4d97198e1fc39d7952f8ca1a67",
+      "reference_path_diagnostics": [
+        {
+          "candidate": true,
+          "path": "middle_man/gateway/context_builder.py",
+          "selected": false,
+          "status": "ALLOCATION_OMISSION"
+        },
+        {
+          "candidate": true,
+          "path": "middle_man/gateway/relevance.py",
+          "selected": true,
+          "status": "SELECTED"
+        },
+        {
+          "candidate": true,
+          "path": "middle_man/gateway/selection.py",
+          "selected": false,
+          "status": "ALLOCATION_OMISSION"
+        }
+      ],
+      "referenced_paths_missing": [
+        "middle_man/gateway/context_builder.py",
+        "middle_man/gateway/selection.py"
+      ],
+      "references_path_targeted": 1,
+      "references_range_intersects": 0,
+      "references_symbol_match": 0,
+      "selected_paths": [
+        "middle_man/mcp/gateway.py",
+        "middle_man/gateway/context_models.py",
+        "middle_man/gateway/context_output.py",
+        "middle_man/gateway/codex_benchmark/runner.py",
+        "tests/test_phase_22_11.py",
+        "middle_man/gateway/codex_benchmark/offline_auto.py",
+        "middle_man/gateway/codex_runner/runner.py",
+        "scripts/measure_large_edit_v1.py",
+        "middle_man/gateway/handoff.py",
+        "middle_man/gateway/quality.py",
+        "middle_man/mcp/server.py",
+        "middle_man/gateway/codex_benchmark/preemption_v3.py",
+        "middle_man/gateway/relevance.py",
+        "tests/test_gateway_context_packs.py"
+      ],
+      "specific_hints": 25,
+      "targeted_references_without_symbol_match": 1,
+      "task_id": "G02",
+      "task_sha256": "174c3ad3b862523f367c1bc452fda5eb2250fa2da731a1f386caf13cac6b51e1",
+      "wrong_range_or_symbol": [
+        "middle_man/gateway/relevance.py"
+      ]
+    },
+    {
+      "areas": [
+        {
+          "id": "victim_policy",
+          "locator_ranges_fully_cover": true,
+          "navigable": true,
+          "options": [
+            {
+              "locator_ranges_fully_cover": true,
+              "navigable": true,
+              "references": [
+                {
+                  "broad_whole_file_ranges": [
+                    [
+                      1,
+                      36
+                    ]
+                  ],
+                  "diagnosis": "NAVIGABLE",
+                  "locator_range_fully_covers_citation": true,
+                  "navigable": true,
+                  "path": "middle_man/lab/preemption.py",
+                  "path_targeted": true,
+                  "range_intersects": true,
+                  "reference_lines": [
+                    18,
+                    36
+                  ],
+                  "reference_symbol": "LargestPrivateOwnerPolicy.choose_victim",
+                  "symbol_match": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "areas_locator_ranges_fully_cover": 1,
+      "areas_navigable": 1,
+      "areas_total": 1,
+      "auto_reason": "candidate_source_at_least_10000",
+      "auto_used": true,
+      "broad_hints": 4,
+      "hints": [
+        {
+          "path": "middle_man/lab/preemption.py",
+          "range": [
+            1,
+            36
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "LargestPrivateOwnerPolicy"
+        },
+        {
+          "path": "middle_man/lab/engine.py",
+          "range": [
+            7,
+            13
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/lab/engine.py",
+          "range": [
+            34,
+            34
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "SimulationEngine"
+        },
+        {
+          "path": "middle_man/lab/engine.py",
+          "range": [
+            232,
+            244
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "SimulationEngine._release_request"
+        },
+        {
+          "path": "tests/test_phase_7_preemption.py",
+          "range": [
+            1,
+            65
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "pressure_requests"
+        },
+        {
+          "path": "middle_man/lab/memory.py",
+          "range": [
+            1,
+            130
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "KVBlockManager"
+        },
+        {
+          "path": "middle_man/lab/metrics.py",
+          "range": [
+            9,
+            9
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/lab/metrics.py",
+          "range": [
+            20,
+            44
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "KVSample"
+        },
+        {
+          "path": "middle_man/lab/metrics.py",
+          "range": [
+            89,
+            89
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MetricsCollector"
+        },
+        {
+          "path": "middle_man/lab/metrics.py",
+          "range": [
+            158,
+            177
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "MetricsCollector._request_metrics"
+        },
+        {
+          "path": "middle_man/lab/memory_control.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/lab/workloads.py",
+          "range": [
+            7,
+            7
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/lab/workloads.py",
+          "range": [
+            19,
+            48
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "RequestSpec"
+        },
+        {
+          "path": "middle_man/lab/request.py",
+          "range": [
+            1,
+            159
+          ],
+          "specificity": "BROAD_WHOLE_FILE",
+          "symbol": "InferenceRequest"
+        },
+        {
+          "path": "middle_man/lab/scheduler.py",
+          "range": [
+            3,
+            11
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "SchedulerPolicy"
+        },
+        {
+          "path": "middle_man/lab/prefix_cache.py",
+          "range": [
+            1,
+            50
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": null
+        },
+        {
+          "path": "middle_man/lab/config.py",
+          "range": [
+            29,
+            52
+          ],
+          "specificity": "SPECIFIC_RANGE",
+          "symbol": "LabConfig"
+        }
+      ],
+      "internal_candidate_source_tokens": 104892,
+      "internal_selected_source_tokens": 5961,
+      "locator_characters": 681,
+      "locator_estimated_tokens": 171,
+      "locator_sha256": "a2561b63865dca415c87e2947c80f580064276247ac1ca9de2c31135f7af8e4b",
+      "model_visible_appendix_characters": 877,
+      "model_visible_appendix_estimated_tokens": 220,
+      "pack_fingerprint": "42a644f3e01aef378c6b26b71f1dad61477a4485b99c53af7cf4225f2796c070",
+      "reference_path_diagnostics": [
+        {
+          "candidate": true,
+          "path": "middle_man/lab/preemption.py",
+          "selected": true,
+          "status": "SELECTED"
+        }
+      ],
+      "referenced_paths_missing": [],
+      "references_path_targeted": 1,
+      "references_range_intersects": 1,
+      "references_symbol_match": 0,
+      "selected_paths": [
+        "middle_man/lab/preemption.py",
+        "middle_man/lab/engine.py",
+        "tests/test_phase_7_preemption.py",
+        "middle_man/lab/memory.py",
+        "middle_man/lab/metrics.py",
+        "middle_man/lab/memory_control.py",
+        "middle_man/lab/workloads.py",
+        "middle_man/lab/request.py",
+        "middle_man/lab/scheduler.py",
+        "middle_man/lab/prefix_cache.py",
+        "middle_man/lab/config.py"
+      ],
+      "specific_hints": 13,
+      "targeted_references_without_symbol_match": 1,
+      "task_id": "E01",
+      "task_sha256": "456e5fe78c3aca95a1a8657bf366be9b5dd82ce97786267d290537b5d5ff1d12",
+      "wrong_range_or_symbol": []
+    }
+  ]
+}
