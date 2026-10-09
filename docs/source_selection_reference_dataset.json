@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "judgment_status": "PROPOSED_SOURCE_GROUNDED_NOT_HUMAN_VALIDATED",
+  "source": {
+    "commit": "0680a1cb8812d35b17ebd628de7ffba95798da7f",
+    "tree": "6276b4a959bc93df8bb82cdde0bfc371d2c99770",
+    "corpus_path": "tests/fixtures/locator_shadow_corpus.json",
+    "corpus_sha256": "6b1be495325413f5fc5e1e4bd53cbfc93a784c8f0365515e8f6a3e6d2ad803b5",
+    "selector_fingerprint": "3a4213e19944220c02b1897e1a05a584d61bbd00e91cbf5a9e38cc07976bf555"
+  },
+  "methodology": "Codex inspected implementation and tests at the pinned source commit using task text only. Selector rankings, archived search paths, and experimental selections were excluded. A core area is satisfied by any complete evidence option; distinct areas are conjunctive. References are proposed, not independently human reviewed.",
+  "development_tasks": [
+    {
+      "task_id": "N01", "task_sha256": "ba9f0f3ce57838e0631919297ff9f4e7590a69323b832d6e674786ddf376b955", "archetype": "NARROW_COMPONENT", "explicit_anchors": [],
+      "areas": [
+        {"id": "reuse", "behavior": "A compatible second request attaches cached blocks and skips prefix work.", "options": [[{"path":"middle_man/lab/prefix_cache.py","symbol":"PrefixCache.acquire","lines":[39,52],"behavior":"Attaches shared blocks and records reused tokens.","reason":"Direct reuse implementation.","requirement":"unique"}]]},
+        {"id": "ownership", "behavior": "Cache and requests hold distinct block references; blocks free at the last release.", "options": [[{"path":"middle_man/lab/memory.py","symbol":"KVBlockManager.release_request / _release_block_ref","lines":[112,130],"behavior":"Drops request references and frees only at zero.","reason":"Direct ownership implementation.","requirement":"unique"}]]},
+        {"id": "cache_lifetime", "behavior": "Published prefix survives a request and is released by eviction or clear.", "options": [[{"path":"middle_man/lab/prefix_cache.py","symbol":"PrefixCache.publish / clear / evict_unused","lines":[54,81],"behavior":"Retains cache reference and later releases it.","reason":"Direct cache lifetime implementation.","requirement":"unique"}]]}
+      ],
+      "supporting": [{"path":"tests/test_phase_8_prefix_cache.py","symbol":"test_shared_block_references_survive_individual_releases","lines":[8,21],"behavior":"Exercises three owners and sequential releases.","reason":"Behavioral proof.","requirement":"optional"}], "unresolved": []
+    },
+    {
+      "task_id": "M02", "task_sha256": "99e572ef26121c9f2260a6d16994cb68bef999c41be79981405056b22cf109a8", "archetype": "MULTI_COMPONENT_ARCHITECTURE", "explicit_anchors": [],
+      "areas": [
+        {"id":"entry","behavior":"MCP request enters gateway context construction.","options":[[{"path":"middle_man/mcp/gateway.py","symbol":"MCPGateway.context","lines":[266,320],"behavior":"Validates query and builds response payload.","reason":"Direct request orchestration.","requirement":"alternative"}],[{"path":"middle_man/mcp/server.py","symbol":"middleman_context","lines":[84,90],"behavior":"Exposes context request and delegates to gateway.","reason":"Valid entry-point evidence.","requirement":"alternative"}]]},
+        {"id":"index","behavior":"Repository files, symbols and relationships are indexed.","options":[[{"path":"middle_man/gateway/indexer.py","symbol":"RepositoryIndexer.index","lines":[147,194],"behavior":"Scans files and creates repository index.","reason":"Direct indexing implementation.","requirement":"unique"}]]},
+        {"id":"ranking","behavior":"Task query is ranked against indexed symbols, imports and tests.","options":[[{"path":"middle_man/gateway/relevance.py","symbol":"RelevanceEngine.find","lines":[74,182],"behavior":"Builds and ranks relevance signals.","reason":"Direct ranking implementation.","requirement":"unique"}]]},
+        {"id":"selection_delivery","behavior":"Source ranges are selected and delivered as context.","options":[[{"path":"middle_man/gateway/context_builder.py","symbol":"ContextBuilder._assemble","lines":[129,289],"behavior":"Chooses ranges, allocates budget and produces excerpts.","reason":"Direct selection and pack assembly.","requirement":"unique"}]]}
+      ],
+      "supporting": [{"path":"middle_man/gateway/selection.py","symbol":"allocate","lines":[175,326],"behavior":"Budgeted range allocation details.","reason":"Deepens selection explanation.","requirement":"optional"},{"path":"middle_man/mcp/gateway.py","symbol":"MCPGateway._core_payload","lines":[196,225],"behavior":"Formats selected excerpts for delivery.","reason":"Delivery detail.","requirement":"optional"}], "unresolved": []
+    },
+    {
+      "task_id": "C02", "task_sha256": "1b7259c528792a6d94ffd0fc36f693e40345efbff3c2a380c8f6f51ec85faa82", "archetype": "CROSS_CUTTING_FEATURE", "explicit_anchors": [],
+      "areas": [
+        {"id":"relationships","behavior":"Imports and tests become graph edges.","options":[[{"path":"middle_man/gateway/indexer.py","symbol":"_relationships","lines":[114,138],"behavior":"Creates IMPORTS and TESTS edges.","reason":"Direct graph construction.","requirement":"unique"}]]},
+        {"id":"candidates","behavior":"Graph neighbors and related tests affect relevance candidates.","options":[[{"path":"middle_man/gateway/relevance.py","symbol":"RelevanceEngine.find","lines":[133,145],"behavior":"Adds import-neighbor and related-test signals.","reason":"Direct candidate expansion.","requirement":"unique"}]]},
+        {"id":"ranges","behavior":"Candidate relationships affect final range selection.","options":[[{"path":"middle_man/gateway/context_builder.py","symbol":"ContextBuilder._assemble","lines":[190,236],"behavior":"Builds anchors/neighbors and passes range entries to allocator.","reason":"Direct final-selection path.","requirement":"unique"}]]}
+      ],
+      "supporting": [{"path":"middle_man/gateway/parsers.py","symbol":"PythonParser.parse","lines":[38,72],"behavior":"Extracts imports and symbols for indexing.","reason":"Upstream parsing detail.","requirement":"optional"},{"path":"middle_man/gateway/selection.py","symbol":"allocate","lines":[175,221],"behavior":"Weights related tests when tests are requested.","reason":"Allocation detail.","requirement":"optional"}], "unresolved": []
+    },
+    {
+      "task_id": "T01", "task_sha256": "16acf6b01a978be176b2c2ce5560f144c55fac5960fc90edf21df93a4ac91c0b", "archetype": "TEST_FOCUSED", "explicit_anchors": [],
+      "areas": [
+        {"id":"refcount_test","behavior":"Test proves cache/request reference counts and final release.","options":[[{"path":"tests/test_phase_8_prefix_cache.py","symbol":"test_shared_block_references_survive_individual_releases","lines":[8,21],"behavior":"Checks counts 3, 2, 1 and final free.","reason":"Direct test proof.","requirement":"unique"}]]},
+        {"id":"reuse_test","behavior":"Test proves a second request reuses prefix blocks.","options":[[{"path":"tests/test_phase_8_prefix_cache.py","symbol":"test_second_request_reuses_prefix_work_and_physical_blocks","lines":[33,54],"behavior":"Checks hit, reused tokens and no leak.","reason":"Direct test proof.","requirement":"unique"}]]},
+        {"id":"implementation","behavior":"Tests exercise block ownership and prefix cache implementation.","options":[[{"path":"middle_man/lab/memory.py","symbol":"KVBlockManager.retain_cache_blocks / attach_shared / release_request","lines":[89,118],"behavior":"Maintains block references.","reason":"Implementation path exercised.","requirement":"unique"},{"path":"middle_man/lab/prefix_cache.py","symbol":"PrefixCache.acquire / publish","lines":[39,66],"behavior":"Shares and publishes prefix blocks.","reason":"Implementation path exercised.","requirement":"unique"}]]}
+      ],
+      "supporting": [{"path":"middle_man/lab/engine.py","symbol":"SimulationEngine.run","lines":[56,127],"behavior":"Drives requests through cache-aware simulation.","reason":"Integration path.","requirement":"optional"}], "unresolved": []
+    },
+    {
+      "task_id": "G02", "task_sha256": "174c3ad3b862523f367c1bc452fda5eb2250fa2da731a1f386caf13cac6b51e1", "archetype": "GENERIC_BROAD", "explicit_anchors": [],
+      "areas": [
+        {"id":"query_relevance","behavior":"Task terms and indexed evidence produce ranked candidates.","options":[[{"path":"middle_man/gateway/relevance.py","symbol":"RelevanceEngine.find","lines":[74,182],"behavior":"Scores path, symbol, import, test and source signals.","reason":"Direct relevance decision.","requirement":"unique"}]]},
+        {"id":"range_selection","behavior":"Relevant candidates become bounded source ranges.","options":[[{"path":"middle_man/gateway/context_builder.py","symbol":"ContextBuilder._assemble","lines":[129,289],"behavior":"Chooses, budgets and redacts selected ranges.","reason":"Direct context decision.","requirement":"alternative"}],[{"path":"middle_man/gateway/selection.py","symbol":"allocate","lines":[175,326],"behavior":"Prioritizes required, coverage and depth ranges.","reason":"Alternative bounded-selection explanation.","requirement":"alternative"}]]}
+      ],
+      "supporting": [{"path":"middle_man/gateway/indexer.py","symbol":"RepositoryIndexer.index","lines":[147,194],"behavior":"Builds index used for relevance.","reason":"Upstream context.","requirement":"optional"}], "unresolved": ["Broad wording does not specify whether delivery or only ranking is in scope."]
+    },
+    {
+      "task_id": "E01", "task_sha256": "456e5fe78c3aca95a1a8657bf366be9b5dd82ce97786267d290537b5d5ff1d12", "archetype": "EXPLICIT_ANCHOR", "explicit_anchors": ["middle_man/lab/preemption.py"],
+      "areas": [{"id":"victim_policy","behavior":"Largest private-block owner is selected, with request ID tie-break and eligibility filtering.","options":[[{"path":"middle_man/lab/preemption.py","symbol":"LargestPrivateOwnerPolicy.choose_victim","lines":[18,36],"behavior":"Filters eligible requests and chooses by private blocks then ID.","reason":"Explicitly named implementation.","requirement":"unique"}]]}],
+      "supporting": [{"path":"middle_man/lab/memory.py","symbol":"KVBlockManager.private_blocks","lines":[47,48],"behavior":"Supplies private-block count.","reason":"Policy dependency.","requirement":"optional"}], "unresolved": []
+    }
+  ],
+  "reserved_evaluation_tasks": [
+    {
+      "task_id": "N04", "task_sha256": "7fc7a5ad7c9293a6f2f9da146b6a7ec32f5e1743e2b520868256446e3a3f74da", "archetype": "NARROW_COMPONENT", "explicit_anchors": [],
+      "areas": [
+        {"id":"redactor","behavior":"Known secret forms are replaced with markers.","options":[[{"path":"middle_man/gateway/secrets.py","symbol":"SecretRedactor.redact","lines":[30,68],"behavior":"Replaces private keys, credentials, bearer and assigned secrets.","reason":"Direct redaction implementation.","requirement":"unique"}]]},
+        {"id":"source_excerpt","behavior":"Source excerpts are redacted before being placed in a Context Pack.","options":[[{"path":"middle_man/gateway/context_builder.py","symbol":"ContextBuilder._assemble","lines":[242,265],"behavior":"Redacts selected raw excerpt before creating SourceExcerpt.","reason":"Direct pre-delivery application.","requirement":"unique"}]]},
+        {"id":"boundary","behavior":"MCP response is sanitized before caller delivery.","options":[[{"path":"middle_man/mcp/gateway.py","symbol":"MCPGateway._execute","lines":[81,122],"behavior":"Sanitizes payload before usage record and return.","reason":"Direct caller boundary.","requirement":"unique"}]]}
+      ],
+      "supporting": [{"path":"tests/test_mcp_gateway.py","symbol":"test_all_direct_tools_quality_safety_and_usage","lines":[40,99],"behavior":"Asserts secrets absent from packs and logs.","reason":"Safety proof.","requirement":"optional"}], "unresolved": []
+    },
+    {
+      "task_id": "M04", "task_sha256": "d8f887465114535ec4517f0b3ff946142d74059907b5acfe66baaa7295b8566b", "archetype": "MULTI_COMPONENT_ARCHITECTURE", "explicit_anchors": [],
+      "areas": [
+        {"id":"workspace","behavior":"Probe prepares isolated disposable workspace.","options":[[{"path":"middle_man/gateway/claude_benchmark/runtime_probe.py","symbol":"_prepare_root","lines":[109,118],"behavior":"Creates clean root and sentinel after memory checks.","reason":"Direct preparation.","requirement":"unique"}]]},
+        {"id":"restrictions","behavior":"Claude invocation restricts tools and MCP/settings.","options":[[{"path":"middle_man/gateway/claude_benchmark/runner.py","symbol":"build_invocation","lines":[75,98],"behavior":"Sets safe/restricted/strict MCP flags and read/write tool profile.","reason":"Direct invocation policy.","requirement":"unique"}]]},
+        {"id":"events","behavior":"Stream events are parsed for tools and results.","options":[[{"path":"middle_man/gateway/claude_benchmark/events.py","symbol":"parse_stream_json","lines":[33,96],"behavior":"Parses tool actions, result status and usage.","reason":"Direct event parser.","requirement":"unique"}]]},
+        {"id":"validation","behavior":"Filesystem and tool invariants determine probe pass/fail.","options":[[{"path":"middle_man/gateway/claude_benchmark/runtime_probe.py","symbol":"_assess","lines":[121,168],"behavior":"Checks sentinel, forbidden/allowed files, actions and MCP isolation.","reason":"Direct validation.","requirement":"unique"}]]}
+      ],
+      "supporting": [{"path":"tests/test_phase_23_claude.py","symbol":"test_success_usage_cost_and_native_actions","lines":[169,183],"behavior":"Synthetic parser/invocation proof.","reason":"Test evidence.","requirement":"optional"}], "unresolved": []
+    },
+    {
+      "task_id": "C04", "task_sha256": "e761cec05a70a415e0c695c1be858cecdbaae0574da28df10a97892a74a35b9b", "archetype": "CROSS_CUTTING_FEATURE", "explicit_anchors": [],
+      "areas": [
+        {"id":"preview","behavior":"Preview preserves original task while optionally appending locator.","options":[[{"path":"middle_man/gateway/codex_runner/runner.py","symbol":"preview_codex","lines":[76,116],"behavior":"Hashes original task, builds optional locator, checks preprocessing state.","reason":"Direct preview implementation.","requirement":"unique"}]]},
+        {"id":"execution","behavior":"Execution checks isolation and repository state before/after call.","options":[[{"path":"middle_man/gateway/codex_runner/execution.py","symbol":"run_codex","lines":[94,175],"behavior":"Validates before spawn and rejects read-only changes.","reason":"Direct execution/integrity implementation.","requirement":"unique"}]]},
+        {"id":"audit","behavior":"Audit records sanitized run and integrity data.","options":[[{"path":"middle_man/gateway/codex_runner/audit.py","symbol":"sanitized_receipt","lines":[23,89],"behavior":"Builds source-free sanitized audit fields.","reason":"Direct audit implementation.","requirement":"unique"}]]}
+      ],
+      "supporting": [{"path":"middle_man/gateway/codex_runner/isolation.py","symbol":"verify_isolation_command","lines":[14,27],"behavior":"Checks per-process isolation flags.","reason":"Execution safety detail.","requirement":"optional"},{"path":"tests/test_codex_live_runner.py","symbol":"test_read_only_mutation_is_invalid_even_on_zero_exit","lines":[165,175],"behavior":"Proves mutation is rejected.","reason":"Behavioral proof.","requirement":"optional"}], "unresolved": []
+    },
+    {
+      "task_id": "T03", "task_sha256": "249495e619f0a94db0c9fa1283072e6dacc97ae616822a491ea21f88b7c39cc2", "archetype": "TEST_FOCUSED", "explicit_anchors": [],
+      "areas": [
+        {"id":"isolation_test","behavior":"Tests reject missing per-process Codex isolation.","options":[[{"path":"tests/test_codex_runner.py","symbol":"test_shared_baseline_command_uses_identical_isolation","lines":[98,113],"behavior":"Asserts missing flags and MCP overrides fail.","reason":"Direct isolation test.","requirement":"unique"}]]},
+        {"id":"mutation_test","behavior":"Tests reject read-only repository mutation.","options":[[{"path":"tests/test_codex_live_runner.py","symbol":"test_read_only_mutation_is_invalid_even_on_zero_exit","lines":[165,175],"behavior":"Simulates mutation and expects integrity failure.","reason":"Direct mutation test.","requirement":"unique"}]]},
+        {"id":"checks","behavior":"Implementation enforces command isolation and post-run state.","options":[[{"path":"middle_man/gateway/codex_runner/isolation.py","symbol":"verify_isolation_command","lines":[14,27],"behavior":"Rejects incomplete isolation flags.","reason":"Implementation underlying first test.","requirement":"unique"},{"path":"middle_man/gateway/codex_runner/execution.py","symbol":"run_codex","lines":[137,152],"behavior":"Compares before/after snapshot for read-only mutation.","reason":"Implementation underlying second test.","requirement":"unique"}]]}
+      ],
+      "supporting": [{"path":"tests/test_codex_live_runner.py","symbol":"test_no_confirmation_or_preprocessing_mutation_never_launches","lines":[198,220],"behavior":"Proves preflight mutation blocks process start.","reason":"Additional integrity proof.","requirement":"optional"}], "unresolved": []
+    },
+    {
+      "task_id": "G04", "task_sha256": "89b8827390c274d2c7bfade1248a5de0b4f5050aa1a4976725628bcb685ec673", "archetype": "GENERIC_BROAD", "explicit_anchors": [],
+      "areas": [
+        {"id":"measurement","behavior":"Simulator records request and aggregate behavior.","options":[[{"path":"middle_man/lab/metrics.py","symbol":"MetricsCollector.build","lines":[100,159],"behavior":"Builds aggregate request, KV and throughput measurements.","reason":"Direct measurement implementation.","requirement":"unique"}]]},
+        {"id":"comparison","behavior":"Benchmark cases run isolated simulations and compare variants.","options":[[{"path":"middle_man/lab/benchmarks.py","symbol":"BenchmarkCase.run / BenchmarkSuite.run","lines":[30,112],"behavior":"Runs cases and compares variant aggregates.","reason":"Direct benchmark orchestration.","requirement":"unique"}]]},
+        {"id":"reporting","behavior":"Results and comparison deltas are reported.","options":[[{"path":"middle_man/lab/reporting.py","symbol":"format_benchmark_suite","lines":[46,73],"behavior":"Formats simulated metrics and comparison report.","reason":"Direct reporting implementation.","requirement":"alternative"}],[{"path":"middle_man/lab/comparison.py","symbol":"compare_aggregates","lines":[40,61],"behavior":"Builds metric deltas for comparison.","reason":"Alternative comparison-report evidence.","requirement":"alternative"}]]}
+      ],
+      "supporting": [{"path":"tests/test_phase_9_benchmarks.py","symbol":"test_scheduler_and_prefix_comparisons_measure_actual_differences","lines":[48,60],"behavior":"Checks benchmark variants differ.","reason":"Behavioral proof.","requirement":"optional"}], "unresolved": ["The task does not distinguish simulator benchmark reports from Codex A/B reports; this reference covers the simulator interpretation only."]
+    },
+    {
+      "task_id": "E04", "task_sha256": "1088492088aac44ff4d6489137e7c554591a9879d37a06ef11b832cb00e48458", "archetype": "EXPLICIT_ANCHOR", "explicit_anchors": ["middle_man/gateway/indexer.py"],
+      "areas": [
+        {"id":"index_method","behavior":"RepositoryIndexer.index scans and collects parsed file records.","options":[[{"path":"middle_man/gateway/indexer.py","symbol":"RepositoryIndexer.index","lines":[147,194],"behavior":"Walks source tree, scans files and builds relationships.","reason":"Explicitly named implementation.","requirement":"unique"}]]},
+        {"id":"symbols_imports","behavior":"Parser extracts symbols and import records from Python.","options":[[{"path":"middle_man/gateway/parsers.py","symbol":"PythonParser.parse","lines":[38,72],"behavior":"Records qualified symbols and imports.","reason":"Direct extraction implementation.","requirement":"unique"}]]},
+        {"id":"links","behavior":"Import records become cross-file relationships.","options":[[{"path":"middle_man/gateway/indexer.py","symbol":"_relationships","lines":[114,138],"behavior":"Resolves module imports and test edges.","reason":"Direct relationship implementation.","requirement":"unique"}]]}
+      ],
+      "supporting": [{"path":"middle_man/gateway/indexer.py","symbol":"RepositoryIndexer._scan_file","lines":[196,232],"behavior":"Hashes and parses scanned files.","reason":"Detailed collection path.","requirement":"optional"}], "unresolved": []
+    }
+  ]
+}
