@@ -1,0 +1,6293 @@
+{
+  "aggregate": {
+    "candidate_full_core_areas": 4,
+    "candidate_within_budget_and_safe": true,
+    "core_area_regressions": [
+      [
+        "N01",
+        "ownership"
+      ],
+      [
+        "C02",
+        "candidates"
+      ]
+    ],
+    "current_full_core_areas": 6,
+    "decision": "REJECT",
+    "sensitivity_candidate": {
+      "full": 4,
+      "total": 14
+    },
+    "sensitivity_current": {
+      "full": 5,
+      "total": 14
+    },
+    "sensitivity_excluded_areas": [
+      [
+        "G02",
+        "range_selection"
+      ],
+      [
+        "N01",
+        "ownership"
+      ]
+    ],
+    "test_evidence_regressions": []
+  },
+  "baseline_artifact_sha256": "5556f4617bdc3081777e159e794d041b53019d287d2fb410971c359a5c241cd1",
+  "baseline_reproduced": true,
+  "context_budget": 6000,
+  "corpus_sha256": "6b1be495325413f5fc5e1e4bd53cbfc93a784c8f0365515e8f6a3e6d2ad803b5",
+  "mode": "balanced",
+  "model_calls": 0,
+  "reference_dataset_sha256": "ef000d32fb4e7d2344fd0461dc3a95be763771588acea71295a8ea08a1fc9317",
+  "rule_sha256": "79ec7ac58751311f863371b338095447b46cf25a4e30eece56550a2d89500d2b",
+  "schema_version": 1,
+  "scope": "DEVELOPMENT_ONLY",
+  "selector_fingerprint": "3a4213e19944220c02b1897e1a05a584d61bbd00e91cbf5a9e38cc07976bf555",
+  "shadow_implementation_sha256": "91aec4668cb8d1f20e41ac8e3baef10112d7c12a26db23052d5a5756a1bdd40f",
+  "source_commit": "0680a1cb8812d35b17ebd628de7ffba95798da7f",
+  "source_fingerprint": "6f360e98d7d87339129d0fde8725b6e26a03fcdf0f16f9a24d8c7a3f6a3db340",
+  "source_tree": "6276b4a959bc93df8bb82cdde0bfc371d2c99770",
+  "tasks": [
+    {
+      "added_delivered_ranges": [
+        [
+          "middle_man/lab/benchmarks.py",
+          1,
+          50
+        ],
+        [
+          "middle_man/lab/events.py",
+          1,
+          27
+        ],
+        [
+          "middle_man/lab/memory.py",
+          21,
+          21
+        ],
+        [
+          "middle_man/lab/memory.py",
+          95,
+          106
+        ],
+        [
+          "middle_man/lab/trace.py",
+          6,
+          14
+        ],
+        [
+          "middle_man/lab/workloads.py",
+          19,
+          48
+        ]
+      ],
+      "candidate": {
+        "areas": [
+          {
+            "id": "reuse",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": true,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 14,
+                    "delivered_ranges": [
+                      [
+                        1,
+                        81
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/lab/prefix_cache.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      39,
+                      52
+                    ],
+                    "required_lines": 14,
+                    "status": "RANGE_FULL",
+                    "symbol": "PrefixCache.acquire",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              }
+            ],
+            "status": "RANGE_FULL"
+          },
+          {
+            "id": "ownership",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [
+                      [
+                        21,
+                        21
+                      ],
+                      [
+                        95,
+                        106
+                      ]
+                    ],
+                    "missing_lines": [
+                      [
+                        112,
+                        130
+                      ]
+                    ],
+                    "path": "middle_man/lab/memory.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      112,
+                      130
+                    ],
+                    "required_lines": 19,
+                    "status": "RANGE_MISSING",
+                    "symbol": "KVBlockManager.release_request / _release_block_ref",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_MISSING"
+              }
+            ],
+            "status": "RANGE_MISSING"
+          },
+          {
+            "id": "cache_lifetime",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": true,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 28,
+                    "delivered_ranges": [
+                      [
+                        1,
+                        81
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/lab/prefix_cache.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      54,
+                      81
+                    ],
+                    "required_lines": 28,
+                    "status": "RANGE_FULL",
+                    "symbol": "PrefixCache.publish / clear / evict_unused",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              }
+            ],
+            "status": "RANGE_FULL"
+          }
+        ],
+        "candidate_cap_omissions": [],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [],
+        "core_areas_total": 3,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [],
+        "mode": "balanced",
+        "path_core_areas_covered": 3,
+        "range_core_areas_full": 2,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 151,
+            "omission_reason": null,
+            "path": "middle_man/lab/memory.py",
+            "proposed_ranges": [
+              [
+                21,
+                21,
+                "class_header"
+              ],
+              [
+                95,
+                106,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 719,
+            "omission_reason": null,
+            "path": "middle_man/lab/prefix_cache.py",
+            "proposed_ranges": [
+              [
+                1,
+                81,
+                "full_file"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 1197,
+            "omission_reason": null,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "proposed_ranges": [
+              [
+                1,
+                102,
+                "full_file"
+              ]
+            ],
+            "selected": true
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": true,
+            "end_line": 102,
+            "estimated_source_tokens": 1197,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 81,
+            "estimated_source_tokens": 719,
+            "path": "middle_man/lab/prefix_cache.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 159,
+            "estimated_source_tokens": 1603,
+            "path": "middle_man/lab/request.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 21,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 21,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 106,
+            "estimated_source_tokens": 145,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 95,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 109,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 34,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 34,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 244,
+            "estimated_source_tokens": 119,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 232,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 18,
+            "estimated_source_tokens": 62,
+            "path": "middle_man/lab/memory_control.py",
+            "start_line": 10,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 9,
+            "estimated_source_tokens": 17,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 44,
+            "estimated_source_tokens": 105,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 28,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 89,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 89,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 177,
+            "estimated_source_tokens": 281,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 158,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 36,
+            "estimated_source_tokens": 371,
+            "path": "tests/test_phase_8_recovery.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 7,
+            "estimated_source_tokens": 13,
+            "path": "middle_man/lab/workloads.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 48,
+            "estimated_source_tokens": 279,
+            "path": "middle_man/lab/workloads.py",
+            "start_line": 19,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 22,
+            "estimated_source_tokens": 90,
+            "path": "middle_man/lab/work.py",
+            "start_line": 4,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 436,
+            "path": "middle_man/lab/benchmarks.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 14,
+            "estimated_source_tokens": 45,
+            "path": "middle_man/lab/trace.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 27,
+            "estimated_source_tokens": 181,
+            "path": "middle_man/lab/events.py",
+            "start_line": 1,
+            "truncated": false
+          }
+        ],
+        "selected_source_tokens": 5790,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": true,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 14,
+            "delivered_ranges": [
+              [
+                1,
+                102
+              ]
+            ],
+            "missing_lines": [],
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "path_covered": true,
+            "reference_lines": [
+              8,
+              21
+            ],
+            "required_lines": 14,
+            "status": "RANGE_FULL",
+            "symbol": "test_shared_block_references_survive_individual_releases",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "N01",
+        "task_sha256": "ba9f0f3ce57838e0631919297ff9f4e7590a69323b832d6e674786ddf376b955",
+        "test_evidence": [
+          {
+            "complete_file_excerpt": true,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 14,
+            "delivered_ranges": [
+              [
+                1,
+                102
+              ]
+            ],
+            "missing_lines": [],
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "path_covered": true,
+            "reference_lines": [
+              8,
+              21
+            ],
+            "required_lines": 14,
+            "status": "RANGE_FULL",
+            "symbol": "test_shared_block_references_survive_individual_releases",
+            "truncated_excerpt": false
+          }
+        ],
+        "unreferenced_selected_paths": [
+          "middle_man/lab/benchmarks.py",
+          "middle_man/lab/engine.py",
+          "middle_man/lab/events.py",
+          "middle_man/lab/memory_control.py",
+          "middle_man/lab/metrics.py",
+          "middle_man/lab/request.py",
+          "middle_man/lab/trace.py",
+          "middle_man/lab/work.py",
+          "middle_man/lab/workloads.py",
+          "tests/test_phase_8_recovery.py"
+        ],
+        "unresolved_cases": [],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/cli/main.py:1-50",
+          "CONTEXT_BUDGET_OMISSION:middle_man/lab/runner.py:1-61",
+          "CONTEXT_BUDGET_OMISSION:middle_man/lab/scheduler.py:1-50",
+          "CONTEXT_BUDGET_OMISSIONS_ADDITIONAL:3"
+        ]
+      },
+      "candidate_parity": true,
+      "current": {
+        "areas": [
+          {
+            "id": "reuse",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": true,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 14,
+                    "delivered_ranges": [
+                      [
+                        1,
+                        81
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/lab/prefix_cache.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      39,
+                      52
+                    ],
+                    "required_lines": 14,
+                    "status": "RANGE_FULL",
+                    "symbol": "PrefixCache.acquire",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              }
+            ],
+            "status": "RANGE_FULL"
+          },
+          {
+            "id": "ownership",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": true,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 19,
+                    "delivered_ranges": [
+                      [
+                        1,
+                        130
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/lab/memory.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      112,
+                      130
+                    ],
+                    "required_lines": 19,
+                    "status": "RANGE_FULL",
+                    "symbol": "KVBlockManager.release_request / _release_block_ref",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              }
+            ],
+            "status": "RANGE_FULL"
+          },
+          {
+            "id": "cache_lifetime",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": true,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 28,
+                    "delivered_ranges": [
+                      [
+                        1,
+                        81
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/lab/prefix_cache.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      54,
+                      81
+                    ],
+                    "required_lines": 28,
+                    "status": "RANGE_FULL",
+                    "symbol": "PrefixCache.publish / clear / evict_unused",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              }
+            ],
+            "status": "RANGE_FULL"
+          }
+        ],
+        "candidate_cap_omissions": [],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [],
+        "core_areas_total": 3,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [],
+        "mode": "balanced",
+        "path_core_areas_covered": 3,
+        "range_core_areas_full": 3,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 1272,
+            "omission_reason": null,
+            "path": "middle_man/lab/memory.py",
+            "proposed_ranges": [
+              [
+                1,
+                130,
+                "full_file"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 719,
+            "omission_reason": null,
+            "path": "middle_man/lab/prefix_cache.py",
+            "proposed_ranges": [
+              [
+                1,
+                81,
+                "full_file"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 1197,
+            "omission_reason": null,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "proposed_ranges": [
+              [
+                1,
+                102,
+                "full_file"
+              ]
+            ],
+            "selected": true
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": true,
+            "end_line": 102,
+            "estimated_source_tokens": 1197,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 81,
+            "estimated_source_tokens": 719,
+            "path": "middle_man/lab/prefix_cache.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 159,
+            "estimated_source_tokens": 1603,
+            "path": "middle_man/lab/request.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 130,
+            "estimated_source_tokens": 1272,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 109,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 34,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 34,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 244,
+            "estimated_source_tokens": 119,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 232,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 18,
+            "estimated_source_tokens": 62,
+            "path": "middle_man/lab/memory_control.py",
+            "start_line": 10,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 9,
+            "estimated_source_tokens": 17,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 44,
+            "estimated_source_tokens": 105,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 28,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 89,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 89,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 177,
+            "estimated_source_tokens": 281,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 158,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 36,
+            "estimated_source_tokens": 371,
+            "path": "tests/test_phase_8_recovery.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 7,
+            "estimated_source_tokens": 13,
+            "path": "middle_man/lab/workloads.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 22,
+            "estimated_source_tokens": 90,
+            "path": "middle_man/lab/work.py",
+            "start_line": 4,
+            "truncated": false
+          }
+        ],
+        "selected_source_tokens": 5970,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": true,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 14,
+            "delivered_ranges": [
+              [
+                1,
+                102
+              ]
+            ],
+            "missing_lines": [],
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "path_covered": true,
+            "reference_lines": [
+              8,
+              21
+            ],
+            "required_lines": 14,
+            "status": "RANGE_FULL",
+            "symbol": "test_shared_block_references_survive_individual_releases",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "N01",
+        "task_sha256": "ba9f0f3ce57838e0631919297ff9f4e7590a69323b832d6e674786ddf376b955",
+        "test_evidence": [
+          {
+            "complete_file_excerpt": true,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 14,
+            "delivered_ranges": [
+              [
+                1,
+                102
+              ]
+            ],
+            "missing_lines": [],
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "path_covered": true,
+            "reference_lines": [
+              8,
+              21
+            ],
+            "required_lines": 14,
+            "status": "RANGE_FULL",
+            "symbol": "test_shared_block_references_survive_individual_releases",
+            "truncated_excerpt": false
+          }
+        ],
+        "unreferenced_selected_paths": [
+          "middle_man/lab/engine.py",
+          "middle_man/lab/memory_control.py",
+          "middle_man/lab/metrics.py",
+          "middle_man/lab/request.py",
+          "middle_man/lab/work.py",
+          "middle_man/lab/workloads.py",
+          "tests/test_phase_8_recovery.py"
+        ],
+        "unresolved_cases": [],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/cli/main.py:1-50",
+          "CONTEXT_BUDGET_OMISSION:middle_man/lab/benchmarks.py:1-50",
+          "CONTEXT_BUDGET_OMISSION:middle_man/lab/runner.py:1-61",
+          "CONTEXT_BUDGET_OMISSIONS_ADDITIONAL:6"
+        ]
+      },
+      "proposal_changes": [
+        {
+          "evidence_terms": [
+            "blocks",
+            "ownership",
+            "request"
+          ],
+          "original_ranges": [
+            [
+              1,
+              130
+            ]
+          ],
+          "original_source_tokens": 1272,
+          "path": "middle_man/lab/memory.py",
+          "proposed_ranges": [
+            [
+              21,
+              21
+            ],
+            [
+              95,
+              106
+            ]
+          ],
+          "proposed_source_tokens": 151,
+          "symbol": "KVBlockManager.attach_shared"
+        }
+      ],
+      "removed_delivered_ranges": [
+        [
+          "middle_man/lab/memory.py",
+          1,
+          130
+        ]
+      ],
+      "task_id": "N01"
+    },
+    {
+      "added_delivered_ranges": [
+        [
+          "middle_man/gateway/context_builder.py",
+          69,
+          69
+        ],
+        [
+          "middle_man/gateway/relevance.py",
+          5,
+          8
+        ],
+        [
+          "middle_man/gateway/relevance.py",
+          12,
+          12
+        ],
+        [
+          "middle_man/gateway/relevance.py",
+          69,
+          69
+        ]
+      ],
+      "candidate": {
+        "areas": [
+          {
+            "id": "entry",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 55,
+                    "delivered_ranges": [
+                      [
+                        7,
+                        8
+                      ],
+                      [
+                        28,
+                        30
+                      ],
+                      [
+                        52,
+                        52
+                      ],
+                      [
+                        265,
+                        321
+                      ],
+                      [
+                        439,
+                        458
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/mcp/gateway.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      266,
+                      320
+                    ],
+                    "required_lines": 55,
+                    "status": "RANGE_FULL",
+                    "symbol": "MCPGateway.context",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              },
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 7,
+                    "delivered_ranges": [
+                      [
+                        6,
+                        6
+                      ],
+                      [
+                        33,
+                        33
+                      ],
+                      [
+                        75,
+                        91
+                      ],
+                      [
+                        98,
+                        103
+                      ],
+                      [
+                        108,
+                        115
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/mcp/server.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      84,
+                      90
+                    ],
+                    "required_lines": 7,
+                    "status": "RANGE_FULL",
+                    "symbol": "middleman_context",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              }
+            ],
+            "status": "RANGE_FULL"
+          },
+          {
+            "id": "index",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        147,
+                        194
+                      ]
+                    ],
+                    "path": "middle_man/gateway/indexer.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      147,
+                      194
+                    ],
+                    "required_lines": 48,
+                    "status": "FILE_MISSING",
+                    "symbol": "RepositoryIndexer.index",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          },
+          {
+            "id": "ranking",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [
+                      [
+                        5,
+                        8
+                      ],
+                      [
+                        12,
+                        12
+                      ],
+                      [
+                        69,
+                        69
+                      ]
+                    ],
+                    "missing_lines": [
+                      [
+                        74,
+                        182
+                      ]
+                    ],
+                    "path": "middle_man/gateway/relevance.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      74,
+                      182
+                    ],
+                    "required_lines": 109,
+                    "status": "RANGE_MISSING",
+                    "symbol": "RelevanceEngine.find",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_MISSING"
+              }
+            ],
+            "status": "RANGE_MISSING"
+          },
+          {
+            "id": "selection_delivery",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [
+                      [
+                        69,
+                        69
+                      ]
+                    ],
+                    "missing_lines": [
+                      [
+                        129,
+                        289
+                      ]
+                    ],
+                    "path": "middle_man/gateway/context_builder.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      129,
+                      289
+                    ],
+                    "required_lines": 161,
+                    "status": "RANGE_MISSING",
+                    "symbol": "ContextBuilder._assemble",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_MISSING"
+              }
+            ],
+            "status": "RANGE_MISSING"
+          }
+        ],
+        "candidate_cap_omissions": [
+          "middle_man/gateway/indexer.py"
+        ],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [
+          "middle_man/gateway/context_builder.py",
+          "middle_man/gateway/relevance.py",
+          "middle_man/gateway/selection.py"
+        ],
+        "core_areas_total": 4,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [],
+        "mode": "balanced",
+        "path_core_areas_covered": 3,
+        "range_core_areas_full": 1,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 2926,
+            "omission_reason": "partial_context_budget",
+            "path": "middle_man/gateway/context_builder.py",
+            "proposed_ranges": [
+              [
+                5,
+                19,
+                "merged"
+              ],
+              [
+                69,
+                69,
+                "class_header"
+              ],
+              [
+                128,
+                291,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "BEYOND_CANDIDATE_CAP",
+            "estimated_source_cost": null,
+            "omission_reason": null,
+            "path": "middle_man/gateway/indexer.py",
+            "proposed_ranges": [],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 1864,
+            "omission_reason": "partial_context_budget",
+            "path": "middle_man/gateway/relevance.py",
+            "proposed_ranges": [
+              [
+                5,
+                8,
+                "merged"
+              ],
+              [
+                12,
+                12,
+                "merged"
+              ],
+              [
+                69,
+                69,
+                "class_header"
+              ],
+              [
+                73,
+                182,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 285,
+            "omission_reason": "partial_context_budget",
+            "path": "middle_man/gateway/selection.py",
+            "proposed_ranges": [
+              [
+                9,
+                24,
+                "merged"
+              ],
+              [
+                33,
+                57,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 1327,
+            "omission_reason": null,
+            "path": "middle_man/mcp/gateway.py",
+            "proposed_ranges": [
+              [
+                52,
+                52,
+                "merged"
+              ],
+              [
+                265,
+                321,
+                "symbol"
+              ],
+              [
+                7,
+                8,
+                "merged"
+              ],
+              [
+                28,
+                30,
+                "merged"
+              ],
+              [
+                439,
+                458,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 545,
+            "omission_reason": null,
+            "path": "middle_man/mcp/server.py",
+            "proposed_ranges": [
+              [
+                6,
+                6,
+                "merged"
+              ],
+              [
+                33,
+                33,
+                "merged"
+              ],
+              [
+                75,
+                91,
+                "merged"
+              ],
+              [
+                98,
+                103,
+                "symbol"
+              ],
+              [
+                108,
+                115,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 21,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 30,
+            "estimated_source_tokens": 11,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 28,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 5,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 321,
+            "estimated_source_tokens": 939,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 265,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 458,
+            "estimated_source_tokens": 351,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 439,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 134,
+            "estimated_source_tokens": 21,
+            "path": "tests/test_phase_22_v4.py",
+            "start_line": 134,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 143,
+            "estimated_source_tokens": 61,
+            "path": "tests/test_phase_22_v4.py",
+            "start_line": 140,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 21,
+            "estimated_source_tokens": 109,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 6,
+            "estimated_source_tokens": 9,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 33,
+            "estimated_source_tokens": 18,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 33,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 91,
+            "estimated_source_tokens": 319,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 75,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 103,
+            "estimated_source_tokens": 69,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 98,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 115,
+            "estimated_source_tokens": 130,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 108,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 14,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 5,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 15,
+            "estimated_source_tokens": 12,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 14,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 34,
+            "estimated_source_tokens": 16,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 34,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 28,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 5,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 12,
+            "estimated_source_tokens": 18,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 12,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 69,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 69,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 69,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/gateway/context_builder.py",
+            "start_line": 69,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 14,
+            "estimated_source_tokens": 61,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 22,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/mcp/benchmark_receipts.py",
+            "start_line": 22,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 47,
+            "estimated_source_tokens": 22,
+            "path": "middle_man/mcp/benchmark_receipts.py",
+            "start_line": 43,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 14,
+            "estimated_source_tokens": 128,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 4,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 131,
+            "estimated_source_tokens": 105,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 125,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 24,
+            "estimated_source_tokens": 85,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 16,
+            "estimated_source_tokens": 18,
+            "path": "middle_man/gateway/codex_benchmark/infrastructure.py",
+            "start_line": 14,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 98,
+            "estimated_source_tokens": 131,
+            "path": "middle_man/gateway/codex_benchmark/infrastructure.py",
+            "start_line": 87,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 70,
+            "estimated_source_tokens": 956,
+            "path": "middle_man/cli/mcp.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 82,
+            "estimated_source_tokens": 946,
+            "path": "middle_man/mcp/delivery.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 22,
+            "estimated_source_tokens": 24,
+            "path": "middle_man/gateway/locator_diagnostics.py",
+            "start_line": 20,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 60,
+            "estimated_source_tokens": 560,
+            "path": "middle_man/gateway/source.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 756,
+            "path": "middle_man/cli/main.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 12,
+            "estimated_source_tokens": 10,
+            "path": "middle_man/gateway/codex_benchmark/offline_auto.py",
+            "start_line": 10,
+            "truncated": false
+          }
+        ],
+        "selected_source_tokens": 5971,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [
+              [
+                9,
+                24
+              ]
+            ],
+            "missing_lines": [
+              [
+                175,
+                326
+              ]
+            ],
+            "path": "middle_man/gateway/selection.py",
+            "path_covered": true,
+            "reference_lines": [
+              175,
+              326
+            ],
+            "required_lines": 152,
+            "status": "RANGE_MISSING",
+            "symbol": "allocate",
+            "truncated_excerpt": false
+          },
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [
+              [
+                7,
+                8
+              ],
+              [
+                28,
+                30
+              ],
+              [
+                52,
+                52
+              ],
+              [
+                265,
+                321
+              ],
+              [
+                439,
+                458
+              ]
+            ],
+            "missing_lines": [
+              [
+                196,
+                225
+              ]
+            ],
+            "path": "middle_man/mcp/gateway.py",
+            "path_covered": true,
+            "reference_lines": [
+              196,
+              225
+            ],
+            "required_lines": 30,
+            "status": "RANGE_MISSING",
+            "symbol": "MCPGateway._core_payload",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "M02",
+        "task_sha256": "99e572ef26121c9f2260a6d16994cb68bef999c41be79981405056b22cf109a8",
+        "test_evidence": [],
+        "unreferenced_selected_paths": [
+          "middle_man/cli/main.py",
+          "middle_man/cli/mcp.py",
+          "middle_man/gateway/codex_benchmark/infrastructure.py",
+          "middle_man/gateway/codex_benchmark/offline_auto.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/gateway/context_models.py",
+          "middle_man/gateway/locator_diagnostics.py",
+          "middle_man/gateway/source.py",
+          "middle_man/mcp/benchmark_receipts.py",
+          "middle_man/mcp/delivery.py",
+          "tests/test_gateway_context_packs.py",
+          "tests/test_phase_22_v4.py"
+        ],
+        "unresolved_cases": [],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/context_output.py:1-52",
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/codex_benchmark/overlap.py:1-74",
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/__init__.py:1-18",
+          "CONTEXT_BUDGET_OMISSIONS_ADDITIONAL:4"
+        ]
+      },
+      "candidate_parity": true,
+      "current": {
+        "areas": [
+          {
+            "id": "entry",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 55,
+                    "delivered_ranges": [
+                      [
+                        7,
+                        8
+                      ],
+                      [
+                        28,
+                        30
+                      ],
+                      [
+                        52,
+                        52
+                      ],
+                      [
+                        265,
+                        321
+                      ],
+                      [
+                        439,
+                        458
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/mcp/gateway.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      266,
+                      320
+                    ],
+                    "required_lines": 55,
+                    "status": "RANGE_FULL",
+                    "symbol": "MCPGateway.context",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              },
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 7,
+                    "delivered_ranges": [
+                      [
+                        6,
+                        6
+                      ],
+                      [
+                        33,
+                        33
+                      ],
+                      [
+                        75,
+                        91
+                      ],
+                      [
+                        98,
+                        103
+                      ],
+                      [
+                        108,
+                        115
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/mcp/server.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      84,
+                      90
+                    ],
+                    "required_lines": 7,
+                    "status": "RANGE_FULL",
+                    "symbol": "middleman_context",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              }
+            ],
+            "status": "RANGE_FULL"
+          },
+          {
+            "id": "index",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        147,
+                        194
+                      ]
+                    ],
+                    "path": "middle_man/gateway/indexer.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      147,
+                      194
+                    ],
+                    "required_lines": 48,
+                    "status": "FILE_MISSING",
+                    "symbol": "RepositoryIndexer.index",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          },
+          {
+            "id": "ranking",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        74,
+                        182
+                      ]
+                    ],
+                    "path": "middle_man/gateway/relevance.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      74,
+                      182
+                    ],
+                    "required_lines": 109,
+                    "status": "FILE_MISSING",
+                    "symbol": "RelevanceEngine.find",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          },
+          {
+            "id": "selection_delivery",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        129,
+                        289
+                      ]
+                    ],
+                    "path": "middle_man/gateway/context_builder.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      129,
+                      289
+                    ],
+                    "required_lines": 161,
+                    "status": "FILE_MISSING",
+                    "symbol": "ContextBuilder._assemble",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          }
+        ],
+        "candidate_cap_omissions": [
+          "middle_man/gateway/indexer.py"
+        ],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [
+          "middle_man/gateway/context_builder.py",
+          "middle_man/gateway/relevance.py",
+          "middle_man/gateway/selection.py"
+        ],
+        "core_areas_total": 4,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [],
+        "mode": "balanced",
+        "path_core_areas_covered": 1,
+        "range_core_areas_full": 1,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 5858,
+            "omission_reason": "context_budget",
+            "path": "middle_man/gateway/context_builder.py",
+            "proposed_ranges": [
+              [
+                1,
+                375,
+                "full_file"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "BEYOND_CANDIDATE_CAP",
+            "estimated_source_cost": null,
+            "omission_reason": null,
+            "path": "middle_man/gateway/indexer.py",
+            "proposed_ranges": [],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 2457,
+            "omission_reason": "context_budget",
+            "path": "middle_man/gateway/relevance.py",
+            "proposed_ranges": [
+              [
+                1,
+                182,
+                "full_file"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 285,
+            "omission_reason": "partial_context_budget",
+            "path": "middle_man/gateway/selection.py",
+            "proposed_ranges": [
+              [
+                9,
+                24,
+                "merged"
+              ],
+              [
+                33,
+                57,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 1327,
+            "omission_reason": null,
+            "path": "middle_man/mcp/gateway.py",
+            "proposed_ranges": [
+              [
+                52,
+                52,
+                "merged"
+              ],
+              [
+                265,
+                321,
+                "symbol"
+              ],
+              [
+                7,
+                8,
+                "merged"
+              ],
+              [
+                28,
+                30,
+                "merged"
+              ],
+              [
+                439,
+                458,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 545,
+            "omission_reason": null,
+            "path": "middle_man/mcp/server.py",
+            "proposed_ranges": [
+              [
+                6,
+                6,
+                "merged"
+              ],
+              [
+                33,
+                33,
+                "merged"
+              ],
+              [
+                75,
+                91,
+                "merged"
+              ],
+              [
+                98,
+                103,
+                "symbol"
+              ],
+              [
+                108,
+                115,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 21,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 30,
+            "estimated_source_tokens": 11,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 28,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 5,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 321,
+            "estimated_source_tokens": 939,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 265,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 458,
+            "estimated_source_tokens": 351,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 439,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 134,
+            "estimated_source_tokens": 21,
+            "path": "tests/test_phase_22_v4.py",
+            "start_line": 134,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 143,
+            "estimated_source_tokens": 61,
+            "path": "tests/test_phase_22_v4.py",
+            "start_line": 140,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 21,
+            "estimated_source_tokens": 109,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 6,
+            "estimated_source_tokens": 9,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 33,
+            "estimated_source_tokens": 18,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 33,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 91,
+            "estimated_source_tokens": 319,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 75,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 103,
+            "estimated_source_tokens": 69,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 98,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 115,
+            "estimated_source_tokens": 130,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 108,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 14,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 5,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 15,
+            "estimated_source_tokens": 12,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 14,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 34,
+            "estimated_source_tokens": 16,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 34,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 14,
+            "estimated_source_tokens": 61,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 22,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/mcp/benchmark_receipts.py",
+            "start_line": 22,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 47,
+            "estimated_source_tokens": 22,
+            "path": "middle_man/mcp/benchmark_receipts.py",
+            "start_line": 43,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 14,
+            "estimated_source_tokens": 128,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 4,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 131,
+            "estimated_source_tokens": 105,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 125,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 24,
+            "estimated_source_tokens": 85,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 16,
+            "estimated_source_tokens": 18,
+            "path": "middle_man/gateway/codex_benchmark/infrastructure.py",
+            "start_line": 14,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 98,
+            "estimated_source_tokens": 131,
+            "path": "middle_man/gateway/codex_benchmark/infrastructure.py",
+            "start_line": 87,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 70,
+            "estimated_source_tokens": 956,
+            "path": "middle_man/cli/mcp.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 82,
+            "estimated_source_tokens": 946,
+            "path": "middle_man/mcp/delivery.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 22,
+            "estimated_source_tokens": 24,
+            "path": "middle_man/gateway/locator_diagnostics.py",
+            "start_line": 20,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 60,
+            "estimated_source_tokens": 560,
+            "path": "middle_man/gateway/source.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 756,
+            "path": "middle_man/cli/main.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 12,
+            "estimated_source_tokens": 10,
+            "path": "middle_man/gateway/codex_benchmark/offline_auto.py",
+            "start_line": 10,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 54,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 43,
+            "truncated": false
+          }
+        ],
+        "selected_source_tokens": 5967,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [
+              [
+                9,
+                24
+              ]
+            ],
+            "missing_lines": [
+              [
+                175,
+                326
+              ]
+            ],
+            "path": "middle_man/gateway/selection.py",
+            "path_covered": true,
+            "reference_lines": [
+              175,
+              326
+            ],
+            "required_lines": 152,
+            "status": "RANGE_MISSING",
+            "symbol": "allocate",
+            "truncated_excerpt": false
+          },
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [
+              [
+                7,
+                8
+              ],
+              [
+                28,
+                30
+              ],
+              [
+                52,
+                52
+              ],
+              [
+                265,
+                321
+              ],
+              [
+                439,
+                458
+              ]
+            ],
+            "missing_lines": [
+              [
+                196,
+                225
+              ]
+            ],
+            "path": "middle_man/mcp/gateway.py",
+            "path_covered": true,
+            "reference_lines": [
+              196,
+              225
+            ],
+            "required_lines": 30,
+            "status": "RANGE_MISSING",
+            "symbol": "MCPGateway._core_payload",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "M02",
+        "task_sha256": "99e572ef26121c9f2260a6d16994cb68bef999c41be79981405056b22cf109a8",
+        "test_evidence": [],
+        "unreferenced_selected_paths": [
+          "middle_man/cli/main.py",
+          "middle_man/cli/mcp.py",
+          "middle_man/gateway/codex_benchmark/infrastructure.py",
+          "middle_man/gateway/codex_benchmark/offline_auto.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/gateway/context_models.py",
+          "middle_man/gateway/handoff.py",
+          "middle_man/gateway/locator_diagnostics.py",
+          "middle_man/gateway/source.py",
+          "middle_man/mcp/benchmark_receipts.py",
+          "middle_man/mcp/delivery.py",
+          "tests/test_gateway_context_packs.py",
+          "tests/test_phase_22_v4.py"
+        ],
+        "unresolved_cases": [],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/relevance.py:1-182",
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/context_builder.py:1-375",
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/context_output.py:1-52",
+          "CONTEXT_BUDGET_OMISSIONS_ADDITIONAL:5"
+        ]
+      },
+      "proposal_changes": [
+        {
+          "evidence_terms": [
+            "context",
+            "source"
+          ],
+          "original_ranges": [
+            [
+              1,
+              182
+            ]
+          ],
+          "original_source_tokens": 2457,
+          "path": "middle_man/gateway/relevance.py",
+          "proposed_ranges": [
+            [
+              5,
+              8
+            ],
+            [
+              12,
+              12
+            ],
+            [
+              69,
+              69
+            ],
+            [
+              73,
+              182
+            ]
+          ],
+          "proposed_source_tokens": 1864,
+          "symbol": "RelevanceEngine.find"
+        },
+        {
+          "evidence_terms": [
+            "relevance",
+            "request",
+            "selection",
+            "source"
+          ],
+          "original_ranges": [
+            [
+              1,
+              375
+            ]
+          ],
+          "original_source_tokens": 5858,
+          "path": "middle_man/gateway/context_builder.py",
+          "proposed_ranges": [
+            [
+              5,
+              19
+            ],
+            [
+              69,
+              69
+            ],
+            [
+              128,
+              291
+            ]
+          ],
+          "proposed_source_tokens": 2926,
+          "symbol": "ContextBuilder._assemble"
+        }
+      ],
+      "removed_delivered_ranges": [
+        [
+          "middle_man/gateway/handoff.py",
+          43,
+          52
+        ]
+      ],
+      "task_id": "M02"
+    },
+    {
+      "added_delivered_ranges": [
+        [
+          "middle_man/gateway/__init__.py",
+          1,
+          18
+        ],
+        [
+          "middle_man/gateway/codex_runner/runner.py",
+          1,
+          50
+        ],
+        [
+          "middle_man/gateway/git_diff.py",
+          1,
+          50
+        ],
+        [
+          "middle_man/gateway/quality.py",
+          61,
+          92
+        ],
+        [
+          "middle_man/gateway/relevance.py",
+          5,
+          8
+        ],
+        [
+          "middle_man/gateway/relevance.py",
+          12,
+          12
+        ],
+        [
+          "middle_man/gateway/relevance.py",
+          69,
+          69
+        ],
+        [
+          "middle_man/mcp/benchmark_receipts.py",
+          1,
+          50
+        ],
+        [
+          "scripts/measure_large_edit_v1.py",
+          1,
+          50
+        ]
+      ],
+      "candidate": {
+        "areas": [
+          {
+            "id": "relationships",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        114,
+                        138
+                      ]
+                    ],
+                    "path": "middle_man/gateway/indexer.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      114,
+                      138
+                    ],
+                    "required_lines": 25,
+                    "status": "FILE_MISSING",
+                    "symbol": "_relationships",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          },
+          {
+            "id": "candidates",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [
+                      [
+                        5,
+                        8
+                      ],
+                      [
+                        12,
+                        12
+                      ],
+                      [
+                        69,
+                        69
+                      ]
+                    ],
+                    "missing_lines": [
+                      [
+                        133,
+                        145
+                      ]
+                    ],
+                    "path": "middle_man/gateway/relevance.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      133,
+                      145
+                    ],
+                    "required_lines": 13,
+                    "status": "RANGE_MISSING",
+                    "symbol": "RelevanceEngine.find",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_MISSING"
+              }
+            ],
+            "status": "RANGE_MISSING"
+          },
+          {
+            "id": "ranges",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        190,
+                        236
+                      ]
+                    ],
+                    "path": "middle_man/gateway/context_builder.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      190,
+                      236
+                    ],
+                    "required_lines": 47,
+                    "status": "FILE_MISSING",
+                    "symbol": "ContextBuilder._assemble",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          }
+        ],
+        "candidate_cap_omissions": [
+          "middle_man/gateway/parsers.py"
+        ],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [
+          "middle_man/gateway/context_builder.py",
+          "middle_man/gateway/indexer.py",
+          "middle_man/gateway/relevance.py"
+        ],
+        "core_areas_total": 3,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [],
+        "mode": "balanced",
+        "path_core_areas_covered": 1,
+        "range_core_areas_full": 0,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 5858,
+            "omission_reason": "context_budget",
+            "path": "middle_man/gateway/context_builder.py",
+            "proposed_ranges": [
+              [
+                1,
+                375,
+                "full_file"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 552,
+            "omission_reason": "context_budget",
+            "path": "middle_man/gateway/indexer.py",
+            "proposed_ranges": [
+              [
+                1,
+                50,
+                "file_opening"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "BEYOND_CANDIDATE_CAP",
+            "estimated_source_cost": null,
+            "omission_reason": null,
+            "path": "middle_man/gateway/parsers.py",
+            "proposed_ranges": [],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 1864,
+            "omission_reason": "partial_context_budget",
+            "path": "middle_man/gateway/relevance.py",
+            "proposed_ranges": [
+              [
+                5,
+                8,
+                "merged"
+              ],
+              [
+                12,
+                12,
+                "merged"
+              ],
+              [
+                69,
+                69,
+                "class_header"
+              ],
+              [
+                73,
+                182,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 285,
+            "omission_reason": null,
+            "path": "middle_man/gateway/selection.py",
+            "proposed_ranges": [
+              [
+                9,
+                24,
+                "merged"
+              ],
+              [
+                33,
+                57,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 21,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 30,
+            "estimated_source_tokens": 11,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 28,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 5,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 321,
+            "estimated_source_tokens": 939,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 265,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 390,
+            "estimated_source_tokens": 238,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 376,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 458,
+            "estimated_source_tokens": 351,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 439,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 28,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 5,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 12,
+            "estimated_source_tokens": 18,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 12,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 69,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 69,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 21,
+            "estimated_source_tokens": 109,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 64,
+            "estimated_source_tokens": 54,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 60,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 6,
+            "estimated_source_tokens": 9,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 33,
+            "estimated_source_tokens": 18,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 33,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 91,
+            "estimated_source_tokens": 319,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 75,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 103,
+            "estimated_source_tokens": 69,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 98,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 115,
+            "estimated_source_tokens": 130,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 108,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 24,
+            "estimated_source_tokens": 85,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 57,
+            "estimated_source_tokens": 200,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 33,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 22,
+            "estimated_source_tokens": 24,
+            "path": "middle_man/gateway/locator_diagnostics.py",
+            "start_line": 20,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 15,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 15,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 34,
+            "estimated_source_tokens": 16,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 34,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 4,
+            "estimated_source_tokens": 7,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 4,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 9,
+            "estimated_source_tokens": 29,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 8,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 16,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 13,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 51,
+            "estimated_source_tokens": 241,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 37,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 131,
+            "estimated_source_tokens": 105,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 125,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 15,
+            "estimated_source_tokens": 58,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 10,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 54,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 43,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 147,
+            "estimated_source_tokens": 259,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 130,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 12,
+            "estimated_source_tokens": 74,
+            "path": "middle_man/gateway/quality.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 92,
+            "estimated_source_tokens": 532,
+            "path": "middle_man/gateway/quality.py",
+            "start_line": 61,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 528,
+            "path": "middle_man/mcp/benchmark_receipts.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 436,
+            "path": "scripts/measure_large_edit_v1.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": true,
+            "end_line": 18,
+            "estimated_source_tokens": 257,
+            "path": "middle_man/gateway/__init__.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 398,
+            "path": "middle_man/gateway/codex_runner/runner.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 85,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/gateway/models.py",
+            "start_line": 85,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 131,
+            "estimated_source_tokens": 26,
+            "path": "middle_man/gateway/models.py",
+            "start_line": 128,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 267,
+            "path": "middle_man/gateway/git_diff.py",
+            "start_line": 1,
+            "truncated": true
+          }
+        ],
+        "selected_source_tokens": 5949,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [],
+            "missing_lines": [
+              [
+                38,
+                72
+              ]
+            ],
+            "path": "middle_man/gateway/parsers.py",
+            "path_covered": false,
+            "reference_lines": [
+              38,
+              72
+            ],
+            "required_lines": 35,
+            "status": "FILE_MISSING",
+            "symbol": "PythonParser.parse",
+            "truncated_excerpt": false
+          },
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [
+              [
+                9,
+                24
+              ],
+              [
+                33,
+                57
+              ]
+            ],
+            "missing_lines": [
+              [
+                175,
+                221
+              ]
+            ],
+            "path": "middle_man/gateway/selection.py",
+            "path_covered": true,
+            "reference_lines": [
+              175,
+              221
+            ],
+            "required_lines": 47,
+            "status": "RANGE_MISSING",
+            "symbol": "allocate",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "C02",
+        "task_sha256": "1b7259c528792a6d94ffd0fc36f693e40345efbff3c2a380c8f6f51ec85faa82",
+        "test_evidence": [],
+        "unreferenced_selected_paths": [
+          "middle_man/gateway/__init__.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/gateway/codex_runner/runner.py",
+          "middle_man/gateway/context_models.py",
+          "middle_man/gateway/git_diff.py",
+          "middle_man/gateway/handoff.py",
+          "middle_man/gateway/locator_diagnostics.py",
+          "middle_man/gateway/models.py",
+          "middle_man/gateway/quality.py",
+          "middle_man/mcp/benchmark_receipts.py",
+          "middle_man/mcp/gateway.py",
+          "middle_man/mcp/server.py",
+          "scripts/measure_large_edit_v1.py",
+          "tests/test_gateway_context_packs.py",
+          "tests/test_phase_22_11.py"
+        ],
+        "unresolved_cases": [],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/context_builder.py:1-375",
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/context_output.py:1-52",
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/codex_benchmark/offline_locator.py:1-50",
+          "CONTEXT_BUDGET_OMISSIONS_ADDITIONAL:8"
+        ]
+      },
+      "candidate_parity": true,
+      "current": {
+        "areas": [
+          {
+            "id": "relationships",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        114,
+                        138
+                      ]
+                    ],
+                    "path": "middle_man/gateway/indexer.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      114,
+                      138
+                    ],
+                    "required_lines": 25,
+                    "status": "FILE_MISSING",
+                    "symbol": "_relationships",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          },
+          {
+            "id": "candidates",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": true,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 13,
+                    "delivered_ranges": [
+                      [
+                        1,
+                        182
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/gateway/relevance.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      133,
+                      145
+                    ],
+                    "required_lines": 13,
+                    "status": "RANGE_FULL",
+                    "symbol": "RelevanceEngine.find",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              }
+            ],
+            "status": "RANGE_FULL"
+          },
+          {
+            "id": "ranges",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        190,
+                        236
+                      ]
+                    ],
+                    "path": "middle_man/gateway/context_builder.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      190,
+                      236
+                    ],
+                    "required_lines": 47,
+                    "status": "FILE_MISSING",
+                    "symbol": "ContextBuilder._assemble",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          }
+        ],
+        "candidate_cap_omissions": [
+          "middle_man/gateway/parsers.py"
+        ],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [
+          "middle_man/gateway/context_builder.py",
+          "middle_man/gateway/indexer.py"
+        ],
+        "core_areas_total": 3,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [],
+        "mode": "balanced",
+        "path_core_areas_covered": 1,
+        "range_core_areas_full": 1,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 5858,
+            "omission_reason": "context_budget",
+            "path": "middle_man/gateway/context_builder.py",
+            "proposed_ranges": [
+              [
+                1,
+                375,
+                "full_file"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 552,
+            "omission_reason": "context_budget",
+            "path": "middle_man/gateway/indexer.py",
+            "proposed_ranges": [
+              [
+                1,
+                50,
+                "file_opening"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "BEYOND_CANDIDATE_CAP",
+            "estimated_source_cost": null,
+            "omission_reason": null,
+            "path": "middle_man/gateway/parsers.py",
+            "proposed_ranges": [],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 2457,
+            "omission_reason": null,
+            "path": "middle_man/gateway/relevance.py",
+            "proposed_ranges": [
+              [
+                1,
+                182,
+                "full_file"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 285,
+            "omission_reason": null,
+            "path": "middle_man/gateway/selection.py",
+            "proposed_ranges": [
+              [
+                9,
+                24,
+                "merged"
+              ],
+              [
+                33,
+                57,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 21,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 30,
+            "estimated_source_tokens": 11,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 28,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 5,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 321,
+            "estimated_source_tokens": 939,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 265,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 390,
+            "estimated_source_tokens": 238,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 376,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 458,
+            "estimated_source_tokens": 351,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 439,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 182,
+            "estimated_source_tokens": 2457,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 21,
+            "estimated_source_tokens": 109,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 64,
+            "estimated_source_tokens": 54,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 60,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 6,
+            "estimated_source_tokens": 9,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 33,
+            "estimated_source_tokens": 18,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 33,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 91,
+            "estimated_source_tokens": 319,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 75,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 103,
+            "estimated_source_tokens": 69,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 98,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 115,
+            "estimated_source_tokens": 130,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 108,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 24,
+            "estimated_source_tokens": 85,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 57,
+            "estimated_source_tokens": 200,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 33,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 22,
+            "estimated_source_tokens": 24,
+            "path": "middle_man/gateway/locator_diagnostics.py",
+            "start_line": 20,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 15,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 15,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 34,
+            "estimated_source_tokens": 16,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 34,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 4,
+            "estimated_source_tokens": 7,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 4,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 9,
+            "estimated_source_tokens": 29,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 8,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 16,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 13,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 51,
+            "estimated_source_tokens": 241,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 37,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 131,
+            "estimated_source_tokens": 105,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 125,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 15,
+            "estimated_source_tokens": 58,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 10,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 54,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 43,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 147,
+            "estimated_source_tokens": 259,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 130,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 12,
+            "estimated_source_tokens": 74,
+            "path": "middle_man/gateway/quality.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 85,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/gateway/models.py",
+            "start_line": 85,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 131,
+            "estimated_source_tokens": 26,
+            "path": "middle_man/gateway/models.py",
+            "start_line": 128,
+            "truncated": false
+          }
+        ],
+        "selected_source_tokens": 5936,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [],
+            "missing_lines": [
+              [
+                38,
+                72
+              ]
+            ],
+            "path": "middle_man/gateway/parsers.py",
+            "path_covered": false,
+            "reference_lines": [
+              38,
+              72
+            ],
+            "required_lines": 35,
+            "status": "FILE_MISSING",
+            "symbol": "PythonParser.parse",
+            "truncated_excerpt": false
+          },
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [
+              [
+                9,
+                24
+              ],
+              [
+                33,
+                57
+              ]
+            ],
+            "missing_lines": [
+              [
+                175,
+                221
+              ]
+            ],
+            "path": "middle_man/gateway/selection.py",
+            "path_covered": true,
+            "reference_lines": [
+              175,
+              221
+            ],
+            "required_lines": 47,
+            "status": "RANGE_MISSING",
+            "symbol": "allocate",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "C02",
+        "task_sha256": "1b7259c528792a6d94ffd0fc36f693e40345efbff3c2a380c8f6f51ec85faa82",
+        "test_evidence": [],
+        "unreferenced_selected_paths": [
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/gateway/context_models.py",
+          "middle_man/gateway/handoff.py",
+          "middle_man/gateway/locator_diagnostics.py",
+          "middle_man/gateway/models.py",
+          "middle_man/gateway/quality.py",
+          "middle_man/mcp/gateway.py",
+          "middle_man/mcp/server.py",
+          "tests/test_gateway_context_packs.py",
+          "tests/test_phase_22_11.py"
+        ],
+        "unresolved_cases": [],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/context_builder.py:1-375",
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/context_output.py:1-52",
+          "CONTEXT_BUDGET_OMISSION:middle_man/mcp/benchmark_receipts.py:1-50",
+          "CONTEXT_BUDGET_OMISSIONS_ADDITIONAL:13"
+        ]
+      },
+      "proposal_changes": [
+        {
+          "evidence_terms": [
+            "context",
+            "imports"
+          ],
+          "original_ranges": [
+            [
+              1,
+              182
+            ]
+          ],
+          "original_source_tokens": 2457,
+          "path": "middle_man/gateway/relevance.py",
+          "proposed_ranges": [
+            [
+              5,
+              8
+            ],
+            [
+              12,
+              12
+            ],
+            [
+              69,
+              69
+            ],
+            [
+              73,
+              182
+            ]
+          ],
+          "proposed_source_tokens": 1864,
+          "symbol": "RelevanceEngine.find"
+        }
+      ],
+      "removed_delivered_ranges": [
+        [
+          "middle_man/gateway/relevance.py",
+          1,
+          182
+        ]
+      ],
+      "task_id": "C02"
+    },
+    {
+      "added_delivered_ranges": [],
+      "candidate": {
+        "areas": [
+          {
+            "id": "refcount_test",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        8,
+                        21
+                      ]
+                    ],
+                    "path": "tests/test_phase_8_prefix_cache.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      8,
+                      21
+                    ],
+                    "required_lines": 14,
+                    "status": "FILE_MISSING",
+                    "symbol": "test_shared_block_references_survive_individual_releases",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          },
+          {
+            "id": "reuse_test",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        33,
+                        54
+                      ]
+                    ],
+                    "path": "tests/test_phase_8_prefix_cache.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      33,
+                      54
+                    ],
+                    "required_lines": 22,
+                    "status": "FILE_MISSING",
+                    "symbol": "test_second_request_reuses_prefix_work_and_physical_blocks",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          },
+          {
+            "id": "implementation",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        89,
+                        118
+                      ]
+                    ],
+                    "path": "middle_man/lab/memory.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      89,
+                      118
+                    ],
+                    "required_lines": 30,
+                    "status": "FILE_MISSING",
+                    "symbol": "KVBlockManager.retain_cache_blocks / attach_shared / release_request",
+                    "truncated_excerpt": false
+                  },
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        39,
+                        66
+                      ]
+                    ],
+                    "path": "middle_man/lab/prefix_cache.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      39,
+                      66
+                    ],
+                    "required_lines": 28,
+                    "status": "FILE_MISSING",
+                    "symbol": "PrefixCache.acquire / publish",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          }
+        ],
+        "candidate_cap_omissions": [],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [],
+        "core_areas_total": 3,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [],
+        "mode": "balanced",
+        "path_core_areas_covered": 0,
+        "range_core_areas_full": 0,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 327,
+            "omission_reason": "outside_task_cluster",
+            "path": "middle_man/lab/engine.py",
+            "proposed_ranges": [
+              [
+                7,
+                13,
+                "merged"
+              ],
+              [
+                34,
+                34,
+                "merged"
+              ],
+              [
+                221,
+                244,
+                "merged"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 348,
+            "omission_reason": "outside_task_cluster",
+            "path": "middle_man/lab/memory.py",
+            "proposed_ranges": [
+              [
+                21,
+                21,
+                "merged"
+              ],
+              [
+                88,
+                95,
+                "symbol"
+              ],
+              [
+                106,
+                130,
+                "merged"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 719,
+            "omission_reason": "outside_task_cluster",
+            "path": "middle_man/lab/prefix_cache.py",
+            "proposed_ranges": [
+              [
+                1,
+                81,
+                "full_file"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 738,
+            "omission_reason": "outside_task_cluster",
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "proposed_ranges": [
+              [
+                1,
+                5,
+                "merged"
+              ],
+              [
+                32,
+                69,
+                "merged"
+              ],
+              [
+                86,
+                102,
+                "symbol"
+              ]
+            ],
+            "selected": false
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": false,
+            "end_line": 5,
+            "estimated_source_tokens": 6,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 4,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 9,
+            "estimated_source_tokens": 12,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 14,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 13,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 39,
+            "estimated_source_tokens": 262,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 23,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 58,
+            "estimated_source_tokens": 19,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 58,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 98,
+            "estimated_source_tokens": 491,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 73,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 5,
+            "estimated_source_tokens": 3,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 5,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 14,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 13,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 24,
+            "estimated_source_tokens": 12,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 24,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 141,
+            "estimated_source_tokens": 21,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 141,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 157,
+            "estimated_source_tokens": 175,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 147,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 7,
+            "estimated_source_tokens": 3,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 16,
+            "estimated_source_tokens": 35,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 13,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 35,
+            "estimated_source_tokens": 120,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 28,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 162,
+            "estimated_source_tokens": 20,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 162,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 183,
+            "estimated_source_tokens": 309,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 166,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 7,
+            "estimated_source_tokens": 3,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 12,
+            "estimated_source_tokens": 12,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 12,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 16,
+            "estimated_source_tokens": 14,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 16,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 42,
+            "estimated_source_tokens": 132,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 35,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 254,
+            "estimated_source_tokens": 349,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 234,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 9,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 8,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 46,
+            "estimated_source_tokens": 44,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 41,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 82,
+            "estimated_source_tokens": 166,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 70,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 5,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 136,
+            "estimated_source_tokens": 72,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 129,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 165,
+            "estimated_source_tokens": 54,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 161,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 552,
+            "path": "middle_man/gateway/indexer.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 141,
+            "path": "middle_man/gateway/codex_benchmark/native_reads.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 41,
+            "estimated_source_tokens": 204,
+            "path": "middle_man/gateway/codex_benchmark/native_reads.py",
+            "start_line": 24,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 373,
+            "estimated_source_tokens": 40,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 370,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 419,
+            "path": "middle_man/gateway/codex_benchmark/tasks.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 357,
+            "path": "middle_man/gateway/codex_benchmark/events.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 756,
+            "path": "middle_man/cli/main.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 660,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 431,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 1,
+            "truncated": true
+          }
+        ],
+        "selected_source_tokens": 5936,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [],
+            "missing_lines": [
+              [
+                56,
+                127
+              ]
+            ],
+            "path": "middle_man/lab/engine.py",
+            "path_covered": false,
+            "reference_lines": [
+              56,
+              127
+            ],
+            "required_lines": 72,
+            "status": "FILE_MISSING",
+            "symbol": "SimulationEngine.run",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "T01",
+        "task_sha256": "16acf6b01a978be176b2c2ce5560f144c55fac5960fc90edf21df93a4ac91c0b",
+        "test_evidence": [
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [],
+            "missing_lines": [
+              [
+                8,
+                21
+              ]
+            ],
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "path_covered": false,
+            "reference_lines": [
+              8,
+              21
+            ],
+            "required_lines": 14,
+            "status": "FILE_MISSING",
+            "symbol": "test_shared_block_references_survive_individual_releases",
+            "truncated_excerpt": false
+          },
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [],
+            "missing_lines": [
+              [
+                33,
+                54
+              ]
+            ],
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "path_covered": false,
+            "reference_lines": [
+              33,
+              54
+            ],
+            "required_lines": 22,
+            "status": "FILE_MISSING",
+            "symbol": "test_second_request_reuses_prefix_work_and_physical_blocks",
+            "truncated_excerpt": false
+          }
+        ],
+        "unreferenced_selected_paths": [
+          "middle_man/cli/main.py",
+          "middle_man/gateway/codex_benchmark/events.py",
+          "middle_man/gateway/codex_benchmark/native_reads.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/gateway/codex_benchmark/tasks.py",
+          "middle_man/gateway/indexer.py",
+          "middle_man/mcp/gateway.py",
+          "middle_man/mcp/server.py",
+          "tests/test_phase_22_1.py",
+          "tests/test_phase_22_10.py",
+          "tests/test_phase_22_10_1.py",
+          "tests/test_phase_22_11.py",
+          "tests/test_phase_22_6.py"
+        ],
+        "unresolved_cases": [],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/mcp/benchmark_receipts.py:1-50",
+          "CONTEXT_BUDGET_OMISSION:middle_man/mcp/usage.py:1-50"
+        ]
+      },
+      "candidate_parity": true,
+      "current": {
+        "areas": [
+          {
+            "id": "refcount_test",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        8,
+                        21
+                      ]
+                    ],
+                    "path": "tests/test_phase_8_prefix_cache.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      8,
+                      21
+                    ],
+                    "required_lines": 14,
+                    "status": "FILE_MISSING",
+                    "symbol": "test_shared_block_references_survive_individual_releases",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          },
+          {
+            "id": "reuse_test",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        33,
+                        54
+                      ]
+                    ],
+                    "path": "tests/test_phase_8_prefix_cache.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      33,
+                      54
+                    ],
+                    "required_lines": 22,
+                    "status": "FILE_MISSING",
+                    "symbol": "test_second_request_reuses_prefix_work_and_physical_blocks",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          },
+          {
+            "id": "implementation",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        89,
+                        118
+                      ]
+                    ],
+                    "path": "middle_man/lab/memory.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      89,
+                      118
+                    ],
+                    "required_lines": 30,
+                    "status": "FILE_MISSING",
+                    "symbol": "KVBlockManager.retain_cache_blocks / attach_shared / release_request",
+                    "truncated_excerpt": false
+                  },
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        39,
+                        66
+                      ]
+                    ],
+                    "path": "middle_man/lab/prefix_cache.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      39,
+                      66
+                    ],
+                    "required_lines": 28,
+                    "status": "FILE_MISSING",
+                    "symbol": "PrefixCache.acquire / publish",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          }
+        ],
+        "candidate_cap_omissions": [],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [],
+        "core_areas_total": 3,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [],
+        "mode": "balanced",
+        "path_core_areas_covered": 0,
+        "range_core_areas_full": 0,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 327,
+            "omission_reason": "outside_task_cluster",
+            "path": "middle_man/lab/engine.py",
+            "proposed_ranges": [
+              [
+                7,
+                13,
+                "merged"
+              ],
+              [
+                34,
+                34,
+                "merged"
+              ],
+              [
+                221,
+                244,
+                "merged"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 348,
+            "omission_reason": "outside_task_cluster",
+            "path": "middle_man/lab/memory.py",
+            "proposed_ranges": [
+              [
+                21,
+                21,
+                "merged"
+              ],
+              [
+                88,
+                95,
+                "symbol"
+              ],
+              [
+                106,
+                130,
+                "merged"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 719,
+            "omission_reason": "outside_task_cluster",
+            "path": "middle_man/lab/prefix_cache.py",
+            "proposed_ranges": [
+              [
+                1,
+                81,
+                "full_file"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 738,
+            "omission_reason": "outside_task_cluster",
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "proposed_ranges": [
+              [
+                1,
+                5,
+                "merged"
+              ],
+              [
+                32,
+                69,
+                "merged"
+              ],
+              [
+                86,
+                102,
+                "symbol"
+              ]
+            ],
+            "selected": false
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": false,
+            "end_line": 5,
+            "estimated_source_tokens": 6,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 4,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 9,
+            "estimated_source_tokens": 12,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 14,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 13,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 39,
+            "estimated_source_tokens": 262,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 23,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 58,
+            "estimated_source_tokens": 19,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 58,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 98,
+            "estimated_source_tokens": 491,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 73,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 5,
+            "estimated_source_tokens": 3,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 5,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 14,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 13,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 24,
+            "estimated_source_tokens": 12,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 24,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 141,
+            "estimated_source_tokens": 21,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 141,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 157,
+            "estimated_source_tokens": 175,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 147,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 7,
+            "estimated_source_tokens": 3,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 16,
+            "estimated_source_tokens": 35,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 13,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 35,
+            "estimated_source_tokens": 120,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 28,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 162,
+            "estimated_source_tokens": 20,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 162,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 183,
+            "estimated_source_tokens": 309,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 166,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 7,
+            "estimated_source_tokens": 3,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 12,
+            "estimated_source_tokens": 12,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 12,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 16,
+            "estimated_source_tokens": 14,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 16,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 42,
+            "estimated_source_tokens": 132,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 35,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 254,
+            "estimated_source_tokens": 349,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 234,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 9,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 8,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 46,
+            "estimated_source_tokens": 44,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 41,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 82,
+            "estimated_source_tokens": 166,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 70,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 5,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 136,
+            "estimated_source_tokens": 72,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 129,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 165,
+            "estimated_source_tokens": 54,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 161,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 552,
+            "path": "middle_man/gateway/indexer.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 141,
+            "path": "middle_man/gateway/codex_benchmark/native_reads.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 41,
+            "estimated_source_tokens": 204,
+            "path": "middle_man/gateway/codex_benchmark/native_reads.py",
+            "start_line": 24,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 373,
+            "estimated_source_tokens": 40,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 370,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 419,
+            "path": "middle_man/gateway/codex_benchmark/tasks.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 357,
+            "path": "middle_man/gateway/codex_benchmark/events.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 756,
+            "path": "middle_man/cli/main.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 660,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 431,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 1,
+            "truncated": true
+          }
+        ],
+        "selected_source_tokens": 5936,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [],
+            "missing_lines": [
+              [
+                56,
+                127
+              ]
+            ],
+            "path": "middle_man/lab/engine.py",
+            "path_covered": false,
+            "reference_lines": [
+              56,
+              127
+            ],
+            "required_lines": 72,
+            "status": "FILE_MISSING",
+            "symbol": "SimulationEngine.run",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "T01",
+        "task_sha256": "16acf6b01a978be176b2c2ce5560f144c55fac5960fc90edf21df93a4ac91c0b",
+        "test_evidence": [
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [],
+            "missing_lines": [
+              [
+                8,
+                21
+              ]
+            ],
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "path_covered": false,
+            "reference_lines": [
+              8,
+              21
+            ],
+            "required_lines": 14,
+            "status": "FILE_MISSING",
+            "symbol": "test_shared_block_references_survive_individual_releases",
+            "truncated_excerpt": false
+          },
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [],
+            "missing_lines": [
+              [
+                33,
+                54
+              ]
+            ],
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "path_covered": false,
+            "reference_lines": [
+              33,
+              54
+            ],
+            "required_lines": 22,
+            "status": "FILE_MISSING",
+            "symbol": "test_second_request_reuses_prefix_work_and_physical_blocks",
+            "truncated_excerpt": false
+          }
+        ],
+        "unreferenced_selected_paths": [
+          "middle_man/cli/main.py",
+          "middle_man/gateway/codex_benchmark/events.py",
+          "middle_man/gateway/codex_benchmark/native_reads.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/gateway/codex_benchmark/tasks.py",
+          "middle_man/gateway/indexer.py",
+          "middle_man/mcp/gateway.py",
+          "middle_man/mcp/server.py",
+          "tests/test_phase_22_1.py",
+          "tests/test_phase_22_10.py",
+          "tests/test_phase_22_10_1.py",
+          "tests/test_phase_22_11.py",
+          "tests/test_phase_22_6.py"
+        ],
+        "unresolved_cases": [],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/mcp/benchmark_receipts.py:1-50",
+          "CONTEXT_BUDGET_OMISSION:middle_man/mcp/usage.py:1-50"
+        ]
+      },
+      "proposal_changes": [],
+      "removed_delivered_ranges": [],
+      "task_id": "T01"
+    },
+    {
+      "added_delivered_ranges": [],
+      "candidate": {
+        "areas": [
+          {
+            "id": "query_relevance",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [
+                      [
+                        39,
+                        47
+                      ]
+                    ],
+                    "missing_lines": [
+                      [
+                        74,
+                        182
+                      ]
+                    ],
+                    "path": "middle_man/gateway/relevance.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      74,
+                      182
+                    ],
+                    "required_lines": 109,
+                    "status": "RANGE_MISSING",
+                    "symbol": "RelevanceEngine.find",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_MISSING"
+              }
+            ],
+            "status": "RANGE_MISSING"
+          },
+          {
+            "id": "range_selection",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        129,
+                        289
+                      ]
+                    ],
+                    "path": "middle_man/gateway/context_builder.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      129,
+                      289
+                    ],
+                    "required_lines": 161,
+                    "status": "FILE_MISSING",
+                    "symbol": "ContextBuilder._assemble",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              },
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        175,
+                        326
+                      ]
+                    ],
+                    "path": "middle_man/gateway/selection.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      175,
+                      326
+                    ],
+                    "required_lines": 152,
+                    "status": "FILE_MISSING",
+                    "symbol": "allocate",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          }
+        ],
+        "candidate_cap_omissions": [
+          "middle_man/gateway/indexer.py"
+        ],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [
+          "middle_man/gateway/context_builder.py",
+          "middle_man/gateway/selection.py"
+        ],
+        "core_areas_total": 2,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [],
+        "mode": "balanced",
+        "path_core_areas_covered": 1,
+        "range_core_areas_full": 0,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 5858,
+            "omission_reason": "context_budget",
+            "path": "middle_man/gateway/context_builder.py",
+            "proposed_ranges": [
+              [
+                1,
+                375,
+                "full_file"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "BEYOND_CANDIDATE_CAP",
+            "estimated_source_cost": null,
+            "omission_reason": null,
+            "path": "middle_man/gateway/indexer.py",
+            "proposed_ranges": [],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 51,
+            "omission_reason": null,
+            "path": "middle_man/gateway/relevance.py",
+            "proposed_ranges": [
+              [
+                39,
+                47,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 316,
+            "omission_reason": "context_budget",
+            "path": "middle_man/gateway/selection.py",
+            "proposed_ranges": [
+              [
+                1,
+                50,
+                "file_opening"
+              ]
+            ],
+            "selected": false
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 21,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 30,
+            "estimated_source_tokens": 11,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 28,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 5,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 321,
+            "estimated_source_tokens": 939,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 265,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 390,
+            "estimated_source_tokens": 238,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 376,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 458,
+            "estimated_source_tokens": 351,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 439,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 21,
+            "estimated_source_tokens": 109,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 89,
+            "estimated_source_tokens": 385,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 37,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 52,
+            "estimated_source_tokens": 711,
+            "path": "middle_man/gateway/context_output.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 15,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 15,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 34,
+            "estimated_source_tokens": 16,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 34,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 336,
+            "estimated_source_tokens": 949,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 285,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 569,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 11,
+            "estimated_source_tokens": 44,
+            "path": "middle_man/gateway/codex_benchmark/offline_auto.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 398,
+            "path": "middle_man/gateway/codex_runner/runner.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 436,
+            "path": "scripts/measure_large_edit_v1.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 15,
+            "estimated_source_tokens": 58,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 10,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 54,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 43,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 12,
+            "estimated_source_tokens": 74,
+            "path": "middle_man/gateway/quality.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 6,
+            "estimated_source_tokens": 9,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 33,
+            "estimated_source_tokens": 18,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 33,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 431,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 47,
+            "estimated_source_tokens": 51,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 39,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 4,
+            "estimated_source_tokens": 7,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 4,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 9,
+            "estimated_source_tokens": 29,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 8,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 16,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 13,
+            "truncated": false
+          }
+        ],
+        "selected_source_tokens": 5935,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [],
+            "missing_lines": [
+              [
+                147,
+                194
+              ]
+            ],
+            "path": "middle_man/gateway/indexer.py",
+            "path_covered": false,
+            "reference_lines": [
+              147,
+              194
+            ],
+            "required_lines": 48,
+            "status": "FILE_MISSING",
+            "symbol": "RepositoryIndexer.index",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "G02",
+        "task_sha256": "174c3ad3b862523f367c1bc452fda5eb2250fa2da731a1f386caf13cac6b51e1",
+        "test_evidence": [],
+        "unreferenced_selected_paths": [
+          "middle_man/gateway/codex_benchmark/offline_auto.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/gateway/codex_runner/runner.py",
+          "middle_man/gateway/context_models.py",
+          "middle_man/gateway/context_output.py",
+          "middle_man/gateway/handoff.py",
+          "middle_man/gateway/quality.py",
+          "middle_man/mcp/gateway.py",
+          "middle_man/mcp/server.py",
+          "scripts/measure_large_edit_v1.py",
+          "tests/test_gateway_context_packs.py",
+          "tests/test_phase_22_11.py"
+        ],
+        "unresolved_cases": [
+          "Broad wording does not specify whether delivery or only ranking is in scope."
+        ],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/context_builder.py:1-375",
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/codex_benchmark/offline_anchor.py:1-50",
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/codex_benchmark/offline_locator.py:1-50",
+          "CONTEXT_BUDGET_OMISSIONS_ADDITIONAL:10"
+        ]
+      },
+      "candidate_parity": true,
+      "current": {
+        "areas": [
+          {
+            "id": "query_relevance",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [
+                      [
+                        39,
+                        47
+                      ]
+                    ],
+                    "missing_lines": [
+                      [
+                        74,
+                        182
+                      ]
+                    ],
+                    "path": "middle_man/gateway/relevance.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      74,
+                      182
+                    ],
+                    "required_lines": 109,
+                    "status": "RANGE_MISSING",
+                    "symbol": "RelevanceEngine.find",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_MISSING"
+              }
+            ],
+            "status": "RANGE_MISSING"
+          },
+          {
+            "id": "range_selection",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        129,
+                        289
+                      ]
+                    ],
+                    "path": "middle_man/gateway/context_builder.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      129,
+                      289
+                    ],
+                    "required_lines": 161,
+                    "status": "FILE_MISSING",
+                    "symbol": "ContextBuilder._assemble",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              },
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": false,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 0,
+                    "delivered_ranges": [],
+                    "missing_lines": [
+                      [
+                        175,
+                        326
+                      ]
+                    ],
+                    "path": "middle_man/gateway/selection.py",
+                    "path_covered": false,
+                    "reference_lines": [
+                      175,
+                      326
+                    ],
+                    "required_lines": 152,
+                    "status": "FILE_MISSING",
+                    "symbol": "allocate",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "FILE_MISSING"
+              }
+            ],
+            "status": "FILE_MISSING"
+          }
+        ],
+        "candidate_cap_omissions": [
+          "middle_man/gateway/indexer.py"
+        ],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [
+          "middle_man/gateway/context_builder.py",
+          "middle_man/gateway/selection.py"
+        ],
+        "core_areas_total": 2,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [],
+        "mode": "balanced",
+        "path_core_areas_covered": 1,
+        "range_core_areas_full": 0,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 5858,
+            "omission_reason": "context_budget",
+            "path": "middle_man/gateway/context_builder.py",
+            "proposed_ranges": [
+              [
+                1,
+                375,
+                "full_file"
+              ]
+            ],
+            "selected": false
+          },
+          {
+            "candidate_status": "BEYOND_CANDIDATE_CAP",
+            "estimated_source_cost": null,
+            "omission_reason": null,
+            "path": "middle_man/gateway/indexer.py",
+            "proposed_ranges": [],
+            "selected": false
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 51,
+            "omission_reason": null,
+            "path": "middle_man/gateway/relevance.py",
+            "proposed_ranges": [
+              [
+                39,
+                47,
+                "symbol"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 316,
+            "omission_reason": "context_budget",
+            "path": "middle_man/gateway/selection.py",
+            "proposed_ranges": [
+              [
+                1,
+                50,
+                "file_opening"
+              ]
+            ],
+            "selected": false
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": false,
+            "end_line": 8,
+            "estimated_source_tokens": 21,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 30,
+            "estimated_source_tokens": 11,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 28,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 5,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 321,
+            "estimated_source_tokens": 939,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 265,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 390,
+            "estimated_source_tokens": 238,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 376,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 458,
+            "estimated_source_tokens": 351,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 439,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 21,
+            "estimated_source_tokens": 109,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 89,
+            "estimated_source_tokens": 385,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 37,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 52,
+            "estimated_source_tokens": 711,
+            "path": "middle_man/gateway/context_output.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 15,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 15,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 34,
+            "estimated_source_tokens": 16,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 34,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 336,
+            "estimated_source_tokens": 949,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 285,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 569,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 11,
+            "estimated_source_tokens": 44,
+            "path": "middle_man/gateway/codex_benchmark/offline_auto.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 398,
+            "path": "middle_man/gateway/codex_runner/runner.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 436,
+            "path": "scripts/measure_large_edit_v1.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 15,
+            "estimated_source_tokens": 58,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 10,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 54,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 43,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 12,
+            "estimated_source_tokens": 74,
+            "path": "middle_man/gateway/quality.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 6,
+            "estimated_source_tokens": 9,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 6,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 33,
+            "estimated_source_tokens": 18,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 33,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 431,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 47,
+            "estimated_source_tokens": 51,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 39,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 4,
+            "estimated_source_tokens": 7,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 4,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 9,
+            "estimated_source_tokens": 29,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 8,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 16,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 13,
+            "truncated": false
+          }
+        ],
+        "selected_source_tokens": 5935,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": false,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 0,
+            "delivered_ranges": [],
+            "missing_lines": [
+              [
+                147,
+                194
+              ]
+            ],
+            "path": "middle_man/gateway/indexer.py",
+            "path_covered": false,
+            "reference_lines": [
+              147,
+              194
+            ],
+            "required_lines": 48,
+            "status": "FILE_MISSING",
+            "symbol": "RepositoryIndexer.index",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "G02",
+        "task_sha256": "174c3ad3b862523f367c1bc452fda5eb2250fa2da731a1f386caf13cac6b51e1",
+        "test_evidence": [],
+        "unreferenced_selected_paths": [
+          "middle_man/gateway/codex_benchmark/offline_auto.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/gateway/codex_runner/runner.py",
+          "middle_man/gateway/context_models.py",
+          "middle_man/gateway/context_output.py",
+          "middle_man/gateway/handoff.py",
+          "middle_man/gateway/quality.py",
+          "middle_man/mcp/gateway.py",
+          "middle_man/mcp/server.py",
+          "scripts/measure_large_edit_v1.py",
+          "tests/test_gateway_context_packs.py",
+          "tests/test_phase_22_11.py"
+        ],
+        "unresolved_cases": [
+          "Broad wording does not specify whether delivery or only ranking is in scope."
+        ],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/context_builder.py:1-375",
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/codex_benchmark/offline_anchor.py:1-50",
+          "CONTEXT_BUDGET_OMISSION:middle_man/gateway/codex_benchmark/offline_locator.py:1-50",
+          "CONTEXT_BUDGET_OMISSIONS_ADDITIONAL:10"
+        ]
+      },
+      "proposal_changes": [],
+      "removed_delivered_ranges": [],
+      "task_id": "G02"
+    },
+    {
+      "added_delivered_ranges": [],
+      "candidate": {
+        "areas": [
+          {
+            "id": "victim_policy",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": true,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 19,
+                    "delivered_ranges": [
+                      [
+                        1,
+                        36
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/lab/preemption.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      18,
+                      36
+                    ],
+                    "required_lines": 19,
+                    "status": "RANGE_FULL",
+                    "symbol": "LargestPrivateOwnerPolicy.choose_victim",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              }
+            ],
+            "status": "RANGE_FULL"
+          }
+        ],
+        "candidate_cap_omissions": [],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [],
+        "core_areas_total": 1,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [
+          "middle_man/lab/preemption.py"
+        ],
+        "mode": "balanced",
+        "path_core_areas_covered": 1,
+        "range_core_areas_full": 1,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 1272,
+            "omission_reason": null,
+            "path": "middle_man/lab/memory.py",
+            "proposed_ranges": [
+              [
+                1,
+                130,
+                "full_file"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 275,
+            "omission_reason": null,
+            "path": "middle_man/lab/preemption.py",
+            "proposed_ranges": [
+              [
+                1,
+                36,
+                "full_file"
+              ]
+            ],
+            "selected": true
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": true,
+            "end_line": 36,
+            "estimated_source_tokens": 275,
+            "path": "middle_man/lab/preemption.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 109,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 34,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 34,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 244,
+            "estimated_source_tokens": 119,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 232,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 65,
+            "estimated_source_tokens": 739,
+            "path": "tests/test_phase_7_preemption.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 130,
+            "estimated_source_tokens": 1272,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 9,
+            "estimated_source_tokens": 17,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 44,
+            "estimated_source_tokens": 138,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 20,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 89,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 89,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 177,
+            "estimated_source_tokens": 281,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 158,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 403,
+            "path": "middle_man/lab/memory_control.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 7,
+            "estimated_source_tokens": 13,
+            "path": "middle_man/lab/workloads.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 48,
+            "estimated_source_tokens": 279,
+            "path": "middle_man/lab/workloads.py",
+            "start_line": 19,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 159,
+            "estimated_source_tokens": 1603,
+            "path": "middle_man/lab/request.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 11,
+            "estimated_source_tokens": 73,
+            "path": "middle_man/lab/scheduler.py",
+            "start_line": 3,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 408,
+            "path": "middle_man/lab/prefix_cache.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 220,
+            "path": "middle_man/lab/config.py",
+            "start_line": 29,
+            "truncated": false
+          }
+        ],
+        "selected_source_tokens": 5961,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": true,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 2,
+            "delivered_ranges": [
+              [
+                1,
+                130
+              ]
+            ],
+            "missing_lines": [],
+            "path": "middle_man/lab/memory.py",
+            "path_covered": true,
+            "reference_lines": [
+              47,
+              48
+            ],
+            "required_lines": 2,
+            "status": "RANGE_FULL",
+            "symbol": "KVBlockManager.private_blocks",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "E01",
+        "task_sha256": "456e5fe78c3aca95a1a8657bf366be9b5dd82ce97786267d290537b5d5ff1d12",
+        "test_evidence": [],
+        "unreferenced_selected_paths": [
+          "middle_man/lab/config.py",
+          "middle_man/lab/engine.py",
+          "middle_man/lab/memory_control.py",
+          "middle_man/lab/metrics.py",
+          "middle_man/lab/prefix_cache.py",
+          "middle_man/lab/request.py",
+          "middle_man/lab/scheduler.py",
+          "middle_man/lab/workloads.py",
+          "tests/test_phase_7_preemption.py"
+        ],
+        "unresolved_cases": [],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/lab/benchmarks.py:1-50",
+          "CONTEXT_BUDGET_OMISSION:middle_man/lab/serialization.py:1-50",
+          "CONTEXT_BUDGET_OMISSION:middle_man/cli/main.py:1-50",
+          "CONTEXT_BUDGET_OMISSIONS_ADDITIONAL:3"
+        ]
+      },
+      "candidate_parity": true,
+      "current": {
+        "areas": [
+          {
+            "id": "victim_policy",
+            "options": [
+              {
+                "references": [
+                  {
+                    "complete_file_excerpt": true,
+                    "content_line_mismatch_ranges": [],
+                    "covered_lines": 19,
+                    "delivered_ranges": [
+                      [
+                        1,
+                        36
+                      ]
+                    ],
+                    "missing_lines": [],
+                    "path": "middle_man/lab/preemption.py",
+                    "path_covered": true,
+                    "reference_lines": [
+                      18,
+                      36
+                    ],
+                    "required_lines": 19,
+                    "status": "RANGE_FULL",
+                    "symbol": "LargestPrivateOwnerPolicy.choose_victim",
+                    "truncated_excerpt": false
+                  }
+                ],
+                "status": "RANGE_FULL"
+              }
+            ],
+            "status": "RANGE_FULL"
+          }
+        ],
+        "candidate_cap_omissions": [],
+        "candidate_count": 50,
+        "context_budget": 6000,
+        "context_budget_omissions": [],
+        "core_areas_total": 1,
+        "explicit_anchors_missing": [],
+        "explicit_anchors_retained": [
+          "middle_man/lab/preemption.py"
+        ],
+        "mode": "balanced",
+        "path_core_areas_covered": 1,
+        "range_core_areas_full": 1,
+        "range_core_areas_partial": 0,
+        "redaction_categories": [],
+        "reference_diagnostics": [
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 1272,
+            "omission_reason": null,
+            "path": "middle_man/lab/memory.py",
+            "proposed_ranges": [
+              [
+                1,
+                130,
+                "full_file"
+              ]
+            ],
+            "selected": true
+          },
+          {
+            "candidate_status": "IN_PACK",
+            "estimated_source_cost": 275,
+            "omission_reason": null,
+            "path": "middle_man/lab/preemption.py",
+            "proposed_ranges": [
+              [
+                1,
+                36,
+                "full_file"
+              ]
+            ],
+            "selected": true
+          }
+        ],
+        "selected_excerpts": [
+          {
+            "complete_file": true,
+            "end_line": 36,
+            "estimated_source_tokens": 275,
+            "path": "middle_man/lab/preemption.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 13,
+            "estimated_source_tokens": 109,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 34,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 34,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 244,
+            "estimated_source_tokens": 119,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 232,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 65,
+            "estimated_source_tokens": 739,
+            "path": "tests/test_phase_7_preemption.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 130,
+            "estimated_source_tokens": 1272,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 9,
+            "estimated_source_tokens": 17,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 9,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 44,
+            "estimated_source_tokens": 138,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 20,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 89,
+            "estimated_source_tokens": 6,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 89,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 177,
+            "estimated_source_tokens": 281,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 158,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 403,
+            "path": "middle_man/lab/memory_control.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 7,
+            "estimated_source_tokens": 13,
+            "path": "middle_man/lab/workloads.py",
+            "start_line": 7,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 48,
+            "estimated_source_tokens": 279,
+            "path": "middle_man/lab/workloads.py",
+            "start_line": 19,
+            "truncated": false
+          },
+          {
+            "complete_file": true,
+            "end_line": 159,
+            "estimated_source_tokens": 1603,
+            "path": "middle_man/lab/request.py",
+            "start_line": 1,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 11,
+            "estimated_source_tokens": 73,
+            "path": "middle_man/lab/scheduler.py",
+            "start_line": 3,
+            "truncated": false
+          },
+          {
+            "complete_file": false,
+            "end_line": 50,
+            "estimated_source_tokens": 408,
+            "path": "middle_man/lab/prefix_cache.py",
+            "start_line": 1,
+            "truncated": true
+          },
+          {
+            "complete_file": false,
+            "end_line": 52,
+            "estimated_source_tokens": 220,
+            "path": "middle_man/lab/config.py",
+            "start_line": 29,
+            "truncated": false
+          }
+        ],
+        "selected_source_tokens": 5961,
+        "split": "development",
+        "structural_only": true,
+        "supporting": [
+          {
+            "complete_file_excerpt": true,
+            "content_line_mismatch_ranges": [],
+            "covered_lines": 2,
+            "delivered_ranges": [
+              [
+                1,
+                130
+              ]
+            ],
+            "missing_lines": [],
+            "path": "middle_man/lab/memory.py",
+            "path_covered": true,
+            "reference_lines": [
+              47,
+              48
+            ],
+            "required_lines": 2,
+            "status": "RANGE_FULL",
+            "symbol": "KVBlockManager.private_blocks",
+            "truncated_excerpt": false
+          }
+        ],
+        "task_id": "E01",
+        "task_sha256": "456e5fe78c3aca95a1a8657bf366be9b5dd82ce97786267d290537b5d5ff1d12",
+        "test_evidence": [],
+        "unreferenced_selected_paths": [
+          "middle_man/lab/config.py",
+          "middle_man/lab/engine.py",
+          "middle_man/lab/memory_control.py",
+          "middle_man/lab/metrics.py",
+          "middle_man/lab/prefix_cache.py",
+          "middle_man/lab/request.py",
+          "middle_man/lab/scheduler.py",
+          "middle_man/lab/workloads.py",
+          "tests/test_phase_7_preemption.py"
+        ],
+        "unresolved_cases": [],
+        "warnings": [
+          "CONTEXT_BUDGET_OMISSION:middle_man/lab/benchmarks.py:1-50",
+          "CONTEXT_BUDGET_OMISSION:middle_man/lab/serialization.py:1-50",
+          "CONTEXT_BUDGET_OMISSION:middle_man/cli/main.py:1-50",
+          "CONTEXT_BUDGET_OMISSIONS_ADDITIONAL:3"
+        ]
+      },
+      "proposal_changes": [],
+      "removed_delivered_ranges": [],
+      "task_id": "E01"
+    }
+  ]
+}
