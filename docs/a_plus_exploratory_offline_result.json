@@ -1,0 +1,1872 @@
+{
+  "claude_benchmark_calls": 0,
+  "codex_benchmark_inference_calls": 0,
+  "confirmatory_gate": "NOT_EVALUABLE_NO_INDEPENDENT_HUMAN_REVIEW_AND_PARTIAL_REFERENCES",
+  "input_hashes": {
+    "a_plus_git_blob": "4a1bc5fc812d288582650a6f1fc6351f32d5e5f0",
+    "corpus_tasks_sha256": "4580134b1ed60c4b75c3c951cda89e65e863ec32dbc70f39e192efaac69770af",
+    "design_sha256": "0E9862460C492457BE09034E9A0C0FAE236C08893AC8D1CDDE9B7E3CC818F1CD",
+    "reference_tasks_sha256": "d9511d4d626e900faf570953fe6a80443217f086f00c9d62bb47ec2cff490b1c",
+    "selector_fingerprint": "3a4213e19944220c02b1897e1a05a584d61bbd00e91cbf5a9e38cc07976bf555"
+  },
+  "outcomes": [
+    {
+      "a": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "case failure representation",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              true
+            ],
+            "area": "CSV failure row",
+            "complete": true
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "JSON suite representation",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 1,
+          "broad_overlap_only_spans": 2,
+          "broad_whole_file_hints": 4,
+          "cited_spans": 3,
+          "exact_symbol_match_spans": 1,
+          "imprecise_overlap_only_spans": 2,
+          "path_targeted_spans": 3,
+          "precise_navigation_spans": 1,
+          "range_intersects_spans": 3,
+          "referenced_paths_targeted": 2,
+          "referenced_paths_total": 2
+        }
+      },
+      "a_appendix_estimated_tokens": 187,
+      "a_locator_sha256": "ad80a39221828888c7fe66df4f92e427a0e76fc5f9bf902dc53b1ea17285f243",
+      "a_plus": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "case failure representation",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              true
+            ],
+            "area": "CSV failure row",
+            "complete": true
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "JSON suite representation",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 1,
+          "broad_overlap_only_spans": 2,
+          "broad_whole_file_hints": 4,
+          "cited_spans": 3,
+          "exact_symbol_match_spans": 1,
+          "imprecise_overlap_only_spans": 2,
+          "path_targeted_spans": 3,
+          "precise_navigation_spans": 1,
+          "range_intersects_spans": 3,
+          "referenced_paths_targeted": 2,
+          "referenced_paths_total": 2
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 249,
+      "a_plus_locator_sha256": "e2e57987df70bfb95a16ed4de08c30d15c01eef34f50ccf6fc860c8db645905c",
+      "additional_estimated_tokens": 62,
+      "archetype": "narrow_explicit_anchor",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 1,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": [],
+      "new_file_count": 2,
+      "newly_navigable_areas": [],
+      "provider_usage": null,
+      "reference_status": "COMPLETE_PROPOSED",
+      "skip_reasons": {
+        "AMBIGUOUS_METHOD": 2,
+        "NO_METHOD_EVIDENCE": 93,
+        "THREE_HINT_LIMIT": 2
+      },
+      "supplement_count": 3,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_10_cli_reporting.py",
+          "range": [
+            13,
+            24
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_benchmark_listing_does_not_execute_suite"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "middle_man/lab/reporting.py",
+          "range": [
+            46,
+            90
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "format_benchmark_suite"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_10_exports.py",
+          "range": [
+            11,
+            31
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_cli_writes_json_and_csv_under_selected_directory"
+        }
+      ],
+      "task_id": "AP-N01",
+      "task_sha256": "0995f18d86b1a8f25fd001a0ded9339536f98111706b1a2d87f95955d2db2dbe",
+      "unresolved_interpretations": []
+    },
+    {
+      "a": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "priority retention under budget",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "over-budget result signaling",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 2,
+          "broad_overlap_only_spans": 2,
+          "broad_whole_file_hints": 3,
+          "cited_spans": 4,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 2,
+          "path_targeted_spans": 4,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 2,
+          "referenced_paths_targeted": 1,
+          "referenced_paths_total": 1
+        }
+      },
+      "a_appendix_estimated_tokens": 206,
+      "a_locator_sha256": "eb2137aedb2ac974b86958b8af0cf97a070de6440bfc886690c436dc67cdaa0a",
+      "a_plus": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "priority retention under budget",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "over-budget result signaling",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 2,
+          "broad_overlap_only_spans": 2,
+          "broad_whole_file_hints": 3,
+          "cited_spans": 4,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 2,
+          "path_targeted_spans": 4,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 2,
+          "referenced_paths_targeted": 1,
+          "referenced_paths_total": 1
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 248,
+      "a_plus_locator_sha256": "2007df4e3512220ad658b7967c4192576b3b30da7529117606602c6b1e675545",
+      "additional_estimated_tokens": 42,
+      "archetype": "narrow_explicit_anchor",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 1,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": [],
+      "new_file_count": 2,
+      "newly_navigable_areas": [],
+      "provider_usage": null,
+      "reference_status": "COMPLETE_PROPOSED",
+      "skip_reasons": {
+        "AMBIGUOUS_METHOD": 1,
+        "DUPLICATE_OR_REDUNDANT": 1,
+        "NO_METHOD_EVIDENCE": 96
+      },
+      "supplement_count": 2,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "middle_man/mcp/gateway.py",
+          "range": [
+            459,
+            484
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "MCPGateway.compact_output"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_3_scheduler.py",
+          "range": [
+            21,
+            29
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_decode_priority_enforces_token_budget_and_decode_first"
+        }
+      ],
+      "task_id": "AP-N02",
+      "task_sha256": "e151f63b6f5d2cdea94e4db614f3c84a3648d11fb549bf8f43133d4bfa11bdca",
+      "unresolved_interpretations": []
+    },
+    {
+      "a": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "line-level delta selection",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "commit and changed-version identity",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 3,
+          "broad_overlap_only_spans": 2,
+          "broad_whole_file_hints": 3,
+          "cited_spans": 2,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 2,
+          "path_targeted_spans": 2,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 2,
+          "referenced_paths_targeted": 1,
+          "referenced_paths_total": 1
+        }
+      },
+      "a_appendix_estimated_tokens": 266,
+      "a_locator_sha256": "7093ce3f9bb45b6cf2d4107fc7db217e7235de57c9c3e3ac96495cc6b4da5176",
+      "a_plus": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "line-level delta selection",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "commit and changed-version identity",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 3,
+          "broad_overlap_only_spans": 2,
+          "broad_whole_file_hints": 3,
+          "cited_spans": 2,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 2,
+          "path_targeted_spans": 2,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 2,
+          "referenced_paths_targeted": 1,
+          "referenced_paths_total": 1
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 307,
+      "a_plus_locator_sha256": "629b75330eb8bcc5e92ac3be2f861353eee81709ac4feccc611eac83f103d95b",
+      "additional_estimated_tokens": 41,
+      "archetype": "narrow_explicit_anchor",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 1,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": [],
+      "new_file_count": 2,
+      "newly_navigable_areas": [],
+      "provider_usage": null,
+      "reference_status": "COMPLETE_PROPOSED",
+      "skip_reasons": {
+        "NO_METHOD_EVIDENCE": 92,
+        "TWO_NEW_FILE_LIMIT": 2,
+        "UNSAFE_OR_STALE_FILE": 4
+      },
+      "supplement_count": 2,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_codex_benchmark_delivery.py",
+          "range": [
+            11,
+            28
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_pack_delivery_log_has_range_identity_and_sizes_but_no_source"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_22_6.py",
+          "range": [
+            48,
+            50
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "_source_lines"
+        }
+      ],
+      "task_id": "AP-N03",
+      "task_sha256": "35eb60462b7f8372b0bc8c0b3dfc9797d460b71b746287cc946c82a0166dc056",
+      "unresolved_interpretations": []
+    },
+    {
+      "a": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "supported command parsing",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "safe target acceptance",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 1,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 4,
+          "exact_symbol_match_spans": 1,
+          "imprecise_overlap_only_spans": 1,
+          "path_targeted_spans": 4,
+          "precise_navigation_spans": 1,
+          "range_intersects_spans": 2,
+          "referenced_paths_targeted": 1,
+          "referenced_paths_total": 1
+        }
+      },
+      "a_appendix_estimated_tokens": 113,
+      "a_locator_sha256": "a5f1843a4490bef0e1a71747f9959c855d9fb9073bbd858b6fef2e42f3ae8bb3",
+      "a_plus": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "supported command parsing",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "safe target acceptance",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 1,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 4,
+          "exact_symbol_match_spans": 2,
+          "imprecise_overlap_only_spans": 1,
+          "path_targeted_spans": 4,
+          "precise_navigation_spans": 2,
+          "range_intersects_spans": 3,
+          "referenced_paths_targeted": 1,
+          "referenced_paths_total": 1
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 182,
+      "a_plus_locator_sha256": "f91fb60a93fc81631e3347082997ce87c45ee0b77b590b5bb7bf5ce2d922d50d",
+      "additional_estimated_tokens": 69,
+      "archetype": "narrow_explicit_anchor",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 1,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": [],
+      "new_file_count": 1,
+      "newly_navigable_areas": [],
+      "provider_usage": null,
+      "reference_status": "COMPLETE_PROPOSED",
+      "skip_reasons": {
+        "AMBIGUOUS_METHOD": 1,
+        "NO_METHOD_EVIDENCE": 94,
+        "UNSAFE_OR_STALE_FILE": 2
+      },
+      "supplement_count": 3,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "middle_man/gateway/codex_runner/search_telemetry.py",
+          "range": [
+            98,
+            135
+          ],
+          "reference_relation": "EXACT_CITED_SPAN",
+          "symbol": "classify_search_command"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_codex_search_telemetry.py",
+          "range": [
+            20,
+            38
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_command_classification_and_safe_targets"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_codex_live_runner.py",
+          "range": [
+            271,
+            298
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_locator_reads_and_search_targets_stay_separate"
+        }
+      ],
+      "task_id": "AP-N04",
+      "task_sha256": "4b37cbfb91b608a55ccb6326111606dff49b11c76412feb4c7a50b12c3283a15",
+      "unresolved_interpretations": []
+    },
+    {
+      "a": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "seeded workload construction",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "fresh per-case request state",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "metric comparison and display",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 0,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 0,
+          "cited_spans": 7,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 0,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 0,
+          "referenced_paths_targeted": 0,
+          "referenced_paths_total": 5
+        }
+      },
+      "a_appendix_estimated_tokens": 103,
+      "a_locator_sha256": "33fd665d26a80a77318f76f297ac80d273568cd2126cfb6525b56d7e924ba1be",
+      "a_plus": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "seeded workload construction",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "fresh per-case request state",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "metric comparison and display",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 0,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 0,
+          "cited_spans": 7,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 0,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 0,
+          "referenced_paths_targeted": 0,
+          "referenced_paths_total": 5
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 155,
+      "a_plus_locator_sha256": "3126fc2af4fae472d43a02283cd0bdbad466fd211c672a543fe6825093f85162",
+      "additional_estimated_tokens": 52,
+      "archetype": "multi_file_architecture",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": [],
+      "new_file_count": 2,
+      "newly_navigable_areas": [],
+      "provider_usage": null,
+      "reference_status": "COMPLETE_PROPOSED",
+      "skip_reasons": {
+        "AMBIGUOUS_METHOD": 1,
+        "NO_METHOD_EVIDENCE": 93,
+        "TWO_NEW_FILE_LIMIT": 4
+      },
+      "supplement_count": 2,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_9_benchmarks.py",
+          "range": [
+            28,
+            45
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_comparison_cases_construct_distinct_request_objects"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_9_workloads.py",
+          "range": [
+            22,
+            30
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_workload_seed_is_deterministic_without_global_random_mutation"
+        }
+      ],
+      "task_id": "AP-M01",
+      "task_sha256": "3157b0870ac1c5705a45f5daeee1b405ec03ae3f6cf974455174322c2c34196a",
+      "unresolved_interpretations": [
+        "No particular metric or observed report is supplied, so a specific discrepancy cannot be diagnosed."
+      ]
+    },
+    {
+      "a": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "bounded initial source seed",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "selected-path eligibility and freshness",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "second-call delta",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 3,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 2,
+          "cited_spans": 6,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 1,
+          "path_targeted_spans": 2,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 1,
+          "referenced_paths_targeted": 1,
+          "referenced_paths_total": 3
+        }
+      },
+      "a_appendix_estimated_tokens": 296,
+      "a_locator_sha256": "9f686ecfa21535cc1afdb0a6c95b73c6a419e5dd2a6250edaba4341214db3b4e",
+      "a_plus": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "bounded initial source seed",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "selected-path eligibility and freshness",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "second-call delta",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 3,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 2,
+          "cited_spans": 6,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 1,
+          "path_targeted_spans": 2,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 1,
+          "referenced_paths_targeted": 1,
+          "referenced_paths_total": 3
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 346,
+      "a_plus_locator_sha256": "e7402285a66a37c473420c35660c93063c435f041c1fa8dd36a27d5bda1429f1",
+      "additional_estimated_tokens": 50,
+      "archetype": "multi_file_architecture",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": [],
+      "new_file_count": 2,
+      "newly_navigable_areas": [],
+      "provider_usage": null,
+      "reference_status": "COMPLETE_PROPOSED",
+      "skip_reasons": {
+        "AMBIGUOUS_METHOD": 1,
+        "NO_METHOD_EVIDENCE": 92,
+        "TWO_NEW_FILE_LIMIT": 2,
+        "UNSAFE_OR_STALE_FILE": 3
+      },
+      "supplement_count": 2,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_8_ownership.py",
+          "range": [
+            27,
+            50
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_engine_really_shares_block_ids_then_cleans_up"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_8_prefix_cache.py",
+          "range": [
+            33,
+            54
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_second_request_reuses_prefix_work_and_physical_blocks"
+        }
+      ],
+      "task_id": "AP-M02",
+      "task_sha256": "9d6b13a211d30794ace2313fdb30e78f6e9d0c01e9f0e5552f0a88e0a405727b",
+      "unresolved_interpretations": [
+        "The prompt does not specify which source-light delivery policy produced the initial response; the proposed flow addresses progressive selected-path delivery."
+      ]
+    },
+    {
+      "a": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "CLI input routing",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "structured diff acquisition",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "text reduction and sensitive or required content",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 4,
+          "broad_overlap_only_spans": 1,
+          "broad_whole_file_hints": 0,
+          "cited_spans": 6,
+          "exact_symbol_match_spans": 1,
+          "imprecise_overlap_only_spans": 1,
+          "path_targeted_spans": 5,
+          "precise_navigation_spans": 1,
+          "range_intersects_spans": 2,
+          "referenced_paths_targeted": 2,
+          "referenced_paths_total": 3
+        }
+      },
+      "a_appendix_estimated_tokens": 458,
+      "a_locator_sha256": "e10962e0c28f1af90add185229c0621209d901cdda5364ea2a0d6ad486114792",
+      "a_plus": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "CLI input routing",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "structured diff acquisition",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "text reduction and sensitive or required content",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 4,
+          "broad_overlap_only_spans": 1,
+          "broad_whole_file_hints": 0,
+          "cited_spans": 6,
+          "exact_symbol_match_spans": 2,
+          "imprecise_overlap_only_spans": 1,
+          "path_targeted_spans": 5,
+          "precise_navigation_spans": 2,
+          "range_intersects_spans": 3,
+          "referenced_paths_targeted": 2,
+          "referenced_paths_total": 3
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 497,
+      "a_plus_locator_sha256": "72794ab38c32ef380ae8a22628f3016ab46cf5f3cf477f17f33e22da10210a07",
+      "additional_estimated_tokens": 39,
+      "archetype": "multi_file_architecture",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": [],
+      "new_file_count": 0,
+      "newly_navigable_areas": [],
+      "provider_usage": null,
+      "reference_status": "COMPLETE_PROPOSED",
+      "skip_reasons": {
+        "APPENDIX_BUDGET": 2,
+        "NO_METHOD_EVIDENCE": 96
+      },
+      "supplement_count": 2,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "middle_man/gateway/compact.py",
+          "range": [
+            200,
+            206
+          ],
+          "reference_relation": "EXACT_CITED_SPAN",
+          "symbol": "OutputCompactor.compact_git_diff"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_gateway_compaction.py",
+          "range": [
+            61,
+            71
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_structured_git_diff_compaction"
+        }
+      ],
+      "task_id": "AP-M03",
+      "task_sha256": "fc69a6b4571ca29574773430abf1f04594377fd6eafc78ff54dd51050109fc08",
+      "unresolved_interpretations": []
+    },
+    {
+      "a": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "completed event to native read/search accounting",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "search target classification",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "run result and sanitized receipt",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "separate semantic review",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 6,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 8,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 0,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 0,
+          "referenced_paths_targeted": 0,
+          "referenced_paths_total": 6
+        }
+      },
+      "a_appendix_estimated_tokens": 307,
+      "a_locator_sha256": "60fdc740e357ae9550649c7c69e8aacf43544b647a180aa91a9ae6b54425dc0a",
+      "a_plus": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "completed event to native read/search accounting",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "search target classification",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "run result and sanitized receipt",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "separate semantic review",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 6,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 8,
+          "exact_symbol_match_spans": 1,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 1,
+          "precise_navigation_spans": 1,
+          "range_intersects_spans": 1,
+          "referenced_paths_targeted": 1,
+          "referenced_paths_total": 6
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 358,
+      "a_plus_locator_sha256": "aeae9fd84f60090118539e405663672309e3232a2faf7e877c1bfad9532929cd",
+      "additional_estimated_tokens": 51,
+      "archetype": "multi_file_architecture",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": [],
+      "new_file_count": 2,
+      "newly_navigable_areas": [],
+      "provider_usage": null,
+      "reference_status": "COMPLETE_PROPOSED",
+      "skip_reasons": {
+        "AMBIGUOUS_METHOD": 3,
+        "NO_METHOD_EVIDENCE": 82,
+        "THREE_HINT_LIMIT": 8,
+        "UNSAFE_OR_STALE_FILE": 4
+      },
+      "supplement_count": 3,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_23_2_runtime.py",
+          "range": [
+            22,
+            52
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "stream"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_22_12.py",
+          "range": [
+            191,
+            223
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_offline_run_isolation_and_audit_without_codex"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "middle_man/gateway/codex_runner/execution.py",
+          "range": [
+            97,
+            211
+          ],
+          "reference_relation": "EXACT_CITED_SPAN",
+          "symbol": "run_codex"
+        }
+      ],
+      "task_id": "AP-M04",
+      "task_sha256": "e596186181d73d897224b1edefd466a5f683687655c8d10e7813fff45518ead6",
+      "unresolved_interpretations": [
+        "No actual run receipt or answer is supplied, so the concrete answer cannot be judged here."
+      ]
+    },
+    {
+      "a": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 2,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 2,
+          "cited_spans": 5,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 0,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 0,
+          "referenced_paths_targeted": 0,
+          "referenced_paths_total": 3
+        }
+      },
+      "a_appendix_estimated_tokens": 333,
+      "a_locator_sha256": "842e22ab6bea72d814e5d12ae52f81d619a7acaff5fd44f40532f9963b0f2eff",
+      "a_plus": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 2,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 2,
+          "cited_spans": 5,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 0,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 0,
+          "referenced_paths_targeted": 0,
+          "referenced_paths_total": 3
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 381,
+      "a_plus_locator_sha256": "0fdf33d93daa74d36c13406d396ee0faf8099182d593b2e3916717b37fcf2129",
+      "additional_estimated_tokens": 48,
+      "archetype": "test_focused",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": null,
+      "new_file_count": 2,
+      "newly_navigable_areas": null,
+      "provider_usage": null,
+      "reference_status": "PARTIAL_UNRESOLVED",
+      "skip_reasons": {
+        "AMBIGUOUS_METHOD": 1,
+        "NO_METHOD_EVIDENCE": 94,
+        "TWO_NEW_FILE_LIMIT": 3
+      },
+      "supplement_count": 2,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_9_immutability.py",
+          "range": [
+            12,
+            21
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_workload_rejects_mutable_request_objects"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_9_benchmarks.py",
+          "range": [
+            28,
+            45
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_comparison_cases_construct_distinct_request_objects"
+        }
+      ],
+      "task_id": "AP-T01",
+      "task_sha256": "aac728faaa347dc6e091f65504e2fcbd53f1b6f2e0c3419be0cf44a651733461",
+      "unresolved_interpretations": [
+        "The identified freshness test calls WorkloadSpec twice, but no inspected test directly runs two BenchmarkCase variants and asserts distinct request identities between them."
+      ]
+    },
+    {
+      "a": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 1,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 6,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 0,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 0,
+          "referenced_paths_targeted": 0,
+          "referenced_paths_total": 4
+        }
+      },
+      "a_appendix_estimated_tokens": 334,
+      "a_locator_sha256": "858ed03b7bc9b5bedfa0de77750b6693f39ab76cccbff4a02f40169135781c74",
+      "a_plus": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 1,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 6,
+          "exact_symbol_match_spans": 2,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 2,
+          "precise_navigation_spans": 2,
+          "range_intersects_spans": 2,
+          "referenced_paths_targeted": 2,
+          "referenced_paths_total": 4
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 381,
+      "a_plus_locator_sha256": "cfeec4e01ca8029a78334c827512c48817a41ce0760236f7471f35036d1e1787",
+      "additional_estimated_tokens": 47,
+      "archetype": "test_focused",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": null,
+      "new_file_count": 2,
+      "newly_navigable_areas": null,
+      "provider_usage": null,
+      "reference_status": "PARTIAL_UNRESOLVED",
+      "skip_reasons": {
+        "AMBIGUOUS_METHOD": 1,
+        "NO_METHOD_EVIDENCE": 94,
+        "TWO_NEW_FILE_LIMIT": 3
+      },
+      "supplement_count": 2,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_10_exports.py",
+          "range": [
+            11,
+            31
+          ],
+          "reference_relation": "EXACT_CITED_SPAN",
+          "symbol": "test_cli_writes_json_and_csv_under_selected_directory"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_9_immutability.py",
+          "range": [
+            24,
+            32
+          ],
+          "reference_relation": "EXACT_CITED_SPAN",
+          "symbol": "test_csv_contains_all_lab_configuration_fields"
+        }
+      ],
+      "task_id": "AP-T02",
+      "task_sha256": "69cbcb5c51091f4d675a0c50699f6709be7cbc6c87fa5bb35a0983ed2654fc39",
+      "unresolved_interpretations": [
+        "The inspected CLI export test does not explicitly assert the CSV simulated field or CSV seed; those are supported by serializer code, not that test assertion."
+      ]
+    },
+    {
+      "a": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "pytest traceback and summary protection",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "Git status path retention",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "structured diff path and hunk retention",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 4,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 7,
+          "exact_symbol_match_spans": 1,
+          "imprecise_overlap_only_spans": 2,
+          "path_targeted_spans": 7,
+          "precise_navigation_spans": 1,
+          "range_intersects_spans": 3,
+          "referenced_paths_targeted": 2,
+          "referenced_paths_total": 2
+        }
+      },
+      "a_appendix_estimated_tokens": 452,
+      "a_locator_sha256": "cff32d970d8c3ef65c1eca0269acbd78910b19a29f2edc72db82fd4b6dafb950",
+      "a_plus": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "pytest traceback and summary protection",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "Git status path retention",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "structured diff path and hunk retention",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 4,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 7,
+          "exact_symbol_match_spans": 2,
+          "imprecise_overlap_only_spans": 1,
+          "path_targeted_spans": 7,
+          "precise_navigation_spans": 2,
+          "range_intersects_spans": 3,
+          "referenced_paths_targeted": 2,
+          "referenced_paths_total": 2
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 494,
+      "a_plus_locator_sha256": "cc3af213810d1bb84e8be1402efcf98244c878553e396164db3d05cadf0b3c9f",
+      "additional_estimated_tokens": 42,
+      "archetype": "test_focused",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": [],
+      "new_file_count": 0,
+      "newly_navigable_areas": [],
+      "provider_usage": null,
+      "reference_status": "COMPLETE_PROPOSED",
+      "skip_reasons": {
+        "APPENDIX_BUDGET": 3,
+        "NO_METHOD_EVIDENCE": 94,
+        "UNSAFE_OR_STALE_FILE": 1
+      },
+      "supplement_count": 2,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_gateway_compaction.py",
+          "range": [
+            25,
+            34
+          ],
+          "reference_relation": "EXACT_CITED_SPAN",
+          "symbol": "test_pytest_failure_traceback_and_summary_survive"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "middle_man/gateway/compact.py",
+          "range": [
+            200,
+            206
+          ],
+          "reference_relation": "CITED_PATH_OTHER_SYMBOL",
+          "symbol": "OutputCompactor.compact_git_diff"
+        }
+      ],
+      "task_id": "AP-T03",
+      "task_sha256": "f7688b5669d28f1e68b3f07c680e1c99c8442373fc1d6f8d35c940916db31913",
+      "unresolved_interpretations": []
+    },
+    {
+      "a": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "repeat and freshness regression",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "selected-path safety implementation",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "delivery identity and accounting",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 3,
+          "broad_overlap_only_spans": 2,
+          "broad_whole_file_hints": 3,
+          "cited_spans": 5,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 2,
+          "path_targeted_spans": 3,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 2,
+          "referenced_paths_targeted": 2,
+          "referenced_paths_total": 3
+        }
+      },
+      "a_appendix_estimated_tokens": 487,
+      "a_locator_sha256": "65e2960ca4e1e664211f4e1fe5292b338d922ce8ae885c9c062566b3d2c03856",
+      "a_plus": {
+        "areas": [
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "repeat and freshness regression",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "selected-path safety implementation",
+            "complete": false
+          },
+          {
+            "alternative_complete": [
+              false
+            ],
+            "area": "delivery identity and accounting",
+            "complete": false
+          }
+        ],
+        "complete_task_navigation": false,
+        "scoring_status": "COMPLETE_PROPOSED_STRUCTURAL_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 3,
+          "broad_overlap_only_spans": 2,
+          "broad_whole_file_hints": 3,
+          "cited_spans": 5,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 2,
+          "path_targeted_spans": 3,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 2,
+          "referenced_paths_targeted": 2,
+          "referenced_paths_total": 3
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 508,
+      "a_plus_locator_sha256": "06b408de648a1aba805cc8113fef85600b4a84b02464b6d8cda8f5a04833dff0",
+      "additional_estimated_tokens": 21,
+      "archetype": "test_focused",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": [],
+      "new_file_count": 0,
+      "newly_navigable_areas": [],
+      "provider_usage": null,
+      "reference_status": "COMPLETE_PROPOSED",
+      "skip_reasons": {
+        "AMBIGUOUS_METHOD": 1,
+        "APPENDIX_BUDGET": 2,
+        "NO_METHOD_EVIDENCE": 91,
+        "UNSAFE_OR_STALE_FILE": 5
+      },
+      "supplement_count": 1,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_22_10.py",
+          "range": [
+            352,
+            362
+          ],
+          "reference_relation": "CITED_PATH_OTHER_SYMBOL",
+          "symbol": "test_mapped_request_file_is_delivered_once"
+        }
+      ],
+      "task_id": "AP-T04",
+      "task_sha256": "31fdab5b4151e6e3561e110131accbc96beec09f35ef8adbb53155414d5f48c1",
+      "unresolved_interpretations": []
+    },
+    {
+      "a": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 1,
+          "broad_overlap_only_spans": 1,
+          "broad_whole_file_hints": 3,
+          "cited_spans": 7,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 1,
+          "path_targeted_spans": 6,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 1,
+          "referenced_paths_targeted": 3,
+          "referenced_paths_total": 4
+        }
+      },
+      "a_appendix_estimated_tokens": 164,
+      "a_locator_sha256": "6cad1e09fdc05c80dc94290cc032f4ffe046dcbf0482defd16c35bae533a9243",
+      "a_plus": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 1,
+          "broad_overlap_only_spans": 1,
+          "broad_whole_file_hints": 3,
+          "cited_spans": 7,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 1,
+          "path_targeted_spans": 6,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 1,
+          "referenced_paths_targeted": 3,
+          "referenced_paths_total": 4
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 203,
+      "a_plus_locator_sha256": "3f4030bb902ba150848ff7abc9cf5dfd713e6e5e69a0afac0ec7958cdca58ec6",
+      "additional_estimated_tokens": 39,
+      "archetype": "broad_ambiguous",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": null,
+      "new_file_count": 2,
+      "newly_navigable_areas": null,
+      "provider_usage": null,
+      "reference_status": "PARTIAL_UNRESOLVED",
+      "skip_reasons": {
+        "NO_METHOD_EVIDENCE": 98
+      },
+      "supplement_count": 2,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "middle_man/lab/visualization.py",
+          "range": [
+            92,
+            112
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "plot_kv_utilization"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_9_benchmarks.py",
+          "range": [
+            17,
+            25
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_every_benchmark_suite_executes_with_isolated_kv"
+        }
+      ],
+      "task_id": "AP-G01",
+      "task_sha256": "68551a563a60cfffefb837d4fc5fa7a4db6053404d91ab31dd853a18e52133e2",
+      "unresolved_interpretations": [
+        "No concrete suite, case, numeric values, or requested utilization definition is given; these spans are inspection locations, not a diagnosis of a specific scheduling bug."
+      ]
+    },
+    {
+      "a": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 0,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 0,
+          "cited_spans": 6,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 0,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 0,
+          "referenced_paths_targeted": 0,
+          "referenced_paths_total": 1
+        }
+      },
+      "a_appendix_estimated_tokens": 62,
+      "a_locator_sha256": "be5e7346df8b312ada7c7f122d6ef2562825c8fbb2bb07cbdf2e5bf7ce252730",
+      "a_plus": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 0,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 0,
+          "cited_spans": 6,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 0,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 0,
+          "referenced_paths_targeted": 0,
+          "referenced_paths_total": 1
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 103,
+      "a_plus_locator_sha256": "66ec82ce53d8d9b570005a4c1d4e8ed31519d66ff0a71e9361defc608c7d9f7c",
+      "additional_estimated_tokens": 41,
+      "archetype": "broad_ambiguous",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": null,
+      "new_file_count": 2,
+      "newly_navigable_areas": null,
+      "provider_usage": null,
+      "reference_status": "PARTIAL_UNRESOLVED",
+      "skip_reasons": {
+        "NO_METHOD_EVIDENCE": 93,
+        "UNSAFE_OR_STALE_FILE": 3
+      },
+      "supplement_count": 2,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_gateway_compaction.py",
+          "range": [
+            13,
+            22
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "pytest_failure_output"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_locator_navigation_eval.py",
+          "range": [
+            29,
+            33
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_wrong_range_but_matching_symbol_still_navigable"
+        }
+      ],
+      "task_id": "AP-G02",
+      "task_sha256": "45b24df4a226f34502fc61e19e5b357721d4054b0ba6d758166648060fc3b1dd",
+      "unresolved_interpretations": [
+        "The input type and actual failure evidence are unspecified; these alternatives cover pytest and log inputs, not a claim about a particular response."
+      ]
+    },
+    {
+      "a": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 5,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 5,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 1,
+          "path_targeted_spans": 4,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 1,
+          "referenced_paths_targeted": 2,
+          "referenced_paths_total": 3
+        }
+      },
+      "a_appendix_estimated_tokens": 444,
+      "a_locator_sha256": "d599fe125394941ed3b07f4350f36ed712563f4cc3756186e800f4167f375882",
+      "a_plus": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 5,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 5,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 1,
+          "path_targeted_spans": 4,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 1,
+          "referenced_paths_targeted": 2,
+          "referenced_paths_total": 3
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 491,
+      "a_plus_locator_sha256": "b0860c5467268b7c1c7aa806748d7d40323fe15fe91494e6efd2d7ec35e6f5a7",
+      "additional_estimated_tokens": 47,
+      "archetype": "broad_ambiguous",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": null,
+      "new_file_count": 2,
+      "newly_navigable_areas": null,
+      "provider_usage": null,
+      "reference_status": "PARTIAL_UNRESOLVED",
+      "skip_reasons": {
+        "AMBIGUOUS_METHOD": 1,
+        "NO_METHOD_EVIDENCE": 89,
+        "TWO_NEW_FILE_LIMIT": 8
+      },
+      "supplement_count": 2,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_23_claude.py",
+          "range": [
+            256,
+            266
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_snapshots_source_identical_committed_clean_and_without_mcp"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_22_3.py",
+          "range": [
+            79,
+            82
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_missing_source_commit_never_falls_back"
+        }
+      ],
+      "task_id": "AP-G03",
+      "task_sha256": "ee49854b1ffa2a5f2f64c3ad6d712961431594615580f306c5b13447292f931e",
+      "unresolved_interpretations": [
+        "No actual MCP response, policy, fingerprint, or repeated range is supplied. Sparse output could have another cause; do not infer this progressive path occurred in the reported incident."
+      ]
+    },
+    {
+      "a": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 4,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 6,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 0,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 0,
+          "referenced_paths_targeted": 0,
+          "referenced_paths_total": 4
+        }
+      },
+      "a_appendix_estimated_tokens": 216,
+      "a_locator_sha256": "9e55c0092559ecbb79ae807871e0d82d4c9d5d54b06a9edec3303a749d9d5ce9",
+      "a_plus": {
+        "areas": null,
+        "complete_task_navigation": null,
+        "scoring_status": "PARTIAL_SPAN_DIAGNOSTIC_ONLY",
+        "span_diagnostics": {
+          "broad_class_hints": 4,
+          "broad_overlap_only_spans": 0,
+          "broad_whole_file_hints": 1,
+          "cited_spans": 6,
+          "exact_symbol_match_spans": 0,
+          "imprecise_overlap_only_spans": 0,
+          "path_targeted_spans": 0,
+          "precise_navigation_spans": 0,
+          "range_intersects_spans": 0,
+          "referenced_paths_targeted": 0,
+          "referenced_paths_total": 4
+        }
+      },
+      "a_plus_appendix_estimated_tokens": 278,
+      "a_plus_locator_sha256": "483ab17715f725d812406c7b0c147ba76d66f0a4b82db6d24b478ad3f99448f0",
+      "additional_estimated_tokens": 62,
+      "archetype": "broad_ambiguous",
+      "baseline_over_budget": false,
+      "baseline_preserved": true,
+      "budget_feasible": true,
+      "explicit_anchor_paths_lost": 0,
+      "explicit_anchor_paths_retained": 0,
+      "external_inference_calls": 0,
+      "lost_navigable_areas": null,
+      "new_file_count": 2,
+      "newly_navigable_areas": null,
+      "provider_usage": null,
+      "reference_status": "PARTIAL_UNRESOLVED",
+      "skip_reasons": {
+        "AMBIGUOUS_METHOD": 3,
+        "NO_METHOD_EVIDENCE": 77,
+        "THREE_HINT_LIMIT": 4,
+        "TWO_NEW_FILE_LIMIT": 8,
+        "UNSAFE_OR_STALE_FILE": 5
+      },
+      "supplement_count": 3,
+      "supplements": [
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_22_12.py",
+          "range": [
+            191,
+            223
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_offline_run_isolation_and_audit_without_codex"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "tests/test_phase_22_4.py",
+          "range": [
+            182,
+            198
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "test_pair_threads_explicit_unique_run_id_without_codex"
+        },
+        {
+          "misleading_judgment": "AI_REVIEW_PENDING",
+          "path": "middle_man/cli/codex_benchmark.py",
+          "range": [
+            68,
+            196
+          ],
+          "reference_relation": "UNREFERENCED_UNKNOWN",
+          "symbol": "run_codex_benchmark"
+        }
+      ],
+      "task_id": "AP-G04",
+      "task_sha256": "4a3590b02cff1fb7a3acceca12b8b912282da4daded977d4ee1a11ea993dbaad",
+      "unresolved_interpretations": [
+        "No answer claims or source citation spans are provided; this dataset cannot judge the particular plausible answer's semantic correctness."
+      ]
+    }
+  ],
+  "provider_usage": null,
+  "repository_integrity": "PASS",
+  "schema": "middle_man.a_plus_exploratory_offline_result.v1",
+  "scoring_rule": "Precise span = one same-path hint intersecting cited lines with exact qualified symbol; every span in an option and any complete option per area; partial tasks have span diagnostics only.",
+  "source": {
+    "commit": "8a6dca9e3cfadd144f14e860d182ec44ac0faedc",
+    "fingerprint": "bf192a20ad175d0714ddaeee4927c034f452fed5fb93c396acb0a94d515e3c9c",
+    "tree": "467f280dfc781897099d726085974223cf9d6754"
+  },
+  "status": "EXPLORATORY_AI_REFERENCES_NOT_HUMAN_VALIDATED",
+  "summary": {
+    "baseline_over_budget_tasks": 0,
+    "budget_feasible_tasks": 16,
+    "complete_reference_tasks": 10,
+    "gain_archetypes": {},
+    "lost_complete_areas": 0,
+    "new_complete_areas": 0,
+    "partial_reference_tasks": 6,
+    "supplement_count": 35,
+    "task_count": 16
+  }
+}
