@@ -1,0 +1,188 @@
+{
+  "schema": "middle_man.a_plus_ai_proposed_references.v1",
+  "status": "AI_PROPOSED_SOURCE_GROUNDED_NOT_HUMAN_VALIDATED",
+  "review_method": "one AI-assisted read-only inspection pass over the pinned source; no independent human review",
+  "source": {
+    "commit": "8a6dca9e3cfadd144f14e860d182ec44ac0faedc",
+    "tree": "467f280dfc781897099d726085974223cf9d6754"
+  },
+  "packet_canonical_sha256": "a6cc580cbc71b88c55619095c39f322cec7180cdfed8368efff72518734eebdb",
+  "span_format": "[repository-relative path, exact Python class/function/method qualified name, inclusive first line, inclusive last line]",
+  "alternative_rule": "Each alternatives entry is one complete proposed evidence option for its area; spans inside an option are jointly required. Unresolved scope is not scored as a definitive reference.",
+  "reference_hash_method": "sha256(canonical JSON tasks array; sort_keys=True, ensure_ascii=False, separators=(',', ':'); UTF-8)",
+  "reference_sha256": "d9511d4d626e900faf570953fe6a80443217f086f00c9d62bb47ec2cff490b1c",
+  "tasks": [
+    {
+      "task_id": "AP-N01", "task_sha256": "0995f18d86b1a8f25fd001a0ded9339536f98111706b1a2d87f95955d2db2dbe", "reference_status": "COMPLETE_PROPOSED",
+      "areas": [
+        {"area": "case failure representation", "alternatives": [[ ["middle_man/lab/benchmarks.py", "BenchmarkCase.run", 30, 66] ]], "explanation": "A case catches allocation/simulation failures and returns a result with failure details and no metrics."},
+        {"area": "CSV failure row", "alternatives": [[ ["middle_man/lab/serialization.py", "save_csv", 48, 95] ]], "explanation": "Every case gets a row; failure type/message are populated and aggregate metric columns remain empty when metrics are absent."},
+        {"area": "JSON suite representation", "alternatives": [[ ["middle_man/lab/serialization.py", "save_json", 34, 45] ]], "explanation": "JSON contains common metadata and an asdict serialization of the complete suite, including cases and comparisons."}
+      ],
+      "supporting_tests": [["tests/test_phase_10_cli_reporting.py", "test_reporting_shows_expected_failure_and_zero_baseline", 57, 65]],
+      "unresolved_interpretations": [],
+      "source_grounded_summary": "The failed case remains in the suite; CSV emits its failure fields and JSON serializes the suite structure."
+    },
+    {
+      "task_id": "AP-N02", "task_sha256": "e151f63b6f5d2cdea94e4db614f3c84a3648d11fb549bf8f43133d4bfa11bdca", "reference_status": "COMPLETE_PROPOSED",
+      "areas": [
+        {"area": "priority retention under budget", "alternatives": [[ ["middle_man/gateway/compact.py", "_trace_blocks", 59, 77], ["middle_man/gateway/compact.py", "_limit", 80, 104] ]], "explanation": "Tracebacks and error/warning blocks are selected before low-priority lines; required blocks are not dropped merely to fit the budget."},
+        {"area": "over-budget result signaling", "alternatives": [[ ["middle_man/gateway/compact.py", "OutputCompactor.compact", 180, 198], ["middle_man/gateway/compact.py", "OutputCompactor._result", 208, 226] ]], "explanation": "The result records a required-output budget warning when retained important content exceeds the local estimate."}
+      ],
+      "supporting_tests": [["tests/test_gateway_compaction.py", "test_pytest_failure_traceback_and_summary_survive", 25, 34], ["tests/test_gateway_compaction.py", "test_exact_duplicate_logs_and_budget_omissions", 37, 49]],
+      "unresolved_interpretations": [],
+      "source_grounded_summary": "The compactor preserves high-priority failure evidence and reports an overrun instead of silently truncating it."
+    },
+    {
+      "task_id": "AP-N03", "task_sha256": "35eb60462b7f8372b0bc8c0b3dfc9797d460b71b746287cc946c82a0166dc056", "reference_status": "COMPLETE_PROPOSED",
+      "areas": [
+        {"area": "line-level delta selection", "alternatives": [[ ["middle_man/mcp/delivery.py", "DeliveryLedger.select", 26, 55] ]], "explanation": "The ledger emits contiguous runs of lines absent from the (path, content hash, line) set; collapsed redactions are handled as indivisible safe excerpts."},
+        {"area": "commit and changed-version identity", "alternatives": [[ ["middle_man/mcp/delivery.py", "DeliveryLedger.commit", 57, 61], ["middle_man/mcp/delivery.py", "DeliveryLedger.select", 26, 55] ]], "explanation": "Committed lines include the content hash, so a changed hash no longer matches the old delivered-line identity."}
+      ],
+      "supporting_tests": [["tests/test_phase_22_10.py", "test_progressive_ledger_delta_and_freshness", 199, 276]],
+      "unresolved_interpretations": [],
+      "source_grounded_summary": "Delivery is session-local and hash-qualified; unchanged overlap is suppressed while changed versions need fresh delivery."
+    },
+    {
+      "task_id": "AP-N04", "task_sha256": "4b37cbfb91b608a55ccb6326111606dff49b11c76412feb4c7a50b12c3283a15", "reference_status": "COMPLETE_PROPOSED",
+      "areas": [
+        {"area": "supported command parsing", "alternatives": [[ ["middle_man/gateway/codex_runner/search_telemetry.py", "_tokens", 45, 63], ["middle_man/gateway/codex_runner/search_telemetry.py", "classify_search_command", 98, 135] ]], "explanation": "Only conservative simple command forms are classified; operators, unsupported syntax, and listing modes do not imply a file-targeted content read."},
+        {"area": "safe target acceptance", "alternatives": [[ ["middle_man/gateway/codex_runner/search_telemetry.py", "_safe_target", 66, 83], ["middle_man/gateway/codex_runner/search_telemetry.py", "_positional_targets", 86, 95] ]], "explanation": "Targets must resolve inside the root, exist, avoid traversal/globs/variables and survive redaction; unsupported flags leave targets unrecorded."}
+      ],
+      "supporting_tests": [["tests/test_codex_search_telemetry.py", "test_command_classification_and_safe_targets", 20, 38], ["tests/test_codex_search_telemetry.py", "test_ambiguous_or_external_targets_are_omitted", 41, 56]],
+      "unresolved_interpretations": [],
+      "source_grounded_summary": "Command shape and path safety independently constrain which search targets enter telemetry."
+    },
+    {
+      "task_id": "AP-M01", "task_sha256": "3157b0870ac1c5705a45f5daeee1b405ec03ae3f6cf974455174322c2c34196a", "reference_status": "COMPLETE_PROPOSED",
+      "areas": [
+        {"area": "seeded workload construction", "alternatives": [[ ["middle_man/lab/workloads.py", "make_workload", 81, 124], ["middle_man/lab/suites.py", "build_suite", 26, 106] ]], "explanation": "One seed-local RNG builds a workload spec and the scheduler comparison reuses that spec across configuration variants."},
+        {"area": "fresh per-case request state", "alternatives": [[ ["middle_man/lab/workloads.py", "WorkloadSpec.create_requests", 66, 67], ["middle_man/lab/benchmarks.py", "BenchmarkCase.run", 30, 66] ]], "explanation": "Each case creates new mutable request objects from immutable specs before running an independent engine."},
+        {"area": "metric comparison and display", "alternatives": [[ ["middle_man/lab/benchmarks.py", "BenchmarkSuite.run", 99, 112], ["middle_man/lab/comparison.py", "compare_aggregates", 40, 61], ["middle_man/lab/reporting.py", "format_benchmark_suite", 46, 90] ]], "explanation": "Successful variants compare aggregates against the first case; reporting selects and formats fields, and unavailable or zero-baseline values need careful interpretation."}
+      ],
+      "supporting_tests": [["tests/test_phase_9_workloads.py", "test_workload_seed_is_deterministic_without_global_random_mutation", 22, 30], ["tests/test_phase_9_workloads.py", "test_each_preset_creates_fresh_requests", 10, 19], ["tests/test_phase_10_cli_reporting.py", "test_cli_selects_suite_and_labels_simulated_results", 27, 33]],
+      "unresolved_interpretations": ["No particular metric or observed report is supplied, so a specific discrepancy cannot be diagnosed."],
+      "source_grounded_summary": "The same immutable workload description is shared, while each case gets fresh state; comparison and display can differ without workload regeneration."
+    },
+    {
+      "task_id": "AP-M02", "task_sha256": "9d6b13a211d30794ace2313fdb30e78f6e9d0c01e9f0e5552f0a88e0a405727b", "reference_status": "COMPLETE_PROPOSED",
+      "areas": [
+        {"area": "bounded initial source seed", "alternatives": [[ ["middle_man/mcp/progressive.py", "plan_seed", 12, 31], ["middle_man/mcp/gateway.py", "MCPGateway._progressive_payload", 227, 248] ]], "explanation": "An initial seed may be smaller than the canonical pack and advertises undelivered selected ranges for follow-up."},
+        {"area": "selected-path eligibility and freshness", "alternatives": [[ ["middle_man/mcp/gateway.py", "MCPGateway.expand_context", 391, 438] ]], "explanation": "The requested path must be in the remembered canonical pack, confined, physically present, and hash-current before its selected excerpts are offered."},
+        {"area": "second-call delta", "alternatives": [[ ["middle_man/mcp/gateway.py", "MCPGateway._core_payload", 196, 225], ["middle_man/mcp/delivery.py", "DeliveryLedger.select", 26, 55], ["middle_man/mcp/delivery.py", "DeliveryLedger.commit", 57, 61] ]], "explanation": "The first expansion commits newly delivered line identities; repeating the selected path yields no already-delivered lines."}
+      ],
+      "supporting_tests": [["tests/test_phase_22_10.py", "test_progressive_ledger_delta_and_freshness", 199, 276]],
+      "unresolved_interpretations": ["The prompt does not specify which source-light delivery policy produced the initial response; the proposed flow addresses progressive selected-path delivery."],
+      "source_grounded_summary": "Seed selection, selected-path freshness, and the delivery ledger jointly explain partial first delivery and empty replay."
+    },
+    {
+      "task_id": "AP-M03", "task_sha256": "fc69a6b4571ca29574773430abf1f04594377fd6eafc78ff54dd51050109fc08", "reference_status": "COMPLETE_PROPOSED",
+      "areas": [
+        {"area": "CLI input routing", "alternatives": [[ ["middle_man/cli/compact.py", "run_compact", 17, 41] ]], "explanation": "Text arrives from a file or stdin; git-diff mode instead reads a structured repository diff and can export compaction metadata."},
+        {"area": "structured diff acquisition", "alternatives": [[ ["middle_man/gateway/git_diff.py", "GitDiffReader.read", 167, 181], ["middle_man/gateway/compact.py", "GitDiffCompactor.prepare", 157, 168] ]], "explanation": "The diff reader maps status/hunks and the compactor renders path, status, symbols, hunk header, and changed lines."},
+        {"area": "text reduction and sensitive or required content", "alternatives": [[ ["middle_man/gateway/compact.py", "OutputCompactor.compact", 180, 198], ["middle_man/gateway/compact.py", "OutputCompactor.compact_git_diff", 200, 206], ["middle_man/gateway/compact.py", "OutputCompactor._result", 208, 226] ]], "explanation": "Input is redacted before text compaction or after structured rendering; required text/diff evidence is retained with an over-budget warning where needed."}
+      ],
+      "supporting_tests": [["tests/test_gateway_compaction.py", "test_pytest_failure_traceback_and_summary_survive", 25, 34], ["tests/test_gateway_compaction.py", "test_structured_git_diff_compaction", 61, 71], ["tests/test_gateway_compaction.py", "test_secret_redaction_categories_and_benign_code", 74, 90], ["tests/test_gateway_compaction.py", "test_compact_cli_file_stdin_and_json", 93, 102]],
+      "unresolved_interpretations": [],
+      "source_grounded_summary": "The CLI has distinct text and structured diff routes; compaction preserves high-priority evidence and reports redaction/budget conditions."
+    },
+    {
+      "task_id": "AP-M04", "task_sha256": "e596186181d73d897224b1edefd466a5f683687655c8d10e7813fff45518ead6", "reference_status": "COMPLETE_PROPOSED",
+      "areas": [
+        {"area": "completed event to native read/search accounting", "alternatives": [[ ["middle_man/gateway/codex_benchmark/events.py", "parse_codex_events", 59, 145], ["middle_man/gateway/codex_runner/events.py", "parse_production_events", 49, 78] ]], "explanation": "The shared parser counts explicit reads separately, while production framing summarizes completed search commands."},
+        {"area": "search target classification", "alternatives": [[ ["middle_man/gateway/codex_runner/search_telemetry.py", "classify_search_command", 98, 135], ["middle_man/gateway/codex_runner/search_telemetry.py", "summarize_searches", 138, 149] ]], "explanation": "A searched path records a safe command target, not proof that the file was explicitly opened."},
+        {"area": "run result and sanitized receipt", "alternatives": [[ ["middle_man/gateway/codex_runner/execution.py", "run_codex", 97, 211], ["middle_man/gateway/codex_runner/audit.py", "sanitized_receipt", 23, 87], ["middle_man/gateway/codex_runner/audit.py", "save_audit", 90, 104] ]], "explanation": "The run assembles distinct exploration counters and status; optional audit persistence keeps aggregate fields, not raw commands or answer text."},
+        {"area": "separate semantic review", "alternatives": [[ ["middle_man/gateway/codex_runner/correctness.py", "score_semantic_answer", 81, 105] ]], "explanation": "A human-evidenced correctness gate requires review of concepts, implementation areas, privacy omissions, and material errors beyond runtime telemetry."}
+      ],
+      "supporting_tests": [["tests/test_codex_search_telemetry.py", "test_production_framing_adds_telemetry_without_reclassifying_reads", 59, 76], ["tests/test_codex_production_correctness.py", "test_rg_searches_called_explicit_reads_fails", 67, 72], ["tests/test_codex_production_correctness.py", "test_receipt_claimed_to_store_commands_and_terms_fails", 75, 88]],
+      "unresolved_interpretations": ["No actual run receipt or answer is supplied, so the concrete answer cannot be judged here."],
+      "source_grounded_summary": "Event and audit evidence describes exploration and run integrity; semantic claims require separate source-grounded review."
+    },
+    {
+      "task_id": "AP-T01", "task_sha256": "aac728faaa347dc6e091f65504e2fcbd53f1b6f2e0c3419be0cf44a651733461", "reference_status": "PARTIAL_UNRESOLVED",
+      "areas": [
+        {"area": "seed reproducibility test", "alternatives": [[ ["tests/test_phase_9_workloads.py", "test_workload_seed_is_deterministic_without_global_random_mutation", 22, 30], ["middle_man/lab/workloads.py", "make_workload", 81, 124] ]], "explanation": "Same-seed spec equality and different-seed variation are asserted without touching the global RNG."},
+        {"area": "fresh request construction test", "alternatives": [[ ["tests/test_phase_9_workloads.py", "test_each_preset_creates_fresh_requests", 10, 19], ["middle_man/lab/workloads.py", "WorkloadSpec.create_requests", 66, 67] ]], "explanation": "Repeated materialization yields equal values but distinct queued objects."},
+        {"area": "per-case use of the constructor", "alternatives": [[ ["middle_man/lab/benchmarks.py", "BenchmarkCase.run", 30, 66] ]], "explanation": "Each benchmark case invokes create_requests before an independent engine run."}
+      ],
+      "supporting_tests": [["tests/test_phase_9_immutability.py", "test_workload_rejects_mutable_request_objects", 12, 21]],
+      "unresolved_interpretations": ["The identified freshness test calls WorkloadSpec twice, but no inspected test directly runs two BenchmarkCase variants and asserts distinct request identities between them."],
+      "source_grounded_summary": "Tests cover deterministic specs and repeated fresh materialization; per-case isolation is source-supported but not directly asserted by those tests."
+    },
+    {
+      "task_id": "AP-T02", "task_sha256": "69cbcb5c51091f4d675a0c50699f6709be7cbc6c87fa5bb35a0983ed2654fc39", "reference_status": "PARTIAL_UNRESOLVED",
+      "areas": [
+        {"area": "CLI JSON and CSV export test", "alternatives": [[ ["tests/test_phase_10_exports.py", "test_cli_writes_json_and_csv_under_selected_directory", 11, 31] ]], "explanation": "The test checks both files exist, JSON simulated metadata and case seeds, and CSV row count/final KV values."},
+        {"area": "metadata and case-field assembly", "alternatives": [[ ["middle_man/lab/serialization.py", "_metadata", 23, 31], ["middle_man/lab/serialization.py", "save_json", 34, 45], ["middle_man/lab/serialization.py", "save_csv", 48, 95] ]], "explanation": "Shared metadata marks exports simulated; JSON serializes the suite and CSV repeats metadata with case seed/config columns."},
+        {"area": "configuration CSV assertion", "alternatives": [[ ["tests/test_phase_9_immutability.py", "test_csv_contains_all_lab_configuration_fields", 24, 32], ["middle_man/lab/suites.py", "build_suite", 26, 106] ]], "explanation": "The configuration test checks selected CSV fields; the suite constructs seeded cases/configs."}
+      ],
+      "supporting_tests": [["tests/test_phase_10_cli_reporting.py", "test_cli_selects_suite_and_labels_simulated_results", 27, 33]],
+      "unresolved_interpretations": ["The inspected CLI export test does not explicitly assert the CSV simulated field or CSV seed; those are supported by serializer code, not that test assertion."],
+      "source_grounded_summary": "The tests establish JSON metadata and both export files, while serializer code supplies CSV metadata/seed; direct CSV assertions are narrower."
+    },
+    {
+      "task_id": "AP-T03", "task_sha256": "f7688b5669d28f1e68b3f07c680e1c99c8442373fc1d6f8d35c940916db31913", "reference_status": "COMPLETE_PROPOSED",
+      "areas": [
+        {"area": "pytest traceback and summary protection", "alternatives": [[ ["tests/test_gateway_compaction.py", "test_pytest_failure_traceback_and_summary_survive", 25, 34], ["middle_man/gateway/compact.py", "PytestCompactor.prepare", 108, 114], ["middle_man/gateway/compact.py", "_limit", 80, 104] ]], "explanation": "The test asserts failure, traceback, summary, and reduced estimated size; the adapter and limiter retain required lines."},
+        {"area": "Git status path retention", "alternatives": [[ ["tests/test_gateway_compaction.py", "test_git_status_keeps_every_path", 52, 58], ["middle_man/gateway/compact.py", "GitStatusCompactor.prepare", 123, 154] ]], "explanation": "The test uses a tiny budget yet keeps each status path and records required-output overrun."},
+        {"area": "structured diff path and hunk retention", "alternatives": [[ ["tests/test_gateway_compaction.py", "test_structured_git_diff_compaction", 61, 71], ["middle_man/gateway/compact.py", "GitDiffCompactor.prepare", 157, 168] ]], "explanation": "The structured diff test checks file path, affected symbol, hunk header, and changed line."}
+      ],
+      "supporting_tests": [["tests/test_gateway_compaction.py", "test_exact_duplicate_logs_and_budget_omissions", 37, 49]],
+      "unresolved_interpretations": [],
+      "source_grounded_summary": "Distinct tests protect pytest evidence, status paths, and structured diff context."
+    },
+    {
+      "task_id": "AP-T04", "task_sha256": "31fdab5b4151e6e3561e110131accbc96beec09f35ef8adbb53155414d5f48c1", "reference_status": "COMPLETE_PROPOSED",
+      "areas": [
+        {"area": "repeat and freshness regression", "alternatives": [[ ["tests/test_phase_22_10.py", "test_progressive_ledger_delta_and_freshness", 199, 276] ]], "explanation": "The test checks a first selected-path delta, empty repeat, unsafe/unselected paths, budget failure, and changed-source rejection."},
+        {"area": "selected-path safety implementation", "alternatives": [[ ["middle_man/mcp/gateway.py", "MCPGateway.expand_context", 391, 438] ]], "explanation": "Expansion confines targets, requires canonical selection, checks current indexed source and content hash, then enforces budget."},
+        {"area": "delivery identity and accounting", "alternatives": [[ ["middle_man/mcp/delivery.py", "DeliveryLedger.select", 26, 55], ["middle_man/mcp/delivery.py", "DeliveryLedger.commit", 57, 61], ["middle_man/mcp/gateway.py", "MCPGateway._execute", 81, 128] ]], "explanation": "Only newly emitted hash-qualified line ranges are committed to the ledger and usage record."}
+      ],
+      "supporting_tests": [["tests/test_phase_22_10.py", "test_mapped_request_file_is_delivered_once", 352, 362]],
+      "unresolved_interpretations": [],
+      "source_grounded_summary": "The progressive regression covers repeat suppression and stale/unsafe follow-up rejection, backed by gateway and ledger state."
+    },
+    {
+      "task_id": "AP-G01", "task_sha256": "68551a563a60cfffefb837d4fc5fa7a4db6053404d91ab31dd853a18e52133e2", "reference_status": "PARTIAL_UNRESOLVED",
+      "areas": [
+        {"area": "KV sampling and completion metrics", "alternatives": [[ ["middle_man/lab/metrics.py", "MetricsCollector.sample", 95, 98], ["middle_man/lab/metrics.py", "MetricsCollector.build", 100, 157], ["middle_man/lab/metrics.py", "MetricsCollector._request_metrics", 160, 177] ]], "explanation": "Samples capture used blocks; aggregate uses current and peak utilization, while request TTFT/E2E use recorded times."},
+        {"area": "engine sampling and cleanup lifecycle", "alternatives": [[ ["middle_man/lab/engine.py", "SimulationEngine.run", 56, 126], ["middle_man/lab/engine.py", "SimulationEngine._release_request", 233, 243] ]], "explanation": "The engine samples through execution and release, and clears memory/cache before final aggregate construction."},
+        {"area": "simulated report interpretation", "alternatives": [[ ["middle_man/lab/reporting.py", "format_benchmark_suite", 46, 90], ["middle_man/lab/benchmarks.py", "BenchmarkSuite.run", 99, 112] ]], "explanation": "The report labels results simulated, prints peak KV and completion statistics, and omits failed-case metrics from comparisons."}
+      ],
+      "supporting_tests": [["tests/test_phase_10_cli_reporting.py", "test_cli_selects_suite_and_labels_simulated_results", 27, 33], ["tests/test_phase_10_cli_reporting.py", "test_reporting_shows_expected_failure_and_zero_baseline", 57, 65]],
+      "unresolved_interpretations": ["No concrete suite, case, numeric values, or requested utilization definition is given; these spans are inspection locations, not a diagnosis of a specific scheduling bug."],
+      "source_grounded_summary": "Current versus peak KV samples and request completion times are different measures; a concrete report is needed to diagnose the surprise."
+    },
+    {
+      "task_id": "AP-G02", "task_sha256": "45b24df4a226f34502fc61e19e5b357721d4054b0ba6d758166648060fc3b1dd", "reference_status": "PARTIAL_UNRESOLVED",
+      "areas": [
+        {"area": "text-output reduction with failure retention", "alternatives": [[ ["middle_man/gateway/compact.py", "PytestCompactor.prepare", 108, 114], ["middle_man/gateway/compact.py", "_trace_blocks", 59, 77], ["middle_man/gateway/compact.py", "_limit", 80, 104] ], [ ["middle_man/gateway/compact.py", "GenericLogCompactor.prepare", 118, 119], ["middle_man/gateway/compact.py", "_trace_blocks", 59, 77], ["middle_man/gateway/compact.py", "_limit", 80, 104] ]], "explanation": "For pytest or generic logs, redundant/low-priority text can shrink while errors and traceback blocks stay visible."},
+        {"area": "budget and redaction result", "alternatives": [[ ["middle_man/gateway/compact.py", "OutputCompactor.compact", 180, 198], ["middle_man/gateway/compact.py", "OutputCompactor._result", 208, 226] ]], "explanation": "Secrets are redacted and required-content overruns are signaled rather than silently discarded."}
+      ],
+      "supporting_tests": [["tests/test_gateway_compaction.py", "test_pytest_failure_traceback_and_summary_survive", 25, 34], ["tests/test_gateway_compaction.py", "test_exact_duplicate_logs_and_budget_omissions", 37, 49]],
+      "unresolved_interpretations": ["The input type and actual failure evidence are unspecified; these alternatives cover pytest and log inputs, not a claim about a particular response."],
+      "source_grounded_summary": "The compactor can remove repetition and low-priority lines while retaining high-priority failure evidence, with input-dependent limits."
+    },
+    {
+      "task_id": "AP-G03", "task_sha256": "ee49854b1ffa2a5f2f64c3ad6d712961431594615580f306c5b13447292f931e", "reference_status": "PARTIAL_UNRESOLVED",
+      "areas": [
+        {"area": "sparse initial delivery", "alternatives": [[ ["middle_man/mcp/progressive.py", "plan_seed", 12, 31], ["middle_man/mcp/gateway.py", "MCPGateway._progressive_payload", 227, 248] ]], "explanation": "A bounded progressive seed can leave canonical selected source available for later selected-path expansion."},
+        {"area": "continuation and duplicate suppression", "alternatives": [[ ["middle_man/mcp/gateway.py", "MCPGateway.expand_context", 391, 438], ["middle_man/mcp/gateway.py", "MCPGateway._core_payload", 196, 225], ["middle_man/mcp/delivery.py", "DeliveryLedger.select", 26, 55] ]], "explanation": "A client can request a selected path using the remembered fingerprint; the ledger returns only lines not already delivered."}
+      ],
+      "supporting_tests": [["tests/test_phase_22_10.py", "test_progressive_ledger_delta_and_freshness", 199, 276]],
+      "unresolved_interpretations": ["No actual MCP response, policy, fingerprint, or repeated range is supplied. Sparse output could have another cause; do not infer this progressive path occurred in the reported incident."],
+      "source_grounded_summary": "Progressive seeding and session-local delivery are one source-grounded explanation, but the specific sparse response cannot be classified without its safe metadata."
+    },
+    {
+      "task_id": "AP-G04", "task_sha256": "4a3590b02cff1fb7a3acceca12b8b912282da4daded977d4ee1a11ea993dbaad", "reference_status": "PARTIAL_UNRESOLVED",
+      "areas": [
+        {"area": "runtime and exploration evidence", "alternatives": [[ ["middle_man/gateway/codex_runner/events.py", "parse_production_events", 49, 78], ["middle_man/gateway/codex_runner/execution.py", "run_codex", 97, 211] ]], "explanation": "Completion, failures, reads, searches, and repository integrity are runtime observations, not proof of answer truth."},
+        {"area": "saved audit scope", "alternatives": [[ ["middle_man/gateway/codex_runner/audit.py", "sanitized_receipt", 23, 87], ["middle_man/gateway/codex_runner/audit.py", "save_audit", 90, 104] ]], "explanation": "The optional receipt stores sanitized aggregate fields and status, omitting answer text and raw command/event contents."},
+        {"area": "separate source-grounded semantic judgment", "alternatives": [[ ["middle_man/gateway/codex_runner/correctness.py", "SemanticReview", 44, 50], ["middle_man/gateway/codex_runner/correctness.py", "score_semantic_answer", 81, 105] ]], "explanation": "Semantic PASS requires review evidence for concepts, implementation areas, privacy omissions and absence of material errors."}
+      ],
+      "supporting_tests": [["tests/test_codex_search_telemetry.py", "test_production_framing_adds_telemetry_without_reclassifying_reads", 59, 76], ["tests/test_codex_production_correctness.py", "test_rg_searches_called_explicit_reads_fails", 67, 72]],
+      "unresolved_interpretations": ["No answer claims or source citation spans are provided; this dataset cannot judge the particular plausible answer's semantic correctness."],
+      "source_grounded_summary": "Audit and event data can establish run behavior and exploration; the answer itself needs separate source-grounded review."
+    }
+  ]
+}
