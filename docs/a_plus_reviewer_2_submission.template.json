@@ -1,0 +1,277 @@
+{
+  "schema": "middle_man.a_plus_blinded_submission_template.v1",
+  "reviewer_slot": "reviewer_2",
+  "review_status": "PENDING",
+  "packet": {
+    "schema": "middle_man.a_plus_blinded_review_packet.v1",
+    "source": {
+      "commit": "8a6dca9e3cfadd144f14e860d182ec44ac0faedc",
+      "tree": "467f280dfc781897099d726085974223cf9d6754"
+    },
+    "instructions": [
+      "Inspect the pinned source commit independently. Do not use another reviewer's work or candidate outputs.",
+      "For each task, record required implementation areas, source-relative paths, qualified function or method symbols, inclusive line intervals, supporting tests or integrations, and source-grounded reasoning.",
+      "Record each complete alternative evidence option as a sufficient whole. Do not combine partial alternatives to imply completeness.",
+      "Document unresolved interpretations or ambiguity from your own reading of the task and source. Leave uncertain judgments unresolved rather than guessing.",
+      "Keep completed submissions private until both independent reviews are complete; do not commit identities or responses to this repository."
+    ],
+    "tasks": [
+      {
+        "task_id": "AP-N01",
+        "task": "In middle_man/lab/serialization.py, what does a failed benchmark case contribute to the CSV export, and how is the same suite represented in JSON?",
+        "sha256": "0995f18d86b1a8f25fd001a0ded9339536f98111706b1a2d87f95955d2db2dbe",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-N02",
+        "task": "In middle_man/gateway/compact.py, what happens when the important error or traceback content alone exceeds OutputCompactor's requested token budget?",
+        "sha256": "e151f63b6f5d2cdea94e4db614f3c84a3648d11fb549bf8f43133d4bfa11bdca",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-N03",
+        "task": "In middle_man/mcp/delivery.py, how does DeliveryLedger avoid redelivering overlapping source lines, and what changes when the file content hash changes?",
+        "sha256": "35eb60462b7f8372b0bc8c0b3dfc9797d460b71b746287cc946c82a0166dc056",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-N04",
+        "task": "In middle_man/gateway/codex_runner/search_telemetry.py, how are file targets extracted from a command, and when is a possible target left unrecorded?",
+        "sha256": "4b37cbfb91b608a55ccb6326111606dff49b11c76412feb4c7a50b12c3283a15",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-M01",
+        "task": "A fixed-seed simulator comparison seems to show different work across scheduler variants. Trace where workloads are generated, how cases receive request state, and how the comparison is computed so I can tell a real workload change from a reporting difference.",
+        "sha256": "3157b0870ac1c5705a45f5daeee1b405ec03ae3f6cf974455174322c2c34196a",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-M02",
+        "task": "An MCP client receives a source-light initial response and then asks for the same selected file twice. Trace how follow-up source is chosen, what the second request can deliver, and what happens if the file changed between requests.",
+        "sha256": "9d6b13a211d30794ace2313fdb30e78f6e9d0c01e9f0e5552f0a88e0a405727b",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-M03",
+        "task": "We pipe a noisy pytest failure into the compact command, but also use it on a Git diff. Trace the CLI input paths and the different compaction flows, including how sensitive text and budget overruns are handled.",
+        "sha256": "fc69a6b4571ca29574773430abf1f04594377fd6eafc78ff54dd51050109fc08",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-M04",
+        "task": "A production Codex run searched a file and later opened it. Trace how the event stream becomes exploration telemetry and a saved audit, and explain which evidence would still be needed to judge the answer's correctness.",
+        "sha256": "e596186181d73d897224b1edefd466a5f683687655c8d10e7813fff45518ead6",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-T01",
+        "task": "Which existing tests would catch a workload generator that changes output for the same seed or reuses mutable request state between benchmark cases, and what implementation do they exercise?",
+        "sha256": "aac728faaa347dc6e091f65504e2fcbd53f1b6f2e0c3419be0cf44a651733461",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-T02",
+        "task": "Which tests show that the benchmark CLI's JSON and CSV exports are marked as simulated and carry the chosen seed and configuration, and where are those fields assembled?",
+        "sha256": "69cbcb5c51091f4d675a0c50699f6709be7cbc6c87fa5bb35a0983ed2654fc39",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-T03",
+        "task": "Which compaction tests protect the failure traceback and summary while reducing pytest output, and which tests ensure Git status or diff paths survive compaction? Trace the implementation those tests exercise.",
+        "sha256": "f7688b5669d28f1e68b3f07c680e1c99c8442373fc1d6f8d35c940916db31913",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-T04",
+        "task": "Where are the regression tests for requesting a selected MCP file twice, rejecting stale or unsafe follow-ups, and counting delivered source only once? Identify the delivery behavior they exercise.",
+        "sha256": "31fdab5b4151e6e3561e110131accbc96beec09f35ef8adbb53155414d5f48c1",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-G01",
+        "task": "A simulated benchmark report shows surprising KV utilization beside completion times. Where would you inspect how those numbers are produced, and what should we check before calling the scheduling behavior a bug?",
+        "sha256": "68551a563a60cfffefb837d4fc5fa7a4db6053404d91ab31dd853a18e52133e2",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-G02",
+        "task": "A tool response is too long, but the engineer still needs the failure evidence. Where could the output be reduced, and which information must remain visible?",
+        "sha256": "45b24df4a226f34502fc61e19e5b357721d4054b0ba6d758166648060fc3b1dd",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-G03",
+        "task": "Our MCP context reply is sparse, and the next request seems to repeat material we already saw. Where can that happen, and how should a client continue without assuming missing source was never available?",
+        "sha256": "ee49854b1ffa2a5f2f64c3ad6d712961431594615580f306c5b13447292f931e",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      },
+      {
+        "task_id": "AP-G04",
+        "task": "A production Codex run finished and left an audit, but its answer sounds plausible without showing much evidence. What can the recorded run actually establish, and what needs separate review?",
+        "sha256": "4a3590b02cff1fb7a3acceca12b8b912282da4daded977d4ee1a11ea993dbaad",
+        "evidence": {
+          "status": "PENDING",
+          "required_implementation_areas": [],
+          "source_paths": [],
+          "relevant_function_method_symbols": [],
+          "source_line_intervals": [],
+          "complete_alternative_evidence_options": [],
+          "supporting_tests_or_integrations": [],
+          "unresolved_interpretation_issues": [],
+          "source_grounded_reasoning": null
+        }
+      }
+    ]
+  }
+}
