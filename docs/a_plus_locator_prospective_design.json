@@ -1,0 +1,158 @@
+{
+  "schema": "middle_man.prospective_a_plus_locator_design.v1",
+  "status": "DESIGN_ONLY_NOT_IMPLEMENTED_NOT_AUTHORIZED",
+  "external_calls_authorized": 0,
+  "research_question": "Can sparse, source-grounded additions to unchanged production A improve complete navigation without misleading hints or excessive appendix overhead?",
+  "historical_evidence": {
+    "development_tasks_are_not_confirmatory": true,
+    "reserved_labels_are_operational_holdout_only": true,
+    "production_a_proposed_areas": "6/16",
+    "navigation_only_b": "REJECTED; 8/16 with a lost A area",
+    "precision_c": "REJECTED; 9/16 with destructive replacement and prior loss",
+    "full_a_b_c_union": "INFEASIBLE under all six original per-task appendix ceilings",
+    "calibration_v2": "High within-arm input variation and opposite paired deltas; no universal noise threshold",
+    "evidence_documents": [
+      "docs/SOURCE_FREE_LOCATOR_NAVIGATION_AUDIT.md",
+      "docs/NAVIGATION_ONLY_SHADOW_RULE.md",
+      "docs/NAVIGATION_ONLY_SHADOW_RESULT.md",
+      "docs/NAVIGATION_HINT_PRECISION_RULE.md",
+      "docs/NAVIGATION_HINT_PRECISION_RESULT.md",
+      "docs/NAVIGATION_HINT_PRESERVATION_FEASIBILITY.md",
+      "docs/CODEX_VARIANCE_CALIBRATION_V2_RESULT.md"
+    ]
+  },
+  "candidate": {
+    "baseline": "unchanged production A locator",
+    "preserve_a_hint_block_as_byte_identical_prefix": true,
+    "selection_inputs": [
+      "same redacted effective task query",
+      "existing relevance rank",
+      "verified indexed function/method metadata from pinned source"
+    ],
+    "forbidden_selection_inputs": [
+      "reference labels",
+      "task IDs",
+      "expected answers",
+      "evaluator outcomes"
+    ],
+    "discovery": {
+      "ranked_file_cap": 100,
+      "outside_cap_exception": "exact repository-relative path explicitly named in task",
+      "ignore_context_pack_source_allocation": true,
+      "ignore_task_cluster_filter_for_supplements": true,
+      "file_evidence": "explicit path/qualified symbol or two distinct normalized non-stop task terms in indexed method name; graph-only insufficient",
+      "symbol_evidence_tiers": [
+        "explicit qualified-symbol match",
+        "explicit path with unique method matching at least one normalized task term",
+        "unique two-term method-name match"
+      ],
+      "within_file_tie": "abstain on equal-best evidence, absent evidence, or invalid span",
+      "cross_file_order": "tier, distinct-term count descending, existing relevance rank, repository-relative path",
+      "class_or_whole_file_fallback": false
+    },
+    "limits": {
+      "max_added_hints_per_task": 3,
+      "max_added_hints_per_file": 1,
+      "max_new_files_per_task": 2,
+      "duplicate_key": ["path", "start_line", "end_line", "symbol"],
+      "redundancy_rule": "skip if range and symbol give no new location beyond A; exact method label inside broad A range may be added"
+    },
+    "appendix": {
+      "fixed_ceiling_heuristic_tokens": 512,
+      "scope": "entire appended heading, instructions, paths, ranges, symbols, separators",
+      "formatter_and_estimator": "production append_offline_locator and HeuristicTokenEstimator",
+      "baseline_exceeds_ceiling": "emit A unchanged; BASELINE_OVER_BUDGET; add nothing; confirmatory feasibility failure",
+      "addition_exceeds_ceiling": "skip addition and continue in fixed priority order",
+      "not_equivalent_to": ["internal Context Pack source budget", "Codex-reported input tokens"]
+    },
+    "safety": [
+      "pinned clean source commit/tree and index identity",
+      "repository path confinement including symlink resolution",
+      "physical existence and indexed line-span bounds",
+      "safe qualified identifiers and existing secret redaction",
+      "source-free output and metadata",
+      "unchanged snapshot Git status and content"
+    ]
+  },
+  "offline_evaluation": {
+    "status": "FUTURE_UNRUN",
+    "fresh_task_count": 16,
+    "archetypes": {
+      "narrow_explicit_anchor": 4,
+      "multi_file_architecture": 4,
+      "test_focused": 4,
+      "broad_ambiguous": 4
+    },
+    "exclude_six_development_tasks": true,
+    "do_not_open_reserved_labels_for_rule_construction": true,
+    "source_pin": "choose clean future commit/tree before reference authoring",
+    "reference_creation": "two human source-reviewers independently identify area alternatives, paths, spans, and symbols blinded to A-plus output; adjudicate disagreements",
+    "ai_generated_reference_status": "PROPOSED_UNTIL_INDEPENDENT_HUMAN_VALIDATION",
+    "freeze_before_candidate_outcomes": [
+      "source commit/tree and index/selector fingerprints",
+      "task text and hashes",
+      "source-grounded references and ambiguity notes",
+      "semantic rubrics",
+      "candidate rule and appendix ceiling",
+      "metrics and acceptance gates"
+    ],
+    "metrics": [
+      "referenced paths targeted",
+      "range intersections and exact function/method symbol matches",
+      "complete navigable areas across approved alternatives",
+      "A areas and explicit anchors retained",
+      "blinded materially misleading supplement review; unreferenced is UNKNOWN",
+      "full appendix UTF-8 bytes and heuristic tokens"
+    ],
+    "acceptance_all_required": [
+      "all 16 tasks valid and independently human-validated",
+      "zero lost A complete areas or explicit anchors",
+      "zero materially misleading supplemental hints",
+      "each complete appendix <= 512 heuristic tokens",
+      "at least two additional complete areas across at least two archetypes",
+      "source safety and repository integrity pass"
+    ],
+    "failure_classification": "failed gate rejects; invalid source/review evidence is inconclusive; offline pass only permits seeking separate Codex authorization"
+  },
+  "future_codex_validation": {
+    "status": "DESIGN_ONLY_SEPARATE_AUTHORIZATION_REQUIRED",
+    "preselected_tasks": "eight human-validated tasks, two per archetype",
+    "arms": ["production A", "A-plus"],
+    "replicates_per_task": 4,
+    "order": "alternate ABBA and BAAB by preregistered task order",
+    "max_inference_processes": 32,
+    "no_retries_or_replacement": true,
+    "max_seconds_per_process": 360,
+    "aggregate_provider_input_token_stop_limit": 24000000,
+    "aggregate_provider_output_token_stop_limit": 512000,
+    "per_call_input_token_accounting_allowance": 750000,
+    "per_call_output_token_accounting_allowance": 16000,
+    "budget_note": "stop limits and accounting allowances, not guaranteed per-call usage bounds; stop before next call when remaining allowance is insufficient",
+    "runtime_lock": "freeze CLI/model/read-only sandbox/task/schema before separately authorized execution; no sandbox fallback",
+    "snapshots": "fresh independent source-identical clean snapshots; pre/post Git and source integrity",
+    "record": [
+      "provider input tokens and cached input separately",
+      "provider output and reasoning output separately",
+      "elapsed time and runtime validity",
+      "native calls, explicit reads, unique files, rereads, searches, listings",
+      "sanitized answer claims, bounded source-grounded reviewer spans and rationale",
+      "blinded independent semantic review and adjudication",
+      "pre/post Git status and source fingerprint"
+    ],
+    "stop_rules": [
+      "infrastructure invalidity",
+      "safety or repository integrity failure",
+      "missing provider usage",
+      "process or token cap reached/breached"
+    ],
+    "analysis": "paired task deltas and distributions, same-arm spread and cached input separately; no universal variance band or token-savings claim from offline scores",
+    "semantic_evidence_rule": "without safely retained reviewable evidence, do not claim semantic PASS"
+  },
+  "unresolved": [
+    "512-token ceiling fit rate on new tasks",
+    "top-100 discovery recall versus noise",
+    "abstention and false precision from lexical method evidence",
+    "availability and privacy cost of independent review",
+    "runtime variance and token budget adequacy"
+  ]
+}
