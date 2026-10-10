@@ -1,0 +1,2761 @@
+{
+  "analysis": "SOURCE_FREE_PRESERVATION_FEASIBILITY_NO_REFERENCE_SCORING",
+  "artifact_sha256": {
+    "A": "22730f8892df9de09c757cc69cc02abcd715cf5afa46f1a3d66e0aad04e4f141",
+    "B": "4e83f7a6df2b8f1c96a4c45261794187ad679240d25937ad895d5edcf9e86a4f",
+    "C": "5b986ed9062da72db63735eb0da584b382a82d53b558246f9e237802714aeda0"
+  },
+  "corpus_sha256": "6b1be495325413f5fc5e1e4bd53cbfc93a784c8f0365515e8f6a3e6d2ad803b5",
+  "model_calls": 0,
+  "production_format_unchanged": true,
+  "reference_dataset_sha256": "ef000d32fb4e7d2344fd0461dc3a95be763771588acea71295a8ea08a1fc9317",
+  "schema_version": 1,
+  "scope": "DEVELOPMENT_ONLY",
+  "selector_fingerprint": "3a4213e19944220c02b1897e1a05a584d61bbd00e91cbf5a9e38cc07976bf555",
+  "source_commit": "0680a1cb8812d35b17ebd628de7ffba95798da7f",
+  "source_fingerprint": "6f360e98d7d87339129d0fde8725b6e26a03fcdf0f16f9a24d8c7a3f6a3db340",
+  "source_tree": "6276b4a959bc93df8bb82cdde0bfc371d2c99770",
+  "tasks": [
+    {
+      "A_plus_B_plus_C": {
+        "appendix_budget": 228,
+        "appendix_bytes": 1602,
+        "appendix_estimated_tokens": 401,
+        "appendix_over_under_tokens": 173,
+        "distinct_hints": 26,
+        "distinct_locations": 26,
+        "distinct_paths": 14,
+        "exact_duplicates_removed": 7,
+        "fits_fixed_budget": false,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 79,
+        "hints": [
+          {
+            "end_line": 102,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "start_line": 1,
+            "symbol": "test_partial_prefix_shares_only_complete_blocks"
+          },
+          {
+            "end_line": 68,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "start_line": 57,
+            "symbol": "test_partial_prefix_shares_only_complete_blocks"
+          },
+          {
+            "end_line": 54,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "start_line": 33,
+            "symbol": "test_second_request_reuses_prefix_work_and_physical_blocks"
+          },
+          {
+            "end_line": 81,
+            "path": "middle_man/lab/prefix_cache.py",
+            "start_line": 1,
+            "symbol": "PrefixCache"
+          },
+          {
+            "end_line": 81,
+            "path": "middle_man/lab/prefix_cache.py",
+            "start_line": 17,
+            "symbol": "PrefixCache"
+          },
+          {
+            "end_line": 159,
+            "path": "middle_man/lab/request.py",
+            "start_line": 1,
+            "symbol": "InferenceRequest"
+          },
+          {
+            "end_line": 159,
+            "path": "middle_man/lab/request.py",
+            "start_line": 18,
+            "symbol": "InferenceRequest"
+          },
+          {
+            "end_line": 130,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 1,
+            "symbol": "KVBlockManager"
+          },
+          {
+            "end_line": 130,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 21,
+            "symbol": "KVBlockManager"
+          },
+          {
+            "end_line": 13,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 7,
+            "symbol": null
+          },
+          {
+            "end_line": 34,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 34,
+            "symbol": "SimulationEngine"
+          },
+          {
+            "end_line": 244,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 232,
+            "symbol": "SimulationEngine._release_request"
+          },
+          {
+            "end_line": 243,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 233,
+            "symbol": "SimulationEngine._release_request"
+          },
+          {
+            "end_line": 18,
+            "path": "middle_man/lab/memory_control.py",
+            "start_line": 10,
+            "symbol": "PreparedWork"
+          },
+          {
+            "end_line": 9,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 9,
+            "symbol": null
+          },
+          {
+            "end_line": 44,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 28,
+            "symbol": "RequestMetrics"
+          },
+          {
+            "end_line": 89,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 89,
+            "symbol": "MetricsCollector"
+          },
+          {
+            "end_line": 177,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 158,
+            "symbol": "MetricsCollector._request_metrics"
+          },
+          {
+            "end_line": 36,
+            "path": "tests/test_phase_8_recovery.py",
+            "start_line": 1,
+            "symbol": "test_preempted_partial_prefix_resumes_after_shared_prefix_boundary"
+          },
+          {
+            "end_line": 7,
+            "path": "middle_man/lab/workloads.py",
+            "start_line": 7,
+            "symbol": null
+          },
+          {
+            "end_line": 22,
+            "path": "middle_man/lab/work.py",
+            "start_line": 4,
+            "symbol": "WorkItem"
+          },
+          {
+            "end_line": 62,
+            "path": "tests/test_phase_8_ownership.py",
+            "start_line": 53,
+            "symbol": "test_cache_reference_cannot_be_released_twice"
+          },
+          {
+            "end_line": 97,
+            "path": "tests/test_phase_4_engine_runner.py",
+            "start_line": 83,
+            "symbol": "test_zero_output_request_completes_after_prefill_and_releases_memory"
+          },
+          {
+            "end_line": 112,
+            "path": "tests/test_phase_4_engine_runner.py",
+            "start_line": 100,
+            "symbol": "test_zero_prompt_and_zero_output_request_terminates_without_work"
+          },
+          {
+            "end_line": 84,
+            "path": "tests/test_phase_1_core.py",
+            "start_line": 75,
+            "symbol": "test_completed_request_cannot_resume_work"
+          },
+          {
+            "end_line": 62,
+            "path": "tests/test_phase_2_memory.py",
+            "start_line": 58,
+            "symbol": "test_ensure_capacity_allocates_only_missing_blocks"
+          }
+        ],
+        "locator_bytes": 1406,
+        "locator_estimated_tokens": 352,
+        "locator_sha256": "8c7e8cfd83125a7f93596de3c1e675a64fb70a1b1e94af916712c577f9de5097",
+        "path_bytes": 393,
+        "range_bytes": 132,
+        "selected_paths": [
+          "tests/test_phase_8_prefix_cache.py",
+          "middle_man/lab/prefix_cache.py",
+          "middle_man/lab/request.py",
+          "middle_man/lab/memory.py",
+          "middle_man/lab/engine.py",
+          "middle_man/lab/memory_control.py",
+          "middle_man/lab/metrics.py",
+          "tests/test_phase_8_recovery.py",
+          "middle_man/lab/workloads.py",
+          "middle_man/lab/work.py",
+          "tests/test_phase_8_ownership.py",
+          "tests/test_phase_4_engine_runner.py",
+          "tests/test_phase_1_core.py",
+          "tests/test_phase_2_memory.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 11,
+        "symbol_bytes": 802,
+        "unique_supplemental_hints": 11
+      },
+      "B_plus_C": {
+        "appendix_budget": 228,
+        "appendix_bytes": 1033,
+        "appendix_estimated_tokens": 259,
+        "appendix_over_under_tokens": 31,
+        "distinct_hints": 11,
+        "distinct_locations": 11,
+        "distinct_paths": 9,
+        "exact_duplicates_removed": 7,
+        "fits_fixed_budget": false,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 39,
+        "hints": [
+          {
+            "end_line": 68,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "start_line": 57,
+            "symbol": "test_partial_prefix_shares_only_complete_blocks"
+          },
+          {
+            "end_line": 54,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "start_line": 33,
+            "symbol": "test_second_request_reuses_prefix_work_and_physical_blocks"
+          },
+          {
+            "end_line": 81,
+            "path": "middle_man/lab/prefix_cache.py",
+            "start_line": 17,
+            "symbol": "PrefixCache"
+          },
+          {
+            "end_line": 62,
+            "path": "tests/test_phase_8_ownership.py",
+            "start_line": 53,
+            "symbol": "test_cache_reference_cannot_be_released_twice"
+          },
+          {
+            "end_line": 159,
+            "path": "middle_man/lab/request.py",
+            "start_line": 18,
+            "symbol": "InferenceRequest"
+          },
+          {
+            "end_line": 130,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 21,
+            "symbol": "KVBlockManager"
+          },
+          {
+            "end_line": 97,
+            "path": "tests/test_phase_4_engine_runner.py",
+            "start_line": 83,
+            "symbol": "test_zero_output_request_completes_after_prefill_and_releases_memory"
+          },
+          {
+            "end_line": 112,
+            "path": "tests/test_phase_4_engine_runner.py",
+            "start_line": 100,
+            "symbol": "test_zero_prompt_and_zero_output_request_terminates_without_work"
+          },
+          {
+            "end_line": 243,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 233,
+            "symbol": "SimulationEngine._release_request"
+          },
+          {
+            "end_line": 84,
+            "path": "tests/test_phase_1_core.py",
+            "start_line": 75,
+            "symbol": "test_completed_request_cannot_resume_work"
+          },
+          {
+            "end_line": 62,
+            "path": "tests/test_phase_2_memory.py",
+            "start_line": 58,
+            "symbol": "test_ensure_capacity_allocates_only_missing_blocks"
+          }
+        ],
+        "locator_bytes": 837,
+        "locator_estimated_tokens": 210,
+        "locator_sha256": "ba28f2ca64a65ca2640748d66d284b06e72afbcc175a1ee727be6958b4f2296d",
+        "path_bytes": 257,
+        "range_bytes": 61,
+        "selected_paths": [
+          "tests/test_phase_8_prefix_cache.py",
+          "middle_man/lab/prefix_cache.py",
+          "tests/test_phase_8_ownership.py",
+          "middle_man/lab/request.py",
+          "middle_man/lab/memory.py",
+          "tests/test_phase_4_engine_runner.py",
+          "middle_man/lab/engine.py",
+          "tests/test_phase_1_core.py",
+          "tests/test_phase_2_memory.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 2,
+        "symbol_bytes": 480,
+        "unique_supplemental_hints": 2
+      },
+      "originals": {
+        "A": {
+          "appendix_estimated_tokens": 228,
+          "distinct_paths": 10,
+          "hint_count": 15,
+          "locator_sha256": "acef90deb24869c4432d47c2954f4ed65ecc04320da35dd40cde8612e017ebc7"
+        },
+        "B": {
+          "appendix_estimated_tokens": 223,
+          "distinct_paths": 9,
+          "hint_count": 9,
+          "locator_sha256": "c91a2d7e2c40380e08f62c169b90b707b0dc8fc2d78a485274cecfe536a70bee"
+        },
+        "C": {
+          "appendix_estimated_tokens": 225,
+          "distinct_paths": 9,
+          "hint_count": 9,
+          "locator_sha256": "24f3b624195a592f9ed32e81ccf79d80e976c3a3344697619cfa4395b4cbe2cf"
+        }
+      },
+      "task_id": "N01",
+      "task_sha256": "ba9f0f3ce57838e0631919297ff9f4e7590a69323b832d6e674786ddf376b955"
+    },
+    {
+      "A_plus_B_plus_C": {
+        "appendix_budget": 397,
+        "appendix_bytes": 2814,
+        "appendix_estimated_tokens": 704,
+        "appendix_over_under_tokens": 307,
+        "distinct_hints": 54,
+        "distinct_locations": 54,
+        "distinct_paths": 27,
+        "exact_duplicates_removed": 15,
+        "fits_fixed_budget": false,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 161,
+        "hints": [
+          {
+            "end_line": 8,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 7,
+            "symbol": null
+          },
+          {
+            "end_line": 30,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 28,
+            "symbol": "MAX_CONTEXT_TOKENS"
+          },
+          {
+            "end_line": 52,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "symbol": "MCPGateway"
+          },
+          {
+            "end_line": 321,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 265,
+            "symbol": "MCPGateway.context"
+          },
+          {
+            "end_line": 458,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 439,
+            "symbol": "MCPGateway.changed_context"
+          },
+          {
+            "end_line": 320,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 266,
+            "symbol": "MCPGateway.context"
+          },
+          {
+            "end_line": 527,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 516,
+            "symbol": "MCPGateway.explain_selection"
+          },
+          {
+            "end_line": 134,
+            "path": "tests/test_phase_22_v4.py",
+            "start_line": 134,
+            "symbol": "test_pinned_v4_source_contract"
+          },
+          {
+            "end_line": 143,
+            "path": "tests/test_phase_22_v4.py",
+            "start_line": 140,
+            "symbol": "test_pinned_v4_source_contract.source"
+          },
+          {
+            "end_line": 142,
+            "path": "tests/test_phase_22_v4.py",
+            "start_line": 141,
+            "symbol": "test_pinned_v4_source_contract.source"
+          },
+          {
+            "end_line": 21,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 6,
+            "symbol": "ContextMode"
+          },
+          {
+            "end_line": 44,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 39,
+            "symbol": "ChangedContext"
+          },
+          {
+            "end_line": 6,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 6,
+            "symbol": null
+          },
+          {
+            "end_line": 33,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 33,
+            "symbol": "create_server"
+          },
+          {
+            "end_line": 91,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 75,
+            "symbol": "create_server.middleman_context"
+          },
+          {
+            "end_line": 103,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 98,
+            "symbol": "create_server.middleman_changed_context"
+          },
+          {
+            "end_line": 115,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 108,
+            "symbol": "create_server.middleman_context_stats"
+          },
+          {
+            "end_line": 102,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 100,
+            "symbol": "create_server.middleman_changed_context"
+          },
+          {
+            "end_line": 8,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 5,
+            "symbol": null
+          },
+          {
+            "end_line": 15,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 14,
+            "symbol": null
+          },
+          {
+            "end_line": 34,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 34,
+            "symbol": null
+          },
+          {
+            "end_line": 233,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 218,
+            "symbol": "_mcp_preflight"
+          },
+          {
+            "end_line": 14,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 9,
+            "symbol": null
+          },
+          {
+            "end_line": 68,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 66,
+            "symbol": "RequiredSourceUnit"
+          },
+          {
+            "end_line": 22,
+            "path": "middle_man/mcp/benchmark_receipts.py",
+            "start_line": 22,
+            "symbol": "BenchmarkPolicy"
+          },
+          {
+            "end_line": 47,
+            "path": "middle_man/mcp/benchmark_receipts.py",
+            "start_line": 43,
+            "symbol": "BenchmarkPolicy.delivery_mode"
+          },
+          {
+            "end_line": 46,
+            "path": "middle_man/mcp/benchmark_receipts.py",
+            "start_line": 45,
+            "symbol": "BenchmarkPolicy.delivery_mode"
+          },
+          {
+            "end_line": 14,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 4,
+            "symbol": null
+          },
+          {
+            "end_line": 131,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 125,
+            "symbol": "test_local_quality_benchmarks_preserve_required_context"
+          },
+          {
+            "end_line": 101,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 80,
+            "symbol": "test_changed_source_refreshes_and_expansion_warns"
+          },
+          {
+            "end_line": 24,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 9,
+            "symbol": "SelectionEntry"
+          },
+          {
+            "end_line": 56,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 35,
+            "symbol": "SelectionDiagnostic"
+          },
+          {
+            "end_line": 16,
+            "path": "middle_man/gateway/codex_benchmark/infrastructure.py",
+            "start_line": 14,
+            "symbol": null
+          },
+          {
+            "end_line": 98,
+            "path": "middle_man/gateway/codex_benchmark/infrastructure.py",
+            "start_line": 87,
+            "symbol": "_snapshot_mcp_call"
+          },
+          {
+            "end_line": 70,
+            "path": "middle_man/cli/mcp.py",
+            "start_line": 1,
+            "symbol": "add_mcp_commands"
+          },
+          {
+            "end_line": 82,
+            "path": "middle_man/mcp/delivery.py",
+            "start_line": 1,
+            "symbol": "DeliveryLedger"
+          },
+          {
+            "end_line": 22,
+            "path": "middle_man/gateway/locator_diagnostics.py",
+            "start_line": 20,
+            "symbol": "SELECTION_PHASES"
+          },
+          {
+            "end_line": 60,
+            "path": "middle_man/gateway/source.py",
+            "start_line": 1,
+            "symbol": "SourceFile"
+          },
+          {
+            "end_line": 50,
+            "path": "middle_man/cli/main.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 12,
+            "path": "middle_man/gateway/codex_benchmark/offline_auto.py",
+            "start_line": 10,
+            "symbol": "MIN_CANDIDATE_SOURCE_TOKENS"
+          },
+          {
+            "end_line": 52,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 43,
+            "symbol": "ContextReference"
+          },
+          {
+            "end_line": 349,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 318,
+            "symbol": "test_candidate_cumulative_delivery"
+          },
+          {
+            "end_line": 362,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 352,
+            "symbol": "test_mapped_request_file_is_delivered_once"
+          },
+          {
+            "end_line": 125,
+            "path": "tests/test_mcp_gateway.py",
+            "start_line": 116,
+            "symbol": "test_context_pack_matches_direct_gateway"
+          },
+          {
+            "end_line": 46,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 41,
+            "symbol": "ContextQuery"
+          },
+          {
+            "end_line": 231,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 215,
+            "symbol": "test_locator_server_rejects_source_bearing_payload"
+          },
+          {
+            "end_line": 263,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 234,
+            "symbol": "test_official_locator_stdio_and_selected_path"
+          },
+          {
+            "end_line": 375,
+            "path": "middle_man/gateway/context_builder.py",
+            "start_line": 69,
+            "symbol": "ContextBuilder"
+          },
+          {
+            "end_line": 118,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 86,
+            "symbol": "test_core_full_surface_and_direct_context"
+          },
+          {
+            "end_line": 50,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 48,
+            "symbol": "_source_lines"
+          },
+          {
+            "end_line": 55,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 53,
+            "symbol": "_delivered_lines"
+          },
+          {
+            "end_line": 45,
+            "path": "middle_man/gateway/context_output.py",
+            "start_line": 39,
+            "symbol": "context_pack_dict"
+          },
+          {
+            "end_line": 28,
+            "path": "tests/test_codex_benchmark_delivery.py",
+            "start_line": 11,
+            "symbol": "test_pack_delivery_log_has_range_identity_and_sizes_but_no_source"
+          },
+          {
+            "end_line": 32,
+            "path": "tests/test_phase_22_14.py",
+            "start_line": 28,
+            "symbol": "_selection"
+          }
+        ],
+        "locator_bytes": 2618,
+        "locator_estimated_tokens": 655,
+        "locator_sha256": "9c72029b18262a2c561395b27e703ca9271b8754893c72733386b2aab0789207",
+        "path_bytes": 866,
+        "range_bytes": 292,
+        "selected_paths": [
+          "middle_man/mcp/gateway.py",
+          "tests/test_phase_22_v4.py",
+          "middle_man/gateway/context_models.py",
+          "middle_man/mcp/server.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/mcp/benchmark_receipts.py",
+          "tests/test_gateway_context_packs.py",
+          "middle_man/gateway/selection.py",
+          "middle_man/gateway/codex_benchmark/infrastructure.py",
+          "middle_man/cli/mcp.py",
+          "middle_man/mcp/delivery.py",
+          "middle_man/gateway/locator_diagnostics.py",
+          "middle_man/gateway/source.py",
+          "middle_man/cli/main.py",
+          "middle_man/gateway/codex_benchmark/offline_auto.py",
+          "middle_man/gateway/handoff.py",
+          "tests/test_phase_22_10.py",
+          "tests/test_mcp_gateway.py",
+          "middle_man/gateway/relevance.py",
+          "tests/test_phase_22_11.py",
+          "middle_man/gateway/context_builder.py",
+          "tests/test_phase_22_1.py",
+          "tests/test_phase_22_6.py",
+          "middle_man/gateway/context_output.py",
+          "tests/test_codex_benchmark_delivery.py",
+          "tests/test_phase_22_14.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 23,
+        "symbol_bytes": 1299,
+        "unique_supplemental_hints": 23
+      },
+      "B_plus_C": {
+        "appendix_budget": 397,
+        "appendix_bytes": 1747,
+        "appendix_estimated_tokens": 437,
+        "appendix_over_under_tokens": 40,
+        "distinct_hints": 23,
+        "distinct_locations": 23,
+        "distinct_paths": 19,
+        "exact_duplicates_removed": 15,
+        "fits_fixed_budget": false,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 83,
+        "hints": [
+          {
+            "end_line": 320,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 266,
+            "symbol": "MCPGateway.context"
+          },
+          {
+            "end_line": 527,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 516,
+            "symbol": "MCPGateway.explain_selection"
+          },
+          {
+            "end_line": 142,
+            "path": "tests/test_phase_22_v4.py",
+            "start_line": 141,
+            "symbol": "test_pinned_v4_source_contract.source"
+          },
+          {
+            "end_line": 349,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 318,
+            "symbol": "test_candidate_cumulative_delivery"
+          },
+          {
+            "end_line": 362,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 352,
+            "symbol": "test_mapped_request_file_is_delivered_once"
+          },
+          {
+            "end_line": 44,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 39,
+            "symbol": "ChangedContext"
+          },
+          {
+            "end_line": 102,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 100,
+            "symbol": "create_server.middleman_changed_context"
+          },
+          {
+            "end_line": 125,
+            "path": "tests/test_mcp_gateway.py",
+            "start_line": 116,
+            "symbol": "test_context_pack_matches_direct_gateway"
+          },
+          {
+            "end_line": 233,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 218,
+            "symbol": "_mcp_preflight"
+          },
+          {
+            "end_line": 46,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 41,
+            "symbol": "ContextQuery"
+          },
+          {
+            "end_line": 231,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 215,
+            "symbol": "test_locator_server_rejects_source_bearing_payload"
+          },
+          {
+            "end_line": 263,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 234,
+            "symbol": "test_official_locator_stdio_and_selected_path"
+          },
+          {
+            "end_line": 375,
+            "path": "middle_man/gateway/context_builder.py",
+            "start_line": 69,
+            "symbol": "ContextBuilder"
+          },
+          {
+            "end_line": 118,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 86,
+            "symbol": "test_core_full_surface_and_direct_context"
+          },
+          {
+            "end_line": 68,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 66,
+            "symbol": "RequiredSourceUnit"
+          },
+          {
+            "end_line": 46,
+            "path": "middle_man/mcp/benchmark_receipts.py",
+            "start_line": 45,
+            "symbol": "BenchmarkPolicy.delivery_mode"
+          },
+          {
+            "end_line": 50,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 48,
+            "symbol": "_source_lines"
+          },
+          {
+            "end_line": 55,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 53,
+            "symbol": "_delivered_lines"
+          },
+          {
+            "end_line": 45,
+            "path": "middle_man/gateway/context_output.py",
+            "start_line": 39,
+            "symbol": "context_pack_dict"
+          },
+          {
+            "end_line": 28,
+            "path": "tests/test_codex_benchmark_delivery.py",
+            "start_line": 11,
+            "symbol": "test_pack_delivery_log_has_range_identity_and_sizes_but_no_source"
+          },
+          {
+            "end_line": 101,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 80,
+            "symbol": "test_changed_source_refreshes_and_expansion_warns"
+          },
+          {
+            "end_line": 56,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 35,
+            "symbol": "SelectionDiagnostic"
+          },
+          {
+            "end_line": 32,
+            "path": "tests/test_phase_22_14.py",
+            "start_line": 28,
+            "symbol": "_selection"
+          }
+        ],
+        "locator_bytes": 1551,
+        "locator_estimated_tokens": 388,
+        "locator_sha256": "0be1efe64eb743205ad82d87850e4a08047c81c6967af533a09662704f9072d2",
+        "path_bytes": 597,
+        "range_bytes": 138,
+        "selected_paths": [
+          "middle_man/mcp/gateway.py",
+          "tests/test_phase_22_v4.py",
+          "tests/test_phase_22_10.py",
+          "middle_man/gateway/context_models.py",
+          "middle_man/mcp/server.py",
+          "tests/test_mcp_gateway.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/gateway/relevance.py",
+          "tests/test_phase_22_11.py",
+          "middle_man/gateway/context_builder.py",
+          "tests/test_phase_22_1.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/mcp/benchmark_receipts.py",
+          "tests/test_phase_22_6.py",
+          "middle_man/gateway/context_output.py",
+          "tests/test_codex_benchmark_delivery.py",
+          "tests/test_gateway_context_packs.py",
+          "middle_man/gateway/selection.py",
+          "tests/test_phase_22_14.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 4,
+        "symbol_bytes": 733,
+        "unique_supplemental_hints": 4
+      },
+      "originals": {
+        "A": {
+          "appendix_estimated_tokens": 397,
+          "distinct_paths": 17,
+          "hint_count": 31,
+          "locator_sha256": "452929883a8a0614fa22198d8d968b129067513862438b1bf553a6b2bc2cdd9f"
+        },
+        "B": {
+          "appendix_estimated_tokens": 393,
+          "distinct_paths": 19,
+          "hint_count": 19,
+          "locator_sha256": "cb518f40e8163e9a4f1af37691e1810e5f86b5949eba711e0f14a1accfaf08bc"
+        },
+        "C": {
+          "appendix_estimated_tokens": 397,
+          "distinct_paths": 19,
+          "hint_count": 19,
+          "locator_sha256": "26a22f913ab558997b88022318313dfabd97fd3ef23f51f06e2a61e03d7b4cc6"
+        }
+      },
+      "task_id": "M02",
+      "task_sha256": "99e572ef26121c9f2260a6d16994cb68bef999c41be79981405056b22cf109a8"
+    },
+    {
+      "A_plus_B_plus_C": {
+        "appendix_budget": 339,
+        "appendix_bytes": 2221,
+        "appendix_estimated_tokens": 556,
+        "appendix_over_under_tokens": 217,
+        "distinct_hints": 50,
+        "distinct_locations": 50,
+        "distinct_paths": 19,
+        "exact_duplicates_removed": 16,
+        "fits_fixed_budget": false,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 137,
+        "hints": [
+          {
+            "end_line": 8,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 7,
+            "symbol": null
+          },
+          {
+            "end_line": 30,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 28,
+            "symbol": "MAX_CONTEXT_TOKENS"
+          },
+          {
+            "end_line": 52,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "symbol": "MCPGateway"
+          },
+          {
+            "end_line": 321,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 265,
+            "symbol": "MCPGateway.context"
+          },
+          {
+            "end_line": 390,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 376,
+            "symbol": "MCPGateway.context_pack"
+          },
+          {
+            "end_line": 458,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 439,
+            "symbol": "MCPGateway.changed_context"
+          },
+          {
+            "end_line": 320,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 266,
+            "symbol": "MCPGateway.context"
+          },
+          {
+            "end_line": 182,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 1,
+            "symbol": "ContextQuery"
+          },
+          {
+            "end_line": 46,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 41,
+            "symbol": "ContextQuery"
+          },
+          {
+            "end_line": 21,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 6,
+            "symbol": "ContextMode"
+          },
+          {
+            "end_line": 44,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 39,
+            "symbol": "ChangedContext"
+          },
+          {
+            "end_line": 64,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 60,
+            "symbol": "_mapped_ranges"
+          },
+          {
+            "end_line": 63,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 61,
+            "symbol": "_mapped_ranges"
+          },
+          {
+            "end_line": 6,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 6,
+            "symbol": null
+          },
+          {
+            "end_line": 33,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 33,
+            "symbol": "create_server"
+          },
+          {
+            "end_line": 91,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 75,
+            "symbol": "create_server.middleman_context"
+          },
+          {
+            "end_line": 103,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 98,
+            "symbol": "create_server.middleman_changed_context"
+          },
+          {
+            "end_line": 115,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 108,
+            "symbol": "create_server.middleman_context_stats"
+          },
+          {
+            "end_line": 102,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 100,
+            "symbol": "create_server.middleman_changed_context"
+          },
+          {
+            "end_line": 119,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 117,
+            "symbol": "create_server.middleman_explain_selection"
+          },
+          {
+            "end_line": 24,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 9,
+            "symbol": "SelectionEntry"
+          },
+          {
+            "end_line": 57,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 33,
+            "symbol": "SelectionDiagnostic"
+          },
+          {
+            "end_line": 56,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 35,
+            "symbol": "SelectionDiagnostic"
+          },
+          {
+            "end_line": 22,
+            "path": "middle_man/gateway/locator_diagnostics.py",
+            "start_line": 20,
+            "symbol": "SELECTION_PHASES"
+          },
+          {
+            "end_line": 21,
+            "path": "middle_man/gateway/locator_diagnostics.py",
+            "start_line": 21,
+            "symbol": "SELECTION_PHASES"
+          },
+          {
+            "end_line": 63,
+            "path": "middle_man/gateway/locator_diagnostics.py",
+            "start_line": 42,
+            "symbol": "_selected_clusters"
+          },
+          {
+            "end_line": 15,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 15,
+            "symbol": null
+          },
+          {
+            "end_line": 34,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 34,
+            "symbol": null
+          },
+          {
+            "end_line": 335,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 286,
+            "symbol": "validate_initial_context_budgets"
+          },
+          {
+            "end_line": 4,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 4,
+            "symbol": null
+          },
+          {
+            "end_line": 9,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 8,
+            "symbol": null
+          },
+          {
+            "end_line": 13,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 13,
+            "symbol": null
+          },
+          {
+            "end_line": 51,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 37,
+            "symbol": "test_complete_method_import_class_and_test_context"
+          },
+          {
+            "end_line": 131,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 125,
+            "symbol": "test_local_quality_benchmarks_preserve_required_context"
+          },
+          {
+            "end_line": 50,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 38,
+            "symbol": "test_complete_method_import_class_and_test_context"
+          },
+          {
+            "end_line": 15,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 10,
+            "symbol": null
+          },
+          {
+            "end_line": 52,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 43,
+            "symbol": "ContextReference"
+          },
+          {
+            "end_line": 147,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 130,
+            "symbol": "context_reference"
+          },
+          {
+            "end_line": 51,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 45,
+            "symbol": "ContextReference"
+          },
+          {
+            "end_line": 12,
+            "path": "middle_man/gateway/quality.py",
+            "start_line": 6,
+            "symbol": null
+          },
+          {
+            "end_line": 92,
+            "path": "middle_man/gateway/quality.py",
+            "start_line": 62,
+            "symbol": "run_context_benchmarks"
+          },
+          {
+            "end_line": 85,
+            "path": "middle_man/gateway/models.py",
+            "start_line": 85,
+            "symbol": "RepositoryIndex"
+          },
+          {
+            "end_line": 131,
+            "path": "middle_man/gateway/models.py",
+            "start_line": 128,
+            "symbol": "RepositoryIndex.imports_for"
+          },
+          {
+            "end_line": 375,
+            "path": "middle_man/gateway/context_builder.py",
+            "start_line": 69,
+            "symbol": "ContextBuilder"
+          },
+          {
+            "end_line": 45,
+            "path": "middle_man/gateway/context_output.py",
+            "start_line": 39,
+            "symbol": "context_pack_dict"
+          },
+          {
+            "end_line": 392,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 198,
+            "path": "tests/test_phase_22_15.py",
+            "start_line": 130,
+            "symbol": "test_large_edit_auto_selection_locator_and_prompt"
+          },
+          {
+            "end_line": 152,
+            "path": "middle_man/mcp/benchmark_receipts.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 32,
+            "path": "tests/test_phase_22_14.py",
+            "start_line": 28,
+            "symbol": "_selection"
+          },
+          {
+            "end_line": 176,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 170,
+            "symbol": "test_normal_context_budget_unchanged"
+          }
+        ],
+        "locator_bytes": 2025,
+        "locator_estimated_tokens": 507,
+        "locator_sha256": "f1da2f3305446eb980ca163b454d9078bda5af6b20cf43e5950de98adf8892bb",
+        "path_bytes": 586,
+        "range_bytes": 267,
+        "selected_paths": [
+          "middle_man/mcp/gateway.py",
+          "middle_man/gateway/relevance.py",
+          "middle_man/gateway/context_models.py",
+          "tests/test_phase_22_11.py",
+          "middle_man/mcp/server.py",
+          "middle_man/gateway/selection.py",
+          "middle_man/gateway/locator_diagnostics.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "tests/test_gateway_context_packs.py",
+          "middle_man/gateway/handoff.py",
+          "middle_man/gateway/quality.py",
+          "middle_man/gateway/models.py",
+          "middle_man/gateway/context_builder.py",
+          "middle_man/gateway/context_output.py",
+          "tests/test_phase_22_10.py",
+          "tests/test_phase_22_15.py",
+          "middle_man/mcp/benchmark_receipts.py",
+          "tests/test_phase_22_14.py",
+          "tests/test_phase_22_6.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 20,
+        "symbol_bytes": 1035,
+        "unique_supplemental_hints": 20
+      },
+      "B_plus_C": {
+        "appendix_budget": 339,
+        "appendix_bytes": 1433,
+        "appendix_estimated_tokens": 359,
+        "appendix_over_under_tokens": 20,
+        "distinct_hints": 20,
+        "distinct_locations": 20,
+        "distinct_paths": 18,
+        "exact_duplicates_removed": 16,
+        "fits_fixed_budget": false,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 75,
+        "hints": [
+          {
+            "end_line": 320,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 266,
+            "symbol": "MCPGateway.context"
+          },
+          {
+            "end_line": 375,
+            "path": "middle_man/gateway/context_builder.py",
+            "start_line": 69,
+            "symbol": "ContextBuilder"
+          },
+          {
+            "end_line": 46,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 41,
+            "symbol": "ContextQuery"
+          },
+          {
+            "end_line": 44,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 39,
+            "symbol": "ChangedContext"
+          },
+          {
+            "end_line": 63,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 61,
+            "symbol": "_mapped_ranges"
+          },
+          {
+            "end_line": 102,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 100,
+            "symbol": "create_server.middleman_changed_context"
+          },
+          {
+            "end_line": 119,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 117,
+            "symbol": "create_server.middleman_explain_selection"
+          },
+          {
+            "end_line": 56,
+            "path": "middle_man/gateway/selection.py",
+            "start_line": 35,
+            "symbol": "SelectionDiagnostic"
+          },
+          {
+            "end_line": 45,
+            "path": "middle_man/gateway/context_output.py",
+            "start_line": 39,
+            "symbol": "context_pack_dict"
+          },
+          {
+            "end_line": 21,
+            "path": "middle_man/gateway/locator_diagnostics.py",
+            "start_line": 21,
+            "symbol": "SELECTION_PHASES"
+          },
+          {
+            "end_line": 63,
+            "path": "middle_man/gateway/locator_diagnostics.py",
+            "start_line": 42,
+            "symbol": "_selected_clusters"
+          },
+          {
+            "end_line": 335,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 286,
+            "symbol": "validate_initial_context_budgets"
+          },
+          {
+            "end_line": 392,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 50,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 38,
+            "symbol": "test_complete_method_import_class_and_test_context"
+          },
+          {
+            "end_line": 51,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 45,
+            "symbol": "ContextReference"
+          },
+          {
+            "end_line": 92,
+            "path": "middle_man/gateway/quality.py",
+            "start_line": 62,
+            "symbol": "run_context_benchmarks"
+          },
+          {
+            "end_line": 198,
+            "path": "tests/test_phase_22_15.py",
+            "start_line": 130,
+            "symbol": "test_large_edit_auto_selection_locator_and_prompt"
+          },
+          {
+            "end_line": 152,
+            "path": "middle_man/mcp/benchmark_receipts.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 32,
+            "path": "tests/test_phase_22_14.py",
+            "start_line": 28,
+            "symbol": "_selection"
+          },
+          {
+            "end_line": 176,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 170,
+            "symbol": "test_normal_context_budget_unchanged"
+          }
+        ],
+        "locator_bytes": 1237,
+        "locator_estimated_tokens": 310,
+        "locator_sha256": "d2fc1778a76f1c04df4d16196e708b75cb4c4a30381b6971bcaadfedfdfa796a",
+        "path_bytes": 558,
+        "range_bytes": 113,
+        "selected_paths": [
+          "middle_man/mcp/gateway.py",
+          "middle_man/gateway/context_builder.py",
+          "middle_man/gateway/relevance.py",
+          "middle_man/gateway/context_models.py",
+          "tests/test_phase_22_11.py",
+          "middle_man/mcp/server.py",
+          "middle_man/gateway/selection.py",
+          "middle_man/gateway/context_output.py",
+          "middle_man/gateway/locator_diagnostics.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "tests/test_phase_22_10.py",
+          "tests/test_gateway_context_packs.py",
+          "middle_man/gateway/handoff.py",
+          "middle_man/gateway/quality.py",
+          "tests/test_phase_22_15.py",
+          "middle_man/mcp/benchmark_receipts.py",
+          "tests/test_phase_22_14.py",
+          "tests/test_phase_22_6.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 2,
+        "symbol_bytes": 491,
+        "unique_supplemental_hints": 2
+      },
+      "originals": {
+        "A": {
+          "appendix_estimated_tokens": 339,
+          "distinct_paths": 12,
+          "hint_count": 30,
+          "locator_sha256": "3a68f62cf2b49e698d628b1b544b696405aae53be89c1e9b512d52962f436dcb"
+        },
+        "B": {
+          "appendix_estimated_tokens": 338,
+          "distinct_paths": 18,
+          "hint_count": 18,
+          "locator_sha256": "e7337bed4326fe9ea31f286ed441fc7d0ade53192f6abe0b61fd1f9a6f36256c"
+        },
+        "C": {
+          "appendix_estimated_tokens": 339,
+          "distinct_paths": 18,
+          "hint_count": 18,
+          "locator_sha256": "83cedb1e7e9544b6d2bfee04bbbd8c329c6b28450d973be8dc918f521635ca65"
+        }
+      },
+      "task_id": "C02",
+      "task_sha256": "1b7259c528792a6d94ffd0fc36f693e40345efbff3c2a380c8f6f51ec85faa82"
+    },
+    {
+      "A_plus_B_plus_C": {
+        "appendix_budget": 375,
+        "appendix_bytes": 2761,
+        "appendix_estimated_tokens": 691,
+        "appendix_over_under_tokens": 316,
+        "distinct_hints": 54,
+        "distinct_locations": 54,
+        "distinct_paths": 23,
+        "exact_duplicates_removed": 12,
+        "fits_fixed_budget": false,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 153,
+        "hints": [
+          {
+            "end_line": 5,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 4,
+            "symbol": null
+          },
+          {
+            "end_line": 9,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 9,
+            "symbol": null
+          },
+          {
+            "end_line": 13,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 13,
+            "symbol": null
+          },
+          {
+            "end_line": 39,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 23,
+            "symbol": "CORE_TOOLS"
+          },
+          {
+            "end_line": 58,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 58,
+            "symbol": "test_stdio_schema_and_two_context_delta_sequence"
+          },
+          {
+            "end_line": 98,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 73,
+            "symbol": "test_stdio_schema_and_two_context_delta_sequence.exercise"
+          },
+          {
+            "end_line": 97,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 74,
+            "symbol": "test_stdio_schema_and_two_context_delta_sequence.exercise"
+          },
+          {
+            "end_line": 5,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 5,
+            "symbol": null
+          },
+          {
+            "end_line": 13,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 13,
+            "symbol": null
+          },
+          {
+            "end_line": 24,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 24,
+            "symbol": null
+          },
+          {
+            "end_line": 141,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 141,
+            "symbol": "test_snapshot_package_cannot_shadow_current_mcp_server"
+          },
+          {
+            "end_line": 157,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 147,
+            "symbol": "test_snapshot_package_cannot_shadow_current_mcp_server.exercise"
+          },
+          {
+            "end_line": 156,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 148,
+            "symbol": "test_snapshot_package_cannot_shadow_current_mcp_server.exercise"
+          },
+          {
+            "end_line": 7,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 7,
+            "symbol": null
+          },
+          {
+            "end_line": 16,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 13,
+            "symbol": null
+          },
+          {
+            "end_line": 35,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 28,
+            "symbol": "POLICY"
+          },
+          {
+            "end_line": 162,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 162,
+            "symbol": "test_official_progressive_stdio_and_selected_path"
+          },
+          {
+            "end_line": 183,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 166,
+            "symbol": "test_official_progressive_stdio_and_selected_path.exercise"
+          },
+          {
+            "end_line": 182,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 167,
+            "symbol": "test_official_progressive_stdio_and_selected_path.exercise"
+          },
+          {
+            "end_line": 7,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 7,
+            "symbol": null
+          },
+          {
+            "end_line": 12,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 12,
+            "symbol": null
+          },
+          {
+            "end_line": 16,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 16,
+            "symbol": null
+          },
+          {
+            "end_line": 42,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 35,
+            "symbol": "ACTUAL_QUERY"
+          },
+          {
+            "end_line": 254,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 234,
+            "symbol": "test_official_locator_stdio_and_selected_path"
+          },
+          {
+            "end_line": 253,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 237,
+            "symbol": "test_official_locator_stdio_and_selected_path.exercise"
+          },
+          {
+            "end_line": 8,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 8,
+            "symbol": null
+          },
+          {
+            "end_line": 46,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 41,
+            "symbol": "RELEASE"
+          },
+          {
+            "end_line": 82,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 70,
+            "symbol": "_recovery_paths"
+          },
+          {
+            "end_line": 45,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 42,
+            "symbol": "RELEASE"
+          },
+          {
+            "end_line": 81,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 71,
+            "symbol": "_recovery_paths"
+          },
+          {
+            "end_line": 52,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "symbol": "MCPGateway"
+          },
+          {
+            "end_line": 136,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 129,
+            "symbol": "MCPGateway._paths"
+          },
+          {
+            "end_line": 165,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 161,
+            "symbol": "MCPGateway._cache_stats"
+          },
+          {
+            "end_line": 164,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 162,
+            "symbol": "MCPGateway._cache_stats"
+          },
+          {
+            "end_line": 50,
+            "path": "middle_man/gateway/indexer.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 13,
+            "path": "middle_man/gateway/codex_benchmark/native_reads.py",
+            "start_line": 6,
+            "symbol": "_FALLBACK"
+          },
+          {
+            "end_line": 41,
+            "path": "middle_man/gateway/codex_benchmark/native_reads.py",
+            "start_line": 24,
+            "symbol": "explicit_read_paths"
+          },
+          {
+            "end_line": 373,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 370,
+            "symbol": "_changed_paths"
+          },
+          {
+            "end_line": 50,
+            "path": "middle_man/gateway/codex_benchmark/tasks.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 50,
+            "path": "middle_man/gateway/codex_benchmark/events.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 50,
+            "path": "middle_man/cli/main.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 50,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 50,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 81,
+            "path": "middle_man/lab/prefix_cache.py",
+            "start_line": 17,
+            "symbol": "PrefixCache"
+          },
+          {
+            "end_line": 68,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "start_line": 57,
+            "symbol": "test_partial_prefix_shares_only_complete_blocks"
+          },
+          {
+            "end_line": 21,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "start_line": 8,
+            "symbol": "test_shared_block_references_survive_individual_releases"
+          },
+          {
+            "end_line": 62,
+            "path": "tests/test_phase_8_ownership.py",
+            "start_line": 53,
+            "symbol": "test_cache_reference_cannot_be_released_twice"
+          },
+          {
+            "end_line": 231,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 222,
+            "symbol": "SimulationEngine._release_completed"
+          },
+          {
+            "end_line": 130,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 120,
+            "symbol": "KVBlockManager._release_block_ref"
+          },
+          {
+            "end_line": 110,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 107,
+            "symbol": "KVBlockManager.release_cache_blocks"
+          },
+          {
+            "end_line": 96,
+            "path": "middle_man/gateway/codex_benchmark/large_edit_v1_reference.py",
+            "start_line": 16,
+            "symbol": "apply_reference_solution"
+          },
+          {
+            "end_line": 27,
+            "path": "tests/test_phase_8_simultaneous_prefix.py",
+            "start_line": 7,
+            "symbol": "test_simultaneous_compatible_requests_share_one_computed_prefix"
+          },
+          {
+            "end_line": 98,
+            "path": "tests/test_phase_22_15.py",
+            "start_line": 80,
+            "symbol": "test_reference_solution_satisfies_hidden_contract_and_harness"
+          },
+          {
+            "end_line": 36,
+            "path": "tests/test_phase_8_recovery.py",
+            "start_line": 6,
+            "symbol": "test_preempted_partial_prefix_resumes_after_shared_prefix_boundary"
+          }
+        ],
+        "locator_bytes": 2565,
+        "locator_estimated_tokens": 642,
+        "locator_sha256": "b7e4786dc201ecce965a0e3825da007158dd0e2bac5efbbd58745aa7715d02d9",
+        "path_bytes": 757,
+        "range_bytes": 278,
+        "selected_paths": [
+          "tests/test_phase_22_6.py",
+          "tests/test_phase_22_1.py",
+          "tests/test_phase_22_10_1.py",
+          "tests/test_phase_22_11.py",
+          "tests/test_phase_22_10.py",
+          "middle_man/mcp/gateway.py",
+          "middle_man/gateway/indexer.py",
+          "middle_man/gateway/codex_benchmark/native_reads.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/gateway/codex_benchmark/tasks.py",
+          "middle_man/gateway/codex_benchmark/events.py",
+          "middle_man/cli/main.py",
+          "middle_man/mcp/server.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/lab/prefix_cache.py",
+          "tests/test_phase_8_prefix_cache.py",
+          "tests/test_phase_8_ownership.py",
+          "middle_man/lab/engine.py",
+          "middle_man/lab/memory.py",
+          "middle_man/gateway/codex_benchmark/large_edit_v1_reference.py",
+          "tests/test_phase_8_simultaneous_prefix.py",
+          "tests/test_phase_22_15.py",
+          "tests/test_phase_8_recovery.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 18,
+        "symbol_bytes": 1377,
+        "unique_supplemental_hints": 18
+      },
+      "B_plus_C": {
+        "appendix_budget": 375,
+        "appendix_bytes": 1619,
+        "appendix_estimated_tokens": 405,
+        "appendix_over_under_tokens": 30,
+        "distinct_hints": 18,
+        "distinct_locations": 18,
+        "distinct_paths": 15,
+        "exact_duplicates_removed": 12,
+        "fits_fixed_budget": false,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 65,
+        "hints": [
+          {
+            "end_line": 97,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 74,
+            "symbol": "test_stdio_schema_and_two_context_delta_sequence.exercise"
+          },
+          {
+            "end_line": 156,
+            "path": "tests/test_phase_22_1.py",
+            "start_line": 148,
+            "symbol": "test_snapshot_package_cannot_shadow_current_mcp_server.exercise"
+          },
+          {
+            "end_line": 182,
+            "path": "tests/test_phase_22_10_1.py",
+            "start_line": 167,
+            "symbol": "test_official_progressive_stdio_and_selected_path.exercise"
+          },
+          {
+            "end_line": 253,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 237,
+            "symbol": "test_official_locator_stdio_and_selected_path.exercise"
+          },
+          {
+            "end_line": 81,
+            "path": "middle_man/lab/prefix_cache.py",
+            "start_line": 17,
+            "symbol": "PrefixCache"
+          },
+          {
+            "end_line": 68,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "start_line": 57,
+            "symbol": "test_partial_prefix_shares_only_complete_blocks"
+          },
+          {
+            "end_line": 21,
+            "path": "tests/test_phase_8_prefix_cache.py",
+            "start_line": 8,
+            "symbol": "test_shared_block_references_survive_individual_releases"
+          },
+          {
+            "end_line": 45,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 42,
+            "symbol": "RELEASE"
+          },
+          {
+            "end_line": 81,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 71,
+            "symbol": "_recovery_paths"
+          },
+          {
+            "end_line": 164,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 162,
+            "symbol": "MCPGateway._cache_stats"
+          },
+          {
+            "end_line": 62,
+            "path": "tests/test_phase_8_ownership.py",
+            "start_line": 53,
+            "symbol": "test_cache_reference_cannot_be_released_twice"
+          },
+          {
+            "end_line": 231,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 222,
+            "symbol": "SimulationEngine._release_completed"
+          },
+          {
+            "end_line": 130,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 120,
+            "symbol": "KVBlockManager._release_block_ref"
+          },
+          {
+            "end_line": 110,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 107,
+            "symbol": "KVBlockManager.release_cache_blocks"
+          },
+          {
+            "end_line": 96,
+            "path": "middle_man/gateway/codex_benchmark/large_edit_v1_reference.py",
+            "start_line": 16,
+            "symbol": "apply_reference_solution"
+          },
+          {
+            "end_line": 27,
+            "path": "tests/test_phase_8_simultaneous_prefix.py",
+            "start_line": 7,
+            "symbol": "test_simultaneous_compatible_requests_share_one_computed_prefix"
+          },
+          {
+            "end_line": 98,
+            "path": "tests/test_phase_22_15.py",
+            "start_line": 80,
+            "symbol": "test_reference_solution_satisfies_hidden_contract_and_harness"
+          },
+          {
+            "end_line": 36,
+            "path": "tests/test_phase_8_recovery.py",
+            "start_line": 6,
+            "symbol": "test_preempted_partial_prefix_resumes_after_shared_prefix_boundary"
+          }
+        ],
+        "locator_bytes": 1423,
+        "locator_estimated_tokens": 356,
+        "locator_sha256": "ccae546bfaa08880f7efae9694885d44d9d0bc4d06f587f6e44b0e85f89fbac8",
+        "path_bytes": 450,
+        "range_bytes": 101,
+        "selected_paths": [
+          "tests/test_phase_22_6.py",
+          "tests/test_phase_22_1.py",
+          "tests/test_phase_22_10_1.py",
+          "tests/test_phase_22_11.py",
+          "middle_man/lab/prefix_cache.py",
+          "tests/test_phase_8_prefix_cache.py",
+          "tests/test_phase_22_10.py",
+          "middle_man/mcp/gateway.py",
+          "tests/test_phase_8_ownership.py",
+          "middle_man/lab/engine.py",
+          "middle_man/lab/memory.py",
+          "middle_man/gateway/codex_benchmark/large_edit_v1_reference.py",
+          "tests/test_phase_8_simultaneous_prefix.py",
+          "tests/test_phase_22_15.py",
+          "tests/test_phase_8_recovery.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 3,
+        "symbol_bytes": 807,
+        "unique_supplemental_hints": 3
+      },
+      "originals": {
+        "A": {
+          "appendix_estimated_tokens": 375,
+          "distinct_paths": 14,
+          "hint_count": 36,
+          "locator_sha256": "0e5df267394b4893370bfc098b7e1f9a2367d0949e78734c0315ab86d5221338"
+        },
+        "B": {
+          "appendix_estimated_tokens": 371,
+          "distinct_paths": 15,
+          "hint_count": 15,
+          "locator_sha256": "4cd605f3b152f759b3c1e6cc92c2f093f0a46ccb587a8b564c34f2abebbbad02"
+        },
+        "C": {
+          "appendix_estimated_tokens": 375,
+          "distinct_paths": 15,
+          "hint_count": 15,
+          "locator_sha256": "8d7dad3f01ec9368db45ce54909b5335acccb67b8f0d54eda9477f47d789aa99"
+        }
+      },
+      "task_id": "T01",
+      "task_sha256": "16acf6b01a978be176b2c2ce5560f144c55fac5960fc90edf21df93a4ac91c0b"
+    },
+    {
+      "A_plus_B_plus_C": {
+        "appendix_budget": 288,
+        "appendix_bytes": 1697,
+        "appendix_estimated_tokens": 425,
+        "appendix_over_under_tokens": 137,
+        "distinct_hints": 41,
+        "distinct_locations": 41,
+        "distinct_paths": 18,
+        "exact_duplicates_removed": 15,
+        "fits_fixed_budget": false,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 117,
+        "hints": [
+          {
+            "end_line": 8,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 7,
+            "symbol": null
+          },
+          {
+            "end_line": 30,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 28,
+            "symbol": "MAX_CONTEXT_TOKENS"
+          },
+          {
+            "end_line": 52,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 52,
+            "symbol": "MCPGateway"
+          },
+          {
+            "end_line": 321,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 265,
+            "symbol": "MCPGateway.context"
+          },
+          {
+            "end_line": 390,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 376,
+            "symbol": "MCPGateway.context_pack"
+          },
+          {
+            "end_line": 458,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 439,
+            "symbol": "MCPGateway.changed_context"
+          },
+          {
+            "end_line": 320,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 266,
+            "symbol": "MCPGateway.context"
+          },
+          {
+            "end_line": 21,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 6,
+            "symbol": "ContextMode"
+          },
+          {
+            "end_line": 89,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 37,
+            "symbol": "ChangedContext"
+          },
+          {
+            "end_line": 44,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 39,
+            "symbol": "ChangedContext"
+          },
+          {
+            "end_line": 52,
+            "path": "middle_man/gateway/context_output.py",
+            "start_line": 1,
+            "symbol": "_FENCES"
+          },
+          {
+            "end_line": 45,
+            "path": "middle_man/gateway/context_output.py",
+            "start_line": 39,
+            "symbol": "context_pack_dict"
+          },
+          {
+            "end_line": 15,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 15,
+            "symbol": null
+          },
+          {
+            "end_line": 34,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 34,
+            "symbol": null
+          },
+          {
+            "end_line": 336,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 285,
+            "symbol": "validate_initial_context_budgets"
+          },
+          {
+            "end_line": 335,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 286,
+            "symbol": "validate_initial_context_budgets"
+          },
+          {
+            "end_line": 50,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 263,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 11,
+            "path": "middle_man/gateway/codex_benchmark/offline_auto.py",
+            "start_line": 7,
+            "symbol": "MIN_CANDIDATE_SOURCE_TOKENS"
+          },
+          {
+            "end_line": 40,
+            "path": "middle_man/gateway/codex_benchmark/offline_auto.py",
+            "start_line": 25,
+            "symbol": "decide_offline_locator"
+          },
+          {
+            "end_line": 50,
+            "path": "middle_man/gateway/codex_runner/runner.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 120,
+            "path": "middle_man/gateway/codex_runner/runner.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 50,
+            "path": "scripts/measure_large_edit_v1.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 101,
+            "path": "scripts/measure_large_edit_v1.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 15,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 10,
+            "symbol": null
+          },
+          {
+            "end_line": 52,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 43,
+            "symbol": "ContextReference"
+          },
+          {
+            "end_line": 51,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 45,
+            "symbol": "ContextReference"
+          },
+          {
+            "end_line": 12,
+            "path": "middle_man/gateway/quality.py",
+            "start_line": 6,
+            "symbol": null
+          },
+          {
+            "end_line": 92,
+            "path": "middle_man/gateway/quality.py",
+            "start_line": 62,
+            "symbol": "run_context_benchmarks"
+          },
+          {
+            "end_line": 6,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 6,
+            "symbol": null
+          },
+          {
+            "end_line": 33,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 33,
+            "symbol": "create_server"
+          },
+          {
+            "end_line": 102,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 100,
+            "symbol": "create_server.middleman_changed_context"
+          },
+          {
+            "end_line": 50,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 47,
+            "path": "middle_man/gateway/relevance.py",
+            "start_line": 39,
+            "symbol": "ContextQuery"
+          },
+          {
+            "end_line": 4,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 4,
+            "symbol": null
+          },
+          {
+            "end_line": 9,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 8,
+            "symbol": null
+          },
+          {
+            "end_line": 13,
+            "path": "tests/test_gateway_context_packs.py",
+            "start_line": 13,
+            "symbol": null
+          },
+          {
+            "end_line": 375,
+            "path": "middle_man/gateway/context_builder.py",
+            "start_line": 69,
+            "symbol": "ContextBuilder"
+          },
+          {
+            "end_line": 98,
+            "path": "middle_man/gateway/codex_benchmark/offline_anchor.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 77,
+            "path": "middle_man/gateway/codex_benchmark/offline_locator.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 176,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 170,
+            "symbol": "test_normal_context_budget_unchanged"
+          }
+        ],
+        "locator_bytes": 1501,
+        "locator_estimated_tokens": 376,
+        "locator_sha256": "44b4f67ac7dc795f794442eea221bdeed00fde2830c808784d37714c567ecfdc",
+        "path_bytes": 654,
+        "range_bytes": 204,
+        "selected_paths": [
+          "middle_man/mcp/gateway.py",
+          "middle_man/gateway/context_models.py",
+          "middle_man/gateway/context_output.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "tests/test_phase_22_11.py",
+          "middle_man/gateway/codex_benchmark/offline_auto.py",
+          "middle_man/gateway/codex_runner/runner.py",
+          "scripts/measure_large_edit_v1.py",
+          "middle_man/gateway/handoff.py",
+          "middle_man/gateway/quality.py",
+          "middle_man/mcp/server.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/gateway/relevance.py",
+          "tests/test_gateway_context_packs.py",
+          "middle_man/gateway/context_builder.py",
+          "middle_man/gateway/codex_benchmark/offline_anchor.py",
+          "middle_man/gateway/codex_benchmark/offline_locator.py",
+          "tests/test_phase_22_6.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 15,
+        "symbol_bytes": 526,
+        "unique_supplemental_hints": 15
+      },
+      "B_plus_C": {
+        "appendix_budget": 288,
+        "appendix_bytes": 1134,
+        "appendix_estimated_tokens": 284,
+        "appendix_over_under_tokens": -4,
+        "distinct_hints": 15,
+        "distinct_locations": 15,
+        "distinct_paths": 15,
+        "exact_duplicates_removed": 15,
+        "fits_fixed_budget": true,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 59,
+        "hints": [
+          {
+            "end_line": 320,
+            "path": "middle_man/mcp/gateway.py",
+            "start_line": 266,
+            "symbol": "MCPGateway.context"
+          },
+          {
+            "end_line": 375,
+            "path": "middle_man/gateway/context_builder.py",
+            "start_line": 69,
+            "symbol": "ContextBuilder"
+          },
+          {
+            "end_line": 44,
+            "path": "middle_man/gateway/context_models.py",
+            "start_line": 39,
+            "symbol": "ChangedContext"
+          },
+          {
+            "end_line": 45,
+            "path": "middle_man/gateway/context_output.py",
+            "start_line": 39,
+            "symbol": "context_pack_dict"
+          },
+          {
+            "end_line": 335,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 286,
+            "symbol": "validate_initial_context_budgets"
+          },
+          {
+            "end_line": 263,
+            "path": "tests/test_phase_22_11.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 40,
+            "path": "middle_man/gateway/codex_benchmark/offline_auto.py",
+            "start_line": 25,
+            "symbol": "decide_offline_locator"
+          },
+          {
+            "end_line": 120,
+            "path": "middle_man/gateway/codex_runner/runner.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 101,
+            "path": "scripts/measure_large_edit_v1.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 98,
+            "path": "middle_man/gateway/codex_benchmark/offline_anchor.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 77,
+            "path": "middle_man/gateway/codex_benchmark/offline_locator.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 51,
+            "path": "middle_man/gateway/handoff.py",
+            "start_line": 45,
+            "symbol": "ContextReference"
+          },
+          {
+            "end_line": 92,
+            "path": "middle_man/gateway/quality.py",
+            "start_line": 62,
+            "symbol": "run_context_benchmarks"
+          },
+          {
+            "end_line": 102,
+            "path": "middle_man/mcp/server.py",
+            "start_line": 100,
+            "symbol": "create_server.middleman_changed_context"
+          },
+          {
+            "end_line": 176,
+            "path": "tests/test_phase_22_6.py",
+            "start_line": 170,
+            "symbol": "test_normal_context_budget_unchanged"
+          }
+        ],
+        "locator_bytes": 938,
+        "locator_estimated_tokens": 235,
+        "locator_sha256": "34fab557935ec35915efde5eddb810deb9bf19ddf6fd327069a9777d4ab881c3",
+        "path_bytes": 537,
+        "range_bytes": 82,
+        "selected_paths": [
+          "middle_man/mcp/gateway.py",
+          "middle_man/gateway/context_builder.py",
+          "middle_man/gateway/context_models.py",
+          "middle_man/gateway/context_output.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "tests/test_phase_22_11.py",
+          "middle_man/gateway/codex_benchmark/offline_auto.py",
+          "middle_man/gateway/codex_runner/runner.py",
+          "scripts/measure_large_edit_v1.py",
+          "middle_man/gateway/codex_benchmark/offline_anchor.py",
+          "middle_man/gateway/codex_benchmark/offline_locator.py",
+          "middle_man/gateway/handoff.py",
+          "middle_man/gateway/quality.py",
+          "middle_man/mcp/server.py",
+          "tests/test_phase_22_6.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 0,
+        "symbol_bytes": 260,
+        "unique_supplemental_hints": 0
+      },
+      "originals": {
+        "A": {
+          "appendix_estimated_tokens": 288,
+          "distinct_paths": 14,
+          "hint_count": 26,
+          "locator_sha256": "abc2606e39fbae6c0aed5a6eb884e93a3c6571595a2571b899938228e8d7c5d2"
+        },
+        "B": {
+          "appendix_estimated_tokens": 284,
+          "distinct_paths": 15,
+          "hint_count": 15,
+          "locator_sha256": "34fab557935ec35915efde5eddb810deb9bf19ddf6fd327069a9777d4ab881c3"
+        },
+        "C": {
+          "appendix_estimated_tokens": 284,
+          "distinct_paths": 15,
+          "hint_count": 15,
+          "locator_sha256": "34fab557935ec35915efde5eddb810deb9bf19ddf6fd327069a9777d4ab881c3"
+        }
+      },
+      "task_id": "G02",
+      "task_sha256": "174c3ad3b862523f367c1bc452fda5eb2250fa2da731a1f386caf13cac6b51e1"
+    },
+    {
+      "A_plus_B_plus_C": {
+        "appendix_budget": 220,
+        "appendix_bytes": 1418,
+        "appendix_estimated_tokens": 355,
+        "appendix_over_under_tokens": 135,
+        "distinct_hints": 27,
+        "distinct_locations": 27,
+        "distinct_paths": 16,
+        "exact_duplicates_removed": 10,
+        "fits_fixed_budget": false,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 85,
+        "hints": [
+          {
+            "end_line": 36,
+            "path": "middle_man/lab/preemption.py",
+            "start_line": 1,
+            "symbol": "LargestPrivateOwnerPolicy"
+          },
+          {
+            "end_line": 36,
+            "path": "middle_man/lab/preemption.py",
+            "start_line": 19,
+            "symbol": "LargestPrivateOwnerPolicy.choose_victim"
+          },
+          {
+            "end_line": 13,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 7,
+            "symbol": null
+          },
+          {
+            "end_line": 34,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 34,
+            "symbol": "SimulationEngine"
+          },
+          {
+            "end_line": 244,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 232,
+            "symbol": "SimulationEngine._release_request"
+          },
+          {
+            "end_line": 243,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 233,
+            "symbol": "SimulationEngine._release_request"
+          },
+          {
+            "end_line": 65,
+            "path": "tests/test_phase_7_preemption.py",
+            "start_line": 1,
+            "symbol": "pressure_requests"
+          },
+          {
+            "end_line": 14,
+            "path": "tests/test_phase_7_preemption.py",
+            "start_line": 10,
+            "symbol": "pressure_requests"
+          },
+          {
+            "end_line": 130,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 1,
+            "symbol": "KVBlockManager"
+          },
+          {
+            "end_line": 130,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 21,
+            "symbol": "KVBlockManager"
+          },
+          {
+            "end_line": 9,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 9,
+            "symbol": null
+          },
+          {
+            "end_line": 44,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 20,
+            "symbol": "KVSample"
+          },
+          {
+            "end_line": 89,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 89,
+            "symbol": "MetricsCollector"
+          },
+          {
+            "end_line": 177,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 158,
+            "symbol": "MetricsCollector._request_metrics"
+          },
+          {
+            "end_line": 26,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 22,
+            "symbol": "KVSample"
+          },
+          {
+            "end_line": 50,
+            "path": "middle_man/lab/memory_control.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 7,
+            "path": "middle_man/lab/workloads.py",
+            "start_line": 7,
+            "symbol": null
+          },
+          {
+            "end_line": 48,
+            "path": "middle_man/lab/workloads.py",
+            "start_line": 19,
+            "symbol": "RequestSpec"
+          },
+          {
+            "end_line": 159,
+            "path": "middle_man/lab/request.py",
+            "start_line": 1,
+            "symbol": "InferenceRequest"
+          },
+          {
+            "end_line": 11,
+            "path": "middle_man/lab/scheduler.py",
+            "start_line": 3,
+            "symbol": "SchedulerPolicy"
+          },
+          {
+            "end_line": 50,
+            "path": "middle_man/lab/prefix_cache.py",
+            "start_line": 1,
+            "symbol": null
+          },
+          {
+            "end_line": 52,
+            "path": "middle_man/lab/config.py",
+            "start_line": 29,
+            "symbol": "LabConfig"
+          },
+          {
+            "end_line": 362,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 352,
+            "symbol": "test_mapped_request_file_is_delivered_once"
+          },
+          {
+            "end_line": 45,
+            "path": "tests/test_phase_9_benchmarks.py",
+            "start_line": 28,
+            "symbol": "test_comparison_cases_construct_distinct_request_objects"
+          },
+          {
+            "end_line": 62,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 47,
+            "symbol": "evaluate_preemption_v3"
+          },
+          {
+            "end_line": 402,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 391,
+            "symbol": "evaluate_preemption_v2"
+          },
+          {
+            "end_line": 146,
+            "path": "middle_man/cli/main.py",
+            "start_line": 1,
+            "symbol": null
+          }
+        ],
+        "locator_bytes": 1222,
+        "locator_estimated_tokens": 306,
+        "locator_sha256": "6f556be7205852d3fc90bcf1910557dff558c577ac0e0260edd7d0bef713ea46",
+        "path_bytes": 472,
+        "range_bytes": 136,
+        "selected_paths": [
+          "middle_man/lab/preemption.py",
+          "middle_man/lab/engine.py",
+          "tests/test_phase_7_preemption.py",
+          "middle_man/lab/memory.py",
+          "middle_man/lab/metrics.py",
+          "middle_man/lab/memory_control.py",
+          "middle_man/lab/workloads.py",
+          "middle_man/lab/request.py",
+          "middle_man/lab/scheduler.py",
+          "middle_man/lab/prefix_cache.py",
+          "middle_man/lab/config.py",
+          "tests/test_phase_22_10.py",
+          "tests/test_phase_9_benchmarks.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/cli/main.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 10,
+        "symbol_bytes": 529,
+        "unique_supplemental_hints": 10
+      },
+      "B_plus_C": {
+        "appendix_budget": 220,
+        "appendix_bytes": 879,
+        "appendix_estimated_tokens": 220,
+        "appendix_over_under_tokens": 0,
+        "distinct_hints": 10,
+        "distinct_locations": 10,
+        "distinct_paths": 10,
+        "exact_duplicates_removed": 10,
+        "fits_fixed_budget": true,
+        "fixed_wrapper_bytes": 196,
+        "format_separator_bytes": 39,
+        "hints": [
+          {
+            "end_line": 36,
+            "path": "middle_man/lab/preemption.py",
+            "start_line": 19,
+            "symbol": "LargestPrivateOwnerPolicy.choose_victim"
+          },
+          {
+            "end_line": 243,
+            "path": "middle_man/lab/engine.py",
+            "start_line": 233,
+            "symbol": "SimulationEngine._release_request"
+          },
+          {
+            "end_line": 362,
+            "path": "tests/test_phase_22_10.py",
+            "start_line": 352,
+            "symbol": "test_mapped_request_file_is_delivered_once"
+          },
+          {
+            "end_line": 14,
+            "path": "tests/test_phase_7_preemption.py",
+            "start_line": 10,
+            "symbol": "pressure_requests"
+          },
+          {
+            "end_line": 45,
+            "path": "tests/test_phase_9_benchmarks.py",
+            "start_line": 28,
+            "symbol": "test_comparison_cases_construct_distinct_request_objects"
+          },
+          {
+            "end_line": 62,
+            "path": "middle_man/gateway/codex_benchmark/preemption_v3.py",
+            "start_line": 47,
+            "symbol": "evaluate_preemption_v3"
+          },
+          {
+            "end_line": 130,
+            "path": "middle_man/lab/memory.py",
+            "start_line": 21,
+            "symbol": "KVBlockManager"
+          },
+          {
+            "end_line": 26,
+            "path": "middle_man/lab/metrics.py",
+            "start_line": 22,
+            "symbol": "KVSample"
+          },
+          {
+            "end_line": 402,
+            "path": "middle_man/gateway/codex_benchmark/runner.py",
+            "start_line": 391,
+            "symbol": "evaluate_preemption_v2"
+          },
+          {
+            "end_line": 146,
+            "path": "middle_man/cli/main.py",
+            "start_line": 1,
+            "symbol": null
+          }
+        ],
+        "locator_bytes": 683,
+        "locator_estimated_tokens": 171,
+        "locator_sha256": "6cc2696c76989af9a73eee5738f39a183998371d95d6216aba725e6f78c425dd",
+        "path_bytes": 307,
+        "range_bytes": 57,
+        "selected_paths": [
+          "middle_man/lab/preemption.py",
+          "middle_man/lab/engine.py",
+          "tests/test_phase_22_10.py",
+          "tests/test_phase_7_preemption.py",
+          "tests/test_phase_9_benchmarks.py",
+          "middle_man/gateway/codex_benchmark/preemption_v3.py",
+          "middle_man/lab/memory.py",
+          "middle_man/lab/metrics.py",
+          "middle_man/gateway/codex_benchmark/runner.py",
+          "middle_man/cli/main.py"
+        ],
+        "supplemental_hints_beyond_budget_in_input_order": 0,
+        "symbol_bytes": 280,
+        "unique_supplemental_hints": 0
+      },
+      "originals": {
+        "A": {
+          "appendix_estimated_tokens": 220,
+          "distinct_paths": 11,
+          "hint_count": 17,
+          "locator_sha256": "a2561b63865dca415c87e2947c80f580064276247ac1ca9de2c31135f7af8e4b"
+        },
+        "B": {
+          "appendix_estimated_tokens": 220,
+          "distinct_paths": 10,
+          "hint_count": 10,
+          "locator_sha256": "6cc2696c76989af9a73eee5738f39a183998371d95d6216aba725e6f78c425dd"
+        },
+        "C": {
+          "appendix_estimated_tokens": 220,
+          "distinct_paths": 10,
+          "hint_count": 10,
+          "locator_sha256": "6cc2696c76989af9a73eee5738f39a183998371d95d6216aba725e6f78c425dd"
+        }
+      },
+      "task_id": "E01",
+      "task_sha256": "456e5fe78c3aca95a1a8657bf366be9b5dd82ce97786267d290537b5d5ff1d12"
+    }
+  ]
+}
