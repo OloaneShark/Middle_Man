@@ -1,0 +1,32 @@
+{
+  "schema": "middle_man.a_plus_human_review_template.v1",
+  "status": "PENDING",
+  "corpus_file": "tests/fixtures/a_plus_prospective_corpus.json",
+  "corpus_sha256": "4580134b1ed60c4b75c3c951cda89e65e863ec32dbc70f39e192efaac69770af",
+  "source_commit": "8a6dca9e3cfadd144f14e860d182ec44ac0faedc",
+  "source_tree": "467f280dfc781897099d726085974223cf9d6754",
+  "reviewers": [
+    {"slot": "reviewer_1", "status": "PENDING", "human_reviewer_id": null, "submitted_at": null, "task_reviews": []},
+    {"slot": "reviewer_2", "status": "PENDING", "human_reviewer_id": null, "submitted_at": null, "task_reviews": []}
+  ],
+  "task_review_entry_template": {
+    "task_id": null,
+    "status": "PENDING",
+    "required_implementation_areas": [],
+    "source_paths": [],
+    "relevant_function_method_symbols": [],
+    "source_line_intervals": [],
+    "complete_alternative_evidence_options": [],
+    "supporting_tests_or_integrations": [],
+    "unresolved_interpretation_issues": [],
+    "source_grounded_reasoning": null
+  },
+  "adjudication": {
+    "status": "PENDING",
+    "human_adjudicator_id": null,
+    "completed_at": null,
+    "disagreements_and_decisions": [],
+    "unresolved_issues": []
+  },
+  "ai_reference_suggestions": {"status": "NOT_PREPARED", "can_substitute_for_human_review": false}
+}
