@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from middle_man.gateway.config import GatewayConfig
+from middle_man.gateway.indexer import _ignored, _rules
 from middle_man.gateway.models import RepositoryIndex
 
 _HUNK = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
@@ -160,6 +161,17 @@ def _affected(path: str, hunks: tuple[DiffHunk, ...], index: RepositoryIndex) ->
     return tuple(sorted(affected))
 
 
+def _included_git_path(config: GatewayConfig, path: str, git_rules: tuple[str, ...], own_rules: tuple[str, ...]) -> bool:
+    try:
+        if not path or config.relative_path(path) != path:
+            return False
+    except (OSError, ValueError, RuntimeError):
+        return False
+    parts = path.split("/")
+    return not any(_ignored(config, "/".join(parts[:count]), True, git_rules, own_rules)
+                   for count in range(1, len(parts))) and not _ignored(config, path, False, git_rules, own_rules)
+
+
 class GitDiffReader:
     def __init__(self, config: GatewayConfig) -> None:
         self.config = config
@@ -170,12 +182,17 @@ class GitDiffReader:
             return GitDiff(False, ())
         statuses = _status(root)
         parsed = _parse_patch(_patches(root))
+        git_rules = _rules(root, ".gitignore")
+        own_rules = _rules(root, ".middlemanignore")
         files = []
         for path in sorted(statuses.keys() | parsed.keys()):
             status, status_old = statuses.get(path, ("modified", None))
             patch_old, hunks, binary = parsed.get(path, (None, (), False))
+            old_path = status_old or patch_old
+            if not _included_git_path(self.config, path, git_rules, own_rules) or (old_path and not _included_git_path(self.config, old_path, git_rules, own_rules)):
+                continue
             additions = sum(line.kind == "+" for hunk in hunks for line in hunk.lines)
             deletions = sum(line.kind == "-" for hunk in hunks for line in hunk.lines)
-            files.append(FileDiff(path, status_old or patch_old, status, additions, deletions, hunks,
+            files.append(FileDiff(path, old_path, status, additions, deletions, hunks,
                                   binary, _affected(path, hunks, index) if index else ()))
         return GitDiff(True, tuple(files))

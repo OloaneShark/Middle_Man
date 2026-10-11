@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -10,6 +11,7 @@ from middle_man.gateway.config import GatewayConfig
 from middle_man.gateway.context_builder import ContextBuilder
 from middle_man.gateway.git_diff import GitDiffReader
 from middle_man.gateway.indexer import RepositoryIndexer
+from middle_man.gateway.project_memory import ProjectMemoryService
 
 
 def git(root: Path, *args: str) -> None:
@@ -80,3 +82,33 @@ def test_diff_aware_pack_keeps_enclosing_function_and_test(repo: Path) -> None:
     changed = next(item for item in pack.changed_files if item.path == "module.py")
     assert "first" in changed.affected_symbols
     assert changed.hunk_ranges
+
+
+def test_git_metadata_excludes_ignored_paths_and_directory_escape(repo: Path) -> None:
+    outside = repo.parent / "outside-source"
+    outside.mkdir()
+    (outside / "outside_only.py").write_text("def outside_only(): pass\n", encoding="utf-8")
+    link = repo / "linked_outside"
+    if os.name == "nt":
+        subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(outside)],
+                       check=True, capture_output=True)
+    else:
+        link.symlink_to(outside, target_is_directory=True)
+    (repo / ".middlemanignore").write_text("private_notes.txt\nprivate_area/\n", encoding="utf-8")
+    (repo / "private_notes.txt").write_text("synthetic private note\n", encoding="utf-8")
+    (repo / "private_area").mkdir()
+    (repo / "private_area" / "hidden.py").write_text("def hidden(): pass\n", encoding="utf-8")
+    status = subprocess.run(["git", "-C", str(repo), "status", "--porcelain=v1", "-z", "--untracked-files=all"],
+                            check=True, capture_output=True).stdout
+    assert b"linked_outside/outside_only.py" in status
+    assert b"private_notes.txt" in status and b"private_area/hidden.py" in status
+
+    config = GatewayConfig(repo)
+    index = RepositoryIndexer(config).index()
+    diff = GitDiffReader(config).read(index)
+    memory = ProjectMemoryService(config).refresh()
+    excluded = {"linked_outside/outside_only.py", "private_notes.txt", "private_area/hidden.py"}
+    assert "linked_outside/outside_only.py" not in index.changed_paths
+    assert excluded.isdisjoint(item.path for item in diff.files)
+    assert excluded.isdisjoint(item.path for item in memory.changes)
+    assert index.get_file("linked_outside/outside_only.py") is None
