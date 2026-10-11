@@ -72,6 +72,16 @@ def test_rename_delete_untracked_binary_and_no_git(repo: Path, tmp_path: Path) -
     assert not GitDiffReader(GatewayConfig(plain)).read().has_git
 
 
+def test_case_only_rename_retains_current_and_old_paths(repo: Path) -> None:
+    git(repo, "mv", "-f", "old.py", "OLD.py")
+    config = GatewayConfig(repo)
+    diff = GitDiffReader(config).read(RepositoryIndexer(config).index())
+    renamed = diff.get_file("OLD.py")
+    assert renamed is not None
+    assert renamed.status == "renamed"
+    assert renamed.old_path == "old.py"
+
+
 def test_diff_aware_pack_keeps_enclosing_function_and_test(repo: Path) -> None:
     source = repo / "module.py"
     source.write_text(source.read_text(encoding="utf-8").replace("value = 1", "value = 100"), encoding="utf-8")
@@ -112,3 +122,15 @@ def test_git_metadata_excludes_ignored_paths_and_directory_escape(repo: Path) ->
     assert excluded.isdisjoint(item.path for item in diff.files)
     assert excluded.isdisjoint(item.path for item in memory.changes)
     assert index.get_file("linked_outside/outside_only.py") is None
+
+
+def test_git_metadata_excludes_file_symlink_escape_when_supported(repo: Path) -> None:
+    outside = repo.parent / "outside-file.py"
+    outside.write_text("def outside_only(): pass\n", encoding="utf-8")
+    link = repo / "linked_file.py"
+    try:
+        link.symlink_to(outside)
+    except OSError:
+        pytest.skip("file symlinks unavailable")
+    config = GatewayConfig(repo)
+    assert GitDiffReader(config).read().get_file("linked_file.py") is None

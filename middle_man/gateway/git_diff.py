@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 from dataclasses import dataclass
@@ -163,7 +164,7 @@ def _affected(path: str, hunks: tuple[DiffHunk, ...], index: RepositoryIndex) ->
 
 def _included_git_path(config: GatewayConfig, path: str, git_rules: tuple[str, ...], own_rules: tuple[str, ...]) -> bool:
     try:
-        if not path or config.relative_path(path) != path:
+        if not path or os.path.normcase(config.relative_path(path)) != os.path.normcase(path):
             return False
     except (OSError, ValueError, RuntimeError):
         return False
