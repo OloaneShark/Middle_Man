@@ -4,17 +4,16 @@ Standing between the request and the model.
 
 Middle_Man Lab implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. The separate Agent Gateway implements Phases 11-19: local repository indexing, incremental caching, explainable relevance search, Context Packs, Git diff-aware context, deterministic output compaction, factual Project Memory, and Session Handoff. Phases 20-21 add an optional local MCP server and Codex setup. No Middle_Man subsystem requires a model, GPU, PyTorch, or provider API.
 
-## Quick Start
+## Quick Start (Windows PowerShell)
 
-```bash
+```powershell
 python -m venv .venv
-.venv\Scripts\activate
-pip install -e ".[dev]"
-python -m pytest
-python -m middle_man simulate
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m middle_man simulate
 ```
 
-On macOS or Linux, activate with `source .venv/bin/activate`. The installed `middle-man` command works when Python's Scripts directory is on `PATH`.
+On macOS or Linux, use `python3 -m venv .venv` and `.venv/bin/python` in the remaining commands. Calling the virtual environment's Python directly avoids shell activation requirements. The installed `middle-man` command also works when that environment's Scripts or bin directory is on `PATH`.
 
 ## Simulate and Inspect
 
@@ -157,18 +156,17 @@ Handoffs are immutable versioned JSON records under `.middle_man_cache/handoffs/
 
 For an ordinary repository task, `middle-man codex run --repo . --read-only --dry-run "Explain this project"` previews local source-free AUTO routing without an external call. Live execution is behind `--confirm-external-service` instead of `--dry-run`; it runs at most one Codex process. The first real read-only production smoke test passed, but its 322,353 Codex-reported input tokens are an unpaired observation, **not** a savings result. Production telemetry now distinguishes explicit reads from content-producing search commands and safe relative search targets; `--save-audit` optionally writes a sanitized local receipt. Read-only requires repository integrity after Codex; workspace-write permits changes to the real worktree. Bypass preserves the task bytes exactly. See [Codex integration](docs/CODEX_INTEGRATION.md). This is separate from `middle-man codex benchmark ...`, the frozen-snapshot research harness.
 
-Install the optional SDK and run the local stdio server for one repository:
+Install the optional SDK and try the Gateway locally from the repository root (Windows PowerShell):
 
-```bash
-pip install -e ".[mcp]"
-python -m middle_man mcp serve --repo .
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[mcp]"
+.\.venv\Scripts\python.exe -m middle_man index --repo .
+.\.venv\Scripts\python.exe -m middle_man context find "KV preemption" --repo . --top-k 3
+.\.venv\Scripts\python.exe -m middle_man mcp usage --repo . --json
 ```
 
-The default `codex-core` server exposes five bounded, read-only tools. A fresh scoped task can call `middleman_context` for redacted source; each excerpt marks whether it is a complete file. For missing detail on the same task, prefer `middleman_expand_context`; a materially new selection may need another context call. Same-session calls suppress already delivered lines even across different Context Pack fingerprints. `force_replay` remains available only through the internal Python Gateway for explicit diagnostics, not in the Codex-core MCP tool schema. Native reads remain valid for exact or stale source and editing. Use `--tool-profile full` for the original ten-tool diagnostic surface. This command speaks MCP on stdout; use it through an MCP client rather than as an interactive shell command. Codex registration, verification, fallback behavior, and usage accounting are in [docs/CODEX_SETUP.md](docs/CODEX_SETUP.md). The root [AGENTS.md](AGENTS.md) gives Codex short repository-specific guidance.
-
-```bash
-python -m middle_man mcp usage --repo . --json
-```
+The default `codex-core` server exposes five bounded tools annotated as read-only for repository source. A fresh scoped task can call `middleman_context` for redacted source; each excerpt marks whether it is a complete file. For missing detail on the same task, prefer `middleman_expand_context`; a materially new selection may need another context call. Same-session calls suppress already delivered lines even across different Context Pack fingerprints. `force_replay` remains available only through the internal Python Gateway for explicit diagnostics, not in the Codex-core MCP tool schema. Native reads remain valid for exact or stale source and editing. The server can write local index, memory, handoff, and usage metadata under the Git-ignored `.middle_man_cache/`; it does not edit repository source. Use `--tool-profile full` for the ten-tool diagnostic surface. The `mcp serve` command speaks protocol on stdout and should be launched by an MCP client, not used as an interactive shell command. Codex registration and verification are in [docs/CODEX_SETUP.md](docs/CODEX_SETUP.md); no Codex registration is needed for the local commands above. The root [AGENTS.md](AGENTS.md) gives Codex short repository-specific guidance.
 
 Local usage records contain only metadata, input hashes, and sanitized excerpt range/size identity for benchmark overlap analysis, never source text. They also record a per-Gateway session ID, call sequence, ledger line counts, and requested/effective budgets. Normal sessions retain the 12,000-token context maximum; explicitly identified benchmark sessions cap each initial `middleman_context` build at 6,000 while explicit expansion may grow to 12,000. Reported token sizes are heuristic context estimates, not Codex plan usage or provider billing. Neither the server nor the Gateway sends repository content to an external service on its own.
 
