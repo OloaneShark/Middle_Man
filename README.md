@@ -227,9 +227,13 @@ Local heuristic tokens size Middle_Man's prepared text; **Codex-reported input**
 
 ### Recorded Performance
 
-![Codex-reported input tokens across six independent frozen pairs](docs/assets/codex_input.svg)
+![One recorded Task A v4 read-only experiment: 55.8% fewer Codex-reported input tokens, 10 to 3 native tool calls, 26.378 to 17.957 seconds, and PASS on both sides](docs/assets/codex_highlight.svg)
 
-The read-only Task A v4 offline locator reduced input **86,515 -> 38,269** with PASS/PASS correctness. Persistent-MCP and edit-task regressions appear in the same chart; the anchor timeout has no optimized usage. See the [full measured report](docs/CODEX_PERFORMANCE.md) for cached/output tokens, exploration, duration, correctness, exact tables, and provenance. These runs do not establish universal provider-token savings.
+In this **one read-only offline-locator pair**, Codex-reported input fell from 86,515 to 38,269 tokens while both structured answers passed. It does not establish universal provider-token or billing savings.
+
+<img src="docs/assets/codex_input.svg" alt="Grouped input-token changes for six independent frozen pairs: one read-only locator reduction, historical MCP and edit regressions, and one edit timeout with unavailable optimized usage" width="720">
+
+The other recorded experiments have mixed results. Historical MCP delivery increased input in both pairs; a former full-locator edit experiment regressed, and current AUTO bypasses edit tasks. The timed-out anchor run has no optimized token count. See the [full measured report](docs/CODEX_PERFORMANCE.md) for exact input, cached input, output, file reads, execution time, correctness, and provenance for all six pairs.
 
 ## Claude Code Preview (Phase 23)
 

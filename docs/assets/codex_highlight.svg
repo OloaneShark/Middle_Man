@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="426" viewBox="0 0 800 426" role="img" aria-labelledby="chart-title chart-description">
+  <title id="chart-title">Task A v4 offline-locator recorded improvement</title>
+  <desc id="chart-description">One read-only Task A v4 pair: Codex-reported input fell from 86,515 to 38,269 tokens, 48,246 fewer or 55.8%. Native tool calls were 10 to 3; elapsed time was 26.378 to 17.957 seconds. Both structured answers passed. This is one observation, not a general guarantee.</desc>
+  <rect x="0" y="0" width="800" height="426" fill="#101C24" />
+  <rect x="1" y="1" width="798" height="424" fill="none" stroke="#344C57" />
+  <text x="32" y="38" fill="#B9C9D1" font-family="Arial, sans-serif" font-size="15" font-weight="700">RECORDED PERFORMANCE  /  READ-ONLY TASK A v4</text>
+  <text x="32" y="114" fill="#67E6A5" font-family="Arial, sans-serif" font-size="68" font-weight="700">55.8%</text>
+  <text x="280" y="96" fill="#F5FAFC" font-family="Arial, sans-serif" font-size="28" font-weight="700">fewer input tokens</text>
+  <text x="282" y="126" fill="#B9C9D1" font-family="Arial, sans-serif" font-size="17" font-weight="400">48,246 fewer Codex-reported tokens</text>
+  <text x="32" y="191" fill="#F5FAFC" font-family="Arial, sans-serif" font-size="17" font-weight="700">Baseline</text>
+  <rect x="192" y="174" width="456" height="22" fill="#293B46" />
+  <rect x="192" y="174" width="456.0" height="22" fill="#718895" />
+  <text x="672" y="192" fill="#F5FAFC" font-family="Arial, sans-serif" font-size="18" font-weight="700">86,515</text>
+  <text x="32" y="240" fill="#F5FAFC" font-family="Arial, sans-serif" font-size="17" font-weight="700">Middle_Man</text>
+  <rect x="192" y="223" width="456" height="22" fill="#293B46" />
+  <rect x="192" y="223" width="201.71" height="22" fill="#67E6A5" />
+  <text x="672" y="241" fill="#F5FAFC" font-family="Arial, sans-serif" font-size="18" font-weight="700">38,269</text>
+  <line x1="32" y1="277" x2="768" y2="277" stroke="#344C57" />
+  <text x="32" y="306" fill="#B9C9D1" font-family="Arial, sans-serif" font-size="14" font-weight="700">INPUT TOKENS</text>
+  <text x="32" y="343" fill="#F5FAFC" font-family="Arial, sans-serif" font-size="22" font-weight="700">-48,246</text>
+  <text x="32" y="365" fill="#67E6A5" font-family="Arial, sans-serif" font-size="14" font-weight="400">55.8% less</text>
+  <text x="282" y="306" fill="#B9C9D1" font-family="Arial, sans-serif" font-size="14" font-weight="700">NATIVE TOOL CALLS</text>
+  <text x="282" y="343" fill="#F5FAFC" font-family="Arial, sans-serif" font-size="22" font-weight="700">10 -&gt; 3</text>
+  <text x="282" y="365" fill="#67E6A5" font-family="Arial, sans-serif" font-size="14" font-weight="400">70.0% fewer</text>
+  <text x="532" y="306" fill="#B9C9D1" font-family="Arial, sans-serif" font-size="14" font-weight="700">EXECUTION TIME</text>
+  <text x="532" y="343" fill="#F5FAFC" font-family="Arial, sans-serif" font-size="19" font-weight="700">26.378s -&gt; 17.957s</text>
+  <text x="532" y="365" fill="#67E6A5" font-family="Arial, sans-serif" font-size="14" font-weight="400">31.9% shorter</text>
+  <text x="32" y="395" fill="#B9C9D1" font-family="Arial, sans-serif" font-size="14" font-weight="700">STRUCTURED CORRECTNESS</text>
+  <text x="282" y="395" fill="#67E6A5" font-family="Arial, sans-serif" font-size="18" font-weight="700">PASS / PASS</text>
+  <text x="768" y="395" fill="#B9C9D1" font-family="Arial, sans-serif" font-size="12" font-weight="700" text-anchor="end">ONE RECORDED PAIR  /  NOT A GENERAL GUARANTEE</text>
+</svg>

@@ -1,59 +1,60 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1030" height="655" viewBox="0 0 1030 655" role="img" aria-labelledby="chart-title chart-description">
-  <title id="chart-title">Codex-reported input tokens by frozen pair</title>
-  <desc id="chart-description">Paired horizontal bars compare baseline and Middle_Man input tokens for five complete pairs. One anchor run has no optimized provider usage. Each row is an independent run, not a pooled estimate.</desc>
-  <rect x="0" y="0" width="1030" height="655" fill="#FFFFFF" />
-  <text x="28" y="42" fill="#202C33" font-family="Arial, sans-serif" font-size="25" font-weight="700">Codex-reported input tokens</text>
-  <text x="28" y="68" fill="#5B6870" font-family="Arial, sans-serif" font-size="14" font-weight="400">Independent frozen pairs | lower is less input within a pair</text>
-  <rect x="30" y="83" width="14" height="10" fill="#66727C" />
-  <text x="51" y="94" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="400">Baseline</text>
-  <rect x="140" y="83" width="14" height="10" fill="#087E72" />
-  <text x="161" y="94" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="400">Middle_Man lower</text>
-  <rect x="319" y="83" width="14" height="10" fill="#B44C39" />
-  <text x="340" y="94" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="400">Middle_Man higher</text>
-  <line x1="28" y1="102" x2="1000" y2="102" stroke="#DCE3E5" />
-  <text x="28" y="123" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">Task A v4 / MCP one-shot</text>
-  <text x="28" y="144" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">read-only | PASS/PASS</text>
-  <rect x="282" y="126" width="83.53" height="12" rx="2" fill="#66727C" />
-  <text x="780" y="137" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">86,143</text>
-  <rect x="282" y="149" width="151.41" height="12" rx="2" fill="#B44C39" />
-  <text x="780" y="160" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">156,138</text>
-  <text x="892" y="151" fill="#B44C39" font-family="Arial, sans-serif" font-size="15" font-weight="700">+81.3%</text>
-  <line x1="28" y1="186" x2="1000" y2="186" stroke="#DCE3E5" />
-  <text x="28" y="207" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">Task A v4 / MCP progressive</text>
-  <text x="28" y="228" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">read-only | PASS/PASS</text>
-  <rect x="282" y="210" width="94.87" height="12" rx="2" fill="#66727C" />
-  <text x="780" y="221" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">97,833</text>
-  <rect x="282" y="233" width="148.27" height="12" rx="2" fill="#B44C39" />
-  <text x="780" y="244" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">152,900</text>
-  <text x="892" y="235" fill="#B44C39" font-family="Arial, sans-serif" font-size="15" font-weight="700">+56.3%</text>
-  <line x1="28" y1="270" x2="1000" y2="270" stroke="#DCE3E5" />
-  <text x="28" y="291" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">Task A v4 / offline locator</text>
-  <text x="28" y="312" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">read-only | PASS/PASS</text>
-  <rect x="282" y="294" width="83.89" height="12" rx="2" fill="#66727C" />
-  <text x="780" y="305" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">86,515</text>
-  <rect x="282" y="317" width="37.11" height="12" rx="2" fill="#087E72" />
-  <text x="780" y="328" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">38,269</text>
-  <text x="892" y="319" fill="#087E72" font-family="Arial, sans-serif" font-size="15" font-weight="700">-55.8%</text>
-  <line x1="28" y1="354" x2="1000" y2="354" stroke="#DCE3E5" stroke-width="2" />
-  <text x="28" y="375" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">OAuth / forced locator</text>
-  <text x="28" y="396" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">edit | FAIL/FAIL</text>
-  <rect x="282" y="378" width="76.53" height="12" rx="2" fill="#66727C" />
-  <text x="780" y="389" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">78,925</text>
-  <rect x="282" y="401" width="91.61" height="12" rx="2" fill="#B44C39" />
-  <text x="780" y="412" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">94,466</text>
-  <text x="892" y="403" fill="#B44C39" font-family="Arial, sans-serif" font-size="15" font-weight="700">+19.7%</text>
-  <line x1="28" y1="438" x2="1000" y2="438" stroke="#DCE3E5" />
-  <text x="28" y="459" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">Large edit / full locator</text>
-  <text x="28" y="480" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">edit | PASS/PASS</text>
-  <rect x="282" y="462" width="352.52" height="12" rx="2" fill="#66727C" />
-  <text x="780" y="473" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">363,533</text>
-  <rect x="282" y="485" width="480.0" height="12" rx="2" fill="#B44C39" />
-  <text x="780" y="496" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">494,991</text>
-  <text x="892" y="487" fill="#B44C39" font-family="Arial, sans-serif" font-size="15" font-weight="700">+36.2%</text>
-  <line x1="28" y1="522" x2="1000" y2="522" stroke="#DCE3E5" />
-  <text x="28" y="543" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">Large edit / compact anchors</text>
-  <text x="28" y="564" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">edit | PASS/FAIL</text>
-  <text x="282" y="557" fill="#5B6870" font-family="Arial, sans-serif" font-size="14" font-weight="400">Baseline 852,482; optimized N/A (timeout)</text>
-  <text x="28" y="630" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">Cached input is part of input, not an additional token count. Missing usage is not zero.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="743" viewBox="0 0 800 743" role="img" aria-labelledby="chart-title chart-description">
+  <title id="chart-title">Codex input changes across six independent frozen pairs</title>
+  <desc id="chart-description">Grouped comparison of read-only offline navigation, historical MCP delivery, and edit-task experiments. One offline pair used fewer input tokens; MCP and two edit pairs used more. A timed-out edit run has no optimized token measurement. Bars show signed within-pair percentage changes on one shared scale from minus 100 to plus 100 percent.</desc>
+  <rect x="0" y="0" width="800" height="743" fill="#FFFFFF" />
+  <rect x="1" y="1" width="798" height="741" fill="none" stroke="#DCE3E5" />
+  <text x="28" y="42" fill="#202C33" font-family="Arial, sans-serif" font-size="25" font-weight="700">Input-token change by experiment</text>
+  <text x="28" y="69" fill="#5B6870" font-family="Arial, sans-serif" font-size="14" font-weight="400">Codex-reported usage | independent pairs, not pooled savings</text>
+  <text x="320" y="101" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-100%  /  fewer</text>
+  <text x="495" y="101" fill="#5B6870" font-family="Arial, sans-serif" font-size="13" font-weight="400">0</text>
+  <text x="604" y="101" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+100%  /  more</text>
+  <rect x="20" y="120" width="760" height="30" fill="#EBF1F3" />
+  <text x="28" y="141" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">READ-ONLY REPOSITORY NAVIGATION</text>
+  <text x="28" y="173" fill="#202C33" font-family="Arial, sans-serif" font-size="15" font-weight="700">Task A v4 / offline locator</text>
+  <text x="28" y="195" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">PASS / PASS</text>
+  <text x="320" y="173" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">86,515 -&gt; 38,269 input</text>
+  <text x="758" y="173" fill="#087E72" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="end">-55.8%</text>
+  <line x1="350" y1="203" x2="650" y2="203" stroke="#DCE3E5" stroke-width="8" />
+  <line x1="500" y1="192" x2="500" y2="214" stroke="#677880" stroke-width="2" />
+  <rect x="416.35092180546724" y="198" width="83.64907819453273" height="10" fill="#087E72" />
+  <rect x="20" y="241" width="760" height="30" fill="#EBF1F3" />
+  <text x="28" y="262" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">HISTORICAL MCP DELIVERY</text>
+  <text x="28" y="294" fill="#202C33" font-family="Arial, sans-serif" font-size="15" font-weight="700">Task A v4 / MCP one-shot</text>
+  <text x="28" y="316" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">PASS / PASS</text>
+  <text x="320" y="294" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">86,143 -&gt; 156,138 input</text>
+  <text x="758" y="294" fill="#B44C39" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="end">+81.3%</text>
+  <line x1="350" y1="324" x2="650" y2="324" stroke="#DCE3E5" stroke-width="8" />
+  <line x1="500" y1="313" x2="500" y2="335" stroke="#677880" stroke-width="2" />
+  <rect x="500.0" y="319" width="121.88163867058265" height="10" fill="#B44C39" />
+  <text x="28" y="369" fill="#202C33" font-family="Arial, sans-serif" font-size="15" font-weight="700">Task A v4 / MCP progressive</text>
+  <text x="28" y="391" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">PASS / PASS</text>
+  <text x="320" y="369" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">97,833 -&gt; 152,900 input</text>
+  <text x="758" y="369" fill="#B44C39" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="end">+56.3%</text>
+  <line x1="350" y1="399" x2="650" y2="399" stroke="#DCE3E5" stroke-width="8" />
+  <line x1="500" y1="388" x2="500" y2="410" stroke="#677880" stroke-width="2" />
+  <rect x="500.0" y="394" width="84.43010027291405" height="10" fill="#B44C39" />
+  <rect x="20" y="437" width="760" height="30" fill="#EBF1F3" />
+  <text x="28" y="458" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">EDIT-TASK EXPERIMENTS (HISTORICAL)</text>
+  <text x="28" y="490" fill="#202C33" font-family="Arial, sans-serif" font-size="15" font-weight="700">OAuth / forced locator</text>
+  <text x="28" y="512" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">FAIL / FAIL</text>
+  <text x="320" y="490" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">78,925 -&gt; 94,466 input</text>
+  <text x="758" y="490" fill="#B44C39" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="end">+19.7%</text>
+  <line x1="350" y1="520" x2="650" y2="520" stroke="#DCE3E5" stroke-width="8" />
+  <line x1="500" y1="509" x2="500" y2="531" stroke="#677880" stroke-width="2" />
+  <rect x="500.0" y="515" width="29.53626860943934" height="10" fill="#B44C39" />
+  <text x="28" y="565" fill="#202C33" font-family="Arial, sans-serif" font-size="15" font-weight="700">Large edit / full locator</text>
+  <text x="28" y="587" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">PASS / PASS</text>
+  <text x="320" y="565" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">363,533 -&gt; 494,991 input</text>
+  <text x="758" y="565" fill="#B44C39" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="end">+36.2%</text>
+  <line x1="350" y1="595" x2="650" y2="595" stroke="#DCE3E5" stroke-width="8" />
+  <line x1="500" y1="584" x2="500" y2="606" stroke="#677880" stroke-width="2" />
+  <rect x="500.0" y="590" width="54.24184324394209" height="10" fill="#B44C39" />
+  <text x="28" y="640" fill="#202C33" font-family="Arial, sans-serif" font-size="15" font-weight="700">Large edit / compact anchors</text>
+  <text x="28" y="662" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">PASS / FAIL (timeout)</text>
+  <text x="320" y="640" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">852,482 -&gt; N/A input</text>
+  <text x="758" y="640" fill="#5B6870" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="end">N/A</text>
+  <line x1="350" y1="670" x2="650" y2="670" stroke="#DCE3E5" stroke-width="8" />
+  <line x1="500" y1="659" x2="500" y2="681" stroke="#677880" stroke-width="2" />
+  <text x="28" y="718" fill="#5B6870" font-family="Arial, sans-serif" font-size="13" font-weight="400">Edit hints are historical; current AUTO bypasses edits. N/A is unreported, not zero.</text>
 </svg>

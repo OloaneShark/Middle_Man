@@ -125,56 +125,125 @@ def _text(parent: ET.Element, x: int | float, y: int | float, content: str,
              font_size=size, font_weight=weight).text = content
 
 
-def _svg(width: int, height: int, title: str, description: str) -> ET.Element:
+def _svg(width: int, height: int, title: str, description: str,
+         *, background: str = "#FFFFFF") -> ET.Element:
     root = ET.Element(f"{{{NS}}}svg", {"width": str(width), "height": str(height),
                "viewBox": f"0 0 {width} {height}", "role": "img",
                "aria-labelledby": "chart-title chart-description"})
     _element(root, "title", id="chart-title").text = title
     _element(root, "desc", id="chart-description").text = description
-    _element(root, "rect", x=0, y=0, width=width, height=height, fill="#FFFFFF")
+    _element(root, "rect", x=0, y=0, width=width, height=height, fill=background)
     return root
+
+
+def highlight_chart(data: dict) -> ET.Element:
+    row = next(item for item in data["pairs"] if item["task_id"] == "preemption-v4"
+               and item["delivery_mode"] == "offline-locator")
+    baseline, optimized = row["baseline"], row["optimized"]
+    before, after = (side["usage"]["input_tokens"] for side in (baseline, optimized))
+    if (before is None or after is None or before <= after
+            or not (baseline["correct"] and optimized["correct"])):
+        raise ValueError("Featured locator pair needs reduced reported usage and PASS/PASS correctness")
+    green, white, muted, border = "#67E6A5", "#F5FAFC", "#B9C9D1", "#344C57"
+    svg = _svg(800, 426, "Task A v4 offline-locator recorded improvement",
+               f"One read-only Task A v4 pair: Codex-reported input fell from {number(before)} to "
+               f"{number(after)} tokens, {number(before-after)} fewer or {abs(delta(before, after)):.1f}%. "
+               f"Native tool calls were {baseline['native_calls']} to {optimized['native_calls']}; "
+               f"elapsed time was {number(baseline['elapsed_seconds'])} to "
+               f"{number(optimized['elapsed_seconds'])} seconds. Both structured answers passed. "
+               "This is one observation, not a general guarantee.", background="#101C24")
+    _element(svg, "rect", x=1, y=1, width=798, height=424, fill="none", stroke=border)
+    _text(svg, 32, 38, "RECORDED PERFORMANCE  /  READ-ONLY TASK A v4", size=15,
+          color=muted, weight=700)
+    _text(svg, 32, 114, f"{abs(delta(before, after)):.1f}%", size=68, color=green, weight=700)
+    _text(svg, 280, 96, "fewer input tokens", size=28, color=white, weight=700)
+    _text(svg, 282, 126, f"{number(before-after)} fewer Codex-reported tokens", size=17,
+          color=muted)
+
+    bar_x, bar_width = 192, 456
+    for y, label, value, fill in ((174, "Baseline", before, "#718895"),
+                                  (223, "Middle_Man", after, green)):
+        _text(svg, 32, y+17, label, size=17, color=white, weight=700)
+        _element(svg, "rect", x=bar_x, y=y, width=bar_width, height=22, fill="#293B46")
+        _element(svg, "rect", x=bar_x, y=y, width=round(bar_width*value/before, 2),
+                 height=22, fill=fill)
+        _text(svg, 672, y+18, number(value), size=18, color=white, weight=700)
+
+    _element(svg, "line", x1=32, y1=277, x2=768, y2=277, stroke=border)
+    indicators = (
+        (32, "INPUT TOKENS", f"-{number(before-after)}",
+         f"{abs(delta(before, after)):.1f}% less"),
+        (282, "NATIVE TOOL CALLS", f"{baseline['native_calls']} -> {optimized['native_calls']}",
+         f"{abs(delta(baseline['native_calls'], optimized['native_calls'])):.1f}% fewer"),
+        (532, "EXECUTION TIME", f"{number(baseline['elapsed_seconds'])}s -> "
+         f"{number(optimized['elapsed_seconds'])}s",
+         f"{abs(delta(baseline['elapsed_seconds'], optimized['elapsed_seconds'])):.1f}% shorter"),
+    )
+    for x, label, value, detail in indicators:
+        _text(svg, x, 306, label, size=14, color=muted, weight=700)
+        _text(svg, x, 343, value, size=22 if label != "EXECUTION TIME" else 19,
+              color=white, weight=700)
+        _text(svg, x, 365, detail, size=14, color=green)
+    _text(svg, 32, 395, "STRUCTURED CORRECTNESS", size=14, color=muted, weight=700)
+    _text(svg, 282, 395, "PASS / PASS", size=18, color=green, weight=700)
+    _text(svg, 768, 395, "ONE RECORDED PAIR  /  NOT A GENERAL GUARANTEE", size=12,
+          color=muted, weight=700)
+    svg[-1].set("text-anchor", "end")
+    return svg
 
 
 def input_chart(data: dict) -> ET.Element:
     rows = data["pairs"]
-    svg = _svg(1030, 655, "Codex-reported input tokens by frozen pair",
-               "Paired horizontal bars compare baseline and Middle_Man input tokens for five complete pairs. "
-               "One anchor run has no optimized provider usage. Each row is an independent run, not a pooled estimate.")
-    _text(svg, 28, 42, "Codex-reported input tokens", size=25, weight=700)
-    _text(svg, 28, 68, "Independent frozen pairs | lower is less input within a pair", color=MUTED)
-    _element(svg, "rect", x=30, y=83, width=14, height=10, fill=BASE)
-    _text(svg, 51, 94, "Baseline", size=13)
-    _element(svg, "rect", x=140, y=83, width=14, height=10, fill=GOOD)
-    _text(svg, 161, 94, "Middle_Man lower", size=13)
-    _element(svg, "rect", x=319, y=83, width=14, height=10, fill=BAD)
-    _text(svg, 340, 94, "Middle_Man higher", size=13)
-    max_value = max(max(row[side]["usage"]["input_tokens"] or 0 for side in ("baseline", "optimized"))
-                    for row in rows if row["optimized"]["usage"]["input_tokens"] is not None)
-    axis, extent = 282, 480
-    for index, row in enumerate(rows):
-        top = 112 + index * 84
-        if index == 3:
-            _element(svg, "line", x1=28, y1=top-10, x2=1000, y2=top-10, stroke=LINE, stroke_width=2)
-        else:
-            _element(svg, "line", x1=28, y1=top-10, x2=1000, y2=top-10, stroke=LINE)
-        _text(svg, 28, top+11, row["label"], size=14, weight=700)
-        _text(svg, 28, top+32, row["task_kind"] + " | " +
-              ("PASS/PASS" if row["baseline"]["correct"] and row["optimized"]["correct"] else
-               "FAIL/FAIL" if not row["baseline"]["correct"] and not row["optimized"]["correct"] else
-               "PASS/FAIL"), size=12, color=MUTED)
-        base = row["baseline"]["usage"]["input_tokens"]
-        opt = row["optimized"]["usage"]["input_tokens"]
-        if opt is None:
-            _text(svg, axis, top+25, f"Baseline {number(base)}; optimized N/A (timeout)", color=MUTED)
-            continue
-        for offset, value, fill in ((14, base, BASE), (37, opt, GOOD if opt < base else BAD)):
-            _element(svg, "rect", x=axis, y=top+offset, width=round(extent*value/max_value, 2),
-                     height=12, rx=2, fill=fill)
-            _text(svg, 780, top+offset+11, number(value), size=13, weight=700)
-        _text(svg, 892, top+39, change(delta(base, opt)), size=15,
-              color=GOOD if opt < base else BAD, weight=700)
-    _text(svg, 28, 630, "Cached input is part of input, not an additional token count. Missing usage is not zero.",
-          size=12, color=MUTED)
+    groups = (
+        ("READ-ONLY REPOSITORY NAVIGATION", [row for row in rows if row["task_kind"] == "read-only"
+                                               and row["delivery_mode"] == "offline-locator"]),
+        ("HISTORICAL MCP DELIVERY", [row for row in rows if row["delivery_mode"] == "mcp"]),
+        ("EDIT-TASK EXPERIMENTS (HISTORICAL)", [row for row in rows if row["task_kind"] == "edit"]),
+    )
+    if sum(len(group) for _, group in groups) != len(rows):
+        raise ValueError("Uncategorized performance pair")
+    svg = _svg(800, 743, "Codex input changes across six independent frozen pairs",
+               "Grouped comparison of read-only offline navigation, historical MCP delivery, and edit-task "
+               "experiments. One offline pair used fewer input tokens; MCP and two edit pairs "
+               "used more. A timed-out edit run has no optimized token measurement. Bars show signed "
+               "within-pair percentage changes on one shared scale from minus 100 to plus 100 percent.")
+    _element(svg, "rect", x=1, y=1, width=798, height=741, fill="none", stroke=LINE)
+    _text(svg, 28, 42, "Input-token change by experiment", size=25, weight=700)
+    _text(svg, 28, 69, "Codex-reported usage | independent pairs, not pooled savings", color=MUTED)
+    _text(svg, 320, 101, "-100%  /  fewer", size=13, color=GOOD, weight=700)
+    _text(svg, 495, 101, "0", size=13, color=MUTED)
+    _text(svg, 604, 101, "+100%  /  more", size=13, color=BAD, weight=700)
+    axis, extent, top = 500, 150, 120
+    for heading, group in groups:
+        _element(svg, "rect", x=20, y=top, width=760, height=30, fill="#EBF1F3")
+        _text(svg, 28, top+21, heading, size=14, weight=700)
+        top += 34
+        for row in group:
+            base = row["baseline"]["usage"]["input_tokens"]
+            opt = row["optimized"]["usage"]["input_tokens"]
+            pct = delta(base, opt)
+            outcome = ("PASS / PASS" if row["baseline"]["correct"] and row["optimized"]["correct"]
+                       else "FAIL / FAIL" if not row["baseline"]["correct"] and not row["optimized"]["correct"]
+                       else "PASS / FAIL")
+            _text(svg, 28, top+19, row["label"], size=15, weight=700)
+            _text(svg, 28, top+41, outcome + (" (timeout)" if opt is None else ""), size=13,
+                  color=BAD if outcome != "PASS / PASS" else GOOD, weight=700)
+            _text(svg, 320, top+19, f"{number(base)} -> {number(opt)} input", size=14, weight=700)
+            _text(svg, 758, top+19, change(pct), size=17,
+                  color=MUTED if pct is None else GOOD if pct < 0 else BAD, weight=700)
+            svg[-1].set("text-anchor", "end")
+            _element(svg, "line", x1=axis-extent, y1=top+49, x2=axis+extent, y2=top+49,
+                     stroke=LINE, stroke_width=8)
+            _element(svg, "line", x1=axis, y1=top+38, x2=axis, y2=top+60,
+                     stroke="#677880", stroke_width=2)
+            if pct is not None:
+                _element(svg, "rect", x=axis+min(0, pct)*extent/100, y=top+44,
+                         width=abs(pct)*extent/100, height=10,
+                         fill=GOOD if pct < 0 else BAD)
+            top += 75
+        top += 12
+    _text(svg, 28, 718, "Edit hints are historical; current AUTO bypasses edits. N/A is unreported, not zero.",
+          size=13, color=MUTED)
     return svg
 
 
@@ -230,7 +299,8 @@ def render(data: dict) -> dict[str, str]:
     for row, expected in zip(data["pairs"], PAIRS):
         if row.get("result_sha256") != expected[1]:
             raise ValueError(f"Result provenance mismatch: {expected[0]}")
-    return {"codex_input.svg": svg_text(input_chart(data)),
+    return {"codex_highlight.svg": svg_text(highlight_chart(data)),
+            "codex_input.svg": svg_text(input_chart(data)),
             "codex_metrics.svg": svg_text(metric_chart(data))}
 
 

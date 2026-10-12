@@ -2,7 +2,7 @@
 
 These are six **independent, frozen Phase 22 pairs**, not a pooled benchmark. Each percentage is `(Middle_Man - baseline) / baseline` within that pair. Negative usage or time means less; it does not by itself mean a better answer. The data is a [sanitized, source-hashed snapshot](data/codex_performance.json) extracted from local ignored `result.json` files. Their run IDs and SHA-256 hashes are retained in that snapshot. Sanitized `turn.completed` events independently matched every available provider-usage record.
 
-![Paired Codex-reported input-token bars](assets/codex_input.svg)
+![Grouped Codex-reported input-token changes across six frozen pairs](assets/codex_input.svg)
 
 ![Cached and output usage, native exploration, time, and correctness matrix](assets/codex_metrics.svg)
 
@@ -38,7 +38,7 @@ The [Phase 22 benchmark history](CODEX_BENCHMARKS.md) also documents earlier Tas
 
 ## Reproduce
 
-From a source checkout, regenerate the two static SVGs with no model or network call:
+From a source checkout, regenerate the three static SVGs with no model or network call:
 
 ```powershell
 python -m scripts.render_codex_performance
