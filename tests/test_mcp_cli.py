@@ -12,7 +12,7 @@ from middle_man.gateway.tokens import HeuristicTokenEstimator
 def test_optional_sdk_absence_does_not_break_other_commands(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
                                                              capsys: pytest.CaptureFixture[str]) -> None:
     monkeypatch.setattr("middle_man.cli.mcp.find_spec", lambda name: None)
-    with pytest.raises(SystemExit, match="MCP support is optional"):
+    with pytest.raises(SystemExit, match=r"MCP support is optional.*\[mcp\] extra"):
         main(["mcp", "serve", "--repo", str(tmp_path)])
     main(["index", "--repo", str(tmp_path)])
     assert "indexed" in capsys.readouterr().out.lower()

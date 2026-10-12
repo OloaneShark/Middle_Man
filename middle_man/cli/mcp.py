@@ -45,7 +45,7 @@ def run_mcp(args: argparse.Namespace) -> None:
             print(f"Estimated tokens: {result['estimated_context_tokens']}")
         return
     if find_spec("mcp") is None:
-        raise SystemExit('MCP support is optional. Install it with: pip install -e ".[mcp]"')
+        raise SystemExit('MCP support is optional. Reinstall Middle_Man with its [mcp] extra (from the wheel or source).')
     from middle_man.mcp.benchmark_receipts import BenchmarkIdentity, BenchmarkPolicy
     from middle_man.mcp.server import serve
 

@@ -2,7 +2,7 @@
 
 Standing between the request and the model.
 
-Middle_Man Lab implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. The separate Agent Gateway implements Phases 11-19: local repository indexing, incremental caching, explainable relevance search, Context Packs, Git diff-aware context, deterministic output compaction, factual Project Memory, and Session Handoff. Phases 20-21 add an optional local MCP server and Codex setup. No Middle_Man subsystem requires a model, GPU, PyTorch, or provider API.
+Middle_Man Lab implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. The separate Agent Gateway implements Phases 11-19: local repository indexing, incremental caching, explainable relevance search, Context Packs, Git diff-aware context, deterministic output compaction, factual Project Memory, and Session Handoff. Phases 20-21 add an optional local MCP server and Codex setup. The Lab and local Gateway require no model, GPU, PyTorch, or provider API.
 
 ## Quick Start (Windows PowerShell)
 
@@ -14,6 +14,17 @@ python -m venv .venv
 ```
 
 On macOS or Linux, use `python3 -m venv .venv` and `.venv/bin/python` in the remaining commands. Calling the virtual environment's Python directly avoids shell activation requirements. The installed `middle-man` command also works when that environment's Scripts or bin directory is on `PATH`.
+
+For an installed alpha wheel, keep the environment outside the repository being analyzed. From a directory containing the downloaded wheel (Windows PowerShell):
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install ".\middle_man-0.1.0a1-py3-none-any.whl[mcp]"
+.\.venv\Scripts\middle-man.exe index --repo C:\path\to\project
+.\.venv\Scripts\middle-man.exe context find "request scheduling" --repo C:\path\to\project
+```
+
+The wheel installation does not require a Middle_Man source checkout. The `mcp` extra installs the optional local stdio server; see [Codex setup](docs/CODEX_SETUP.md) for its five-tool profile. The proposed alpha notes are in [docs/RELEASE_NOTES_0.1.0a1.md](docs/RELEASE_NOTES_0.1.0a1.md). This wheel workflow has been verified on Windows; other platforms and supported Python versions have not yet received the same release smoke test.
 
 ## Simulate and Inspect
 
@@ -216,7 +227,7 @@ Local heuristic tokens size Middle_Man's prepared text; **Codex-reported input**
 
 ## Claude Code Preview (Phase 23)
 
-**Paused:** Claude integration work is retained, but the available Console account currently has no funded model access. No Claude benchmark completed. The failed runtime probes do not establish Claude quality or token performance; no further Claude model calls are part of the current Codex productization work.
+**Paused:** Claude integration work is retained, but no Claude benchmark completed. Historical runtime probes failed before tool use; they do not establish current account access, Claude quality, or token performance. No Claude model calls are part of this alpha release preparation.
 
 ```bash
 python -m middle_man claude benchmark preflight

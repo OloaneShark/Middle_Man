@@ -19,6 +19,17 @@ python -m venv .venv
 
 These commands use only the local Gateway and MCP protocol test. They require no Codex login, OpenAI API key, or model call. `index` writes metadata into the Git-ignored `.middle_man_cache/` directory. The protocol test starts a local stdio server; it does not contact Codex.
 
+For a release wheel, install from its download directory into a virtual environment outside the repository being analyzed:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install ".\middle_man-0.1.0a1-py3-none-any.whl[mcp]"
+.\.venv\Scripts\middle-man.exe index --repo C:\path\to\project
+.\.venv\Scripts\middle-man.exe context find "request scheduling" --repo C:\path\to\project
+```
+
+The installed command and `.\.venv\Scripts\python.exe -m middle_man mcp serve --repo C:\path\to\project --tool-profile codex-core` work without the Middle_Man source checkout. The target path must name the repository you intend to inspect. No Codex registration or model call is needed for this local workflow.
+
 ## Register with Codex (Optional)
 
 After the local check, still from the repository root:
@@ -46,6 +57,8 @@ codex mcp list --json
 
 The root [AGENTS.md](../AGENTS.md) routes a fresh scoped task to one `middleman_context` call. The default `codex-core` profile offers five tools annotated as read-only for repository source: `middleman_context`, `middleman_expand_context`, `middleman_session_handoff`, `middleman_compact_output`, and `middleman_project_state`. Use `--tool-profile full` for the ten-tool diagnostic surface, including `middleman_find_context` and `middleman_context_pack`. Core responses are bounded/redacted and omit redundant metadata; repeated source is suppressed, and `force_replay` is **not** exposed in the core MCP schema. Expansion returns only newly delivered ranges. Native reads remain the correctness fallback when source is stale, incomplete, or exact full text is needed. A new repository has no latest handoff until one is explicitly created, so `middleman_session_handoff` reports that absence; use `middleman_project_state` for initial orientation. The server may write ignored cache and usage metadata, but does not edit repository source.
 
+The local Gateway's path checks and redaction do not confine an external Codex process. A non-inference Windows sandbox probe showed that the proposed read-only Codex exploration pilot could access a host file outside its disposable snapshot. That pilot remains blocked pending independently verified host-filesystem isolation; do not treat Codex read-only mode as a containment guarantee.
+
 ## Local Usage Data
 
 `mcp usage` reports call counts, errors, Context Packs, expansions, index cache reuse, and heuristic context-token estimates. The JSONL log at `.middle_man_cache/mcp_usage.jsonl` stores only metadata, query hashes, current-server implementation identity, and sanitized excerpt path/hash/range/line-byte identity for overlap analysis, not task text, source excerpts, compacted output, secrets, or raw diffs. It is local and Git-ignored. The token estimator is UTF-8 bytes divided by four, rounded up. These figures **cannot measure Codex plan usage, provider billing, or real token savings**. Compare equally scoped local context paths when evaluating efficiency, and verify answer quality separately.
@@ -55,4 +68,4 @@ For a quick local status check, run `codex --version`, `codex mcp get middle-man
 
 ## Real A/B Benchmark
 
-The separate [Phase 22 benchmark guide](CODEX_BENCHMARKS.md) covers snapshot isolation, explicit external-service confirmation, correctness gates, official Codex JSONL usage fields, and Middle_Man context-overlap estimates. An early suite attempt was infrastructure-invalid. A later valid Task A v1 pair was FAIL/FAIL and the optimized side used far more Codex-reported input tokens. Phase 22.1 provides local candidate optimizations only; a new Task A v2 A/B run requires separate authorization. Do not infer real token savings from the local estimates.
+The separate [Phase 22 benchmark guide](CODEX_BENCHMARKS.md) records historical A/B results, correctness gates, official Codex JSONL usage fields, and Middle_Man context-overlap estimates. Those task-specific results do not establish general provider-token savings. No live Codex benchmark is part of installing or using the local Gateway.

@@ -18,12 +18,15 @@ Please keep changes focused and measurable. For simulator changes, add or update
 
 ## Development
 
-```bash
+Windows PowerShell:
+
+```powershell
 python -m venv .venv
-.venv\Scripts\activate
-pip install -e ".[dev]"
-pytest
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m pytest
 ```
+
+On macOS or Linux, use `python3 -m venv .venv` and `.venv/bin/python` for the remaining commands.
 
 ## Design Expectations
 
