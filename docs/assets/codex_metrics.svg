@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1230" height="665" viewBox="0 0 1230 665" role="img" aria-labelledby="chart-title chart-description">
+  <title id="chart-title">Cached and output usage, native exploration, duration, and correctness</title>
+  <desc id="chart-description">A color-coded matrix shows baseline to Middle_Man values and within-pair percentage change. Green means lower measured usage; red means higher. Missing provider usage is marked N/A.</desc>
+  <rect x="0" y="0" width="1230" height="665" fill="#FFFFFF" />
+  <text x="25" y="42" fill="#202C33" font-family="Arial, sans-serif" font-size="24" font-weight="700">Usage, exploration, time and correctness</text>
+  <text x="25" y="67" fill="#5B6870" font-family="Arial, sans-serif" font-size="14" font-weight="400">B = baseline; M = Middle_Man | each percentage compares only its own pair</text>
+  <text x="257" y="113" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">Cached input</text>
+  <text x="421" y="113" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">Output</text>
+  <text x="585" y="113" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">Native calls</text>
+  <text x="749" y="113" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">File reads</text>
+  <text x="913" y="113" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">Duration (s)</text>
+  <text x="1082" y="113" fill="#202C33" font-family="Arial, sans-serif" font-size="14" font-weight="700">Correctness</text>
+  <line x1="25" y1="126" x2="1200" y2="126" stroke="#DCE3E5" stroke-width="1" />
+  <text x="25" y="155" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">Task A v4 / MCP one-shot</text>
+  <text x="25" y="175" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">read-only</text>
+  <rect x="249" y="135" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="257" y="160" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">58,368 → 120,320</text>
+  <text x="257" y="182" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+106.1%</text>
+  <rect x="413" y="135" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="421" y="160" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">634 → 1,383</text>
+  <text x="421" y="182" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+118.1%</text>
+  <rect x="577" y="135" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="585" y="160" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">8 → 9</text>
+  <text x="585" y="182" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+12.5%</text>
+  <rect x="741" y="135" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="749" y="160" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">7 → 3</text>
+  <text x="749" y="182" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-57.1%</text>
+  <rect x="905" y="135" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="913" y="160" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">40.263 → 82.496</text>
+  <text x="913" y="182" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+104.9%</text>
+  <text x="1082" y="165" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">PASS / PASS</text>
+  <line x1="25" y1="207" x2="1200" y2="207" stroke="#DCE3E5" stroke-width="1" />
+  <text x="25" y="236" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">Task A v4 / MCP progressive</text>
+  <text x="25" y="256" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">read-only</text>
+  <rect x="249" y="216" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="257" y="241" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">70,016 → 116,352</text>
+  <text x="257" y="263" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+66.2%</text>
+  <rect x="413" y="216" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="421" y="241" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">1,239 → 1,174</text>
+  <text x="421" y="263" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-5.2%</text>
+  <rect x="577" y="216" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="585" y="241" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">14 → 7</text>
+  <text x="585" y="263" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-50.0%</text>
+  <rect x="741" y="216" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="749" y="241" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">9 → 4</text>
+  <text x="749" y="263" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-55.6%</text>
+  <rect x="905" y="216" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="913" y="241" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">43.617 → 41.262</text>
+  <text x="913" y="263" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-5.4%</text>
+  <text x="1082" y="246" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">PASS / PASS</text>
+  <line x1="25" y1="288" x2="1200" y2="288" stroke="#DCE3E5" stroke-width="1" />
+  <text x="25" y="317" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">Task A v4 / offline locator</text>
+  <text x="25" y="337" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">read-only</text>
+  <rect x="249" y="297" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="257" y="322" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">57,728 → 14,336</text>
+  <text x="257" y="344" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-75.2%</text>
+  <rect x="413" y="297" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="421" y="322" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">713 → 628</text>
+  <text x="421" y="344" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-11.9%</text>
+  <rect x="577" y="297" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="585" y="322" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">10 → 3</text>
+  <text x="585" y="344" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-70.0%</text>
+  <rect x="741" y="297" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="749" y="322" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">9 → 8</text>
+  <text x="749" y="344" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-11.1%</text>
+  <rect x="905" y="297" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="913" y="322" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">26.378 → 17.957</text>
+  <text x="913" y="344" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-31.9%</text>
+  <text x="1082" y="327" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">PASS / PASS</text>
+  <line x1="25" y1="369" x2="1200" y2="369" stroke="#DCE3E5" stroke-width="2" />
+  <text x="25" y="398" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">OAuth / forced locator</text>
+  <text x="25" y="418" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">edit</text>
+  <rect x="249" y="378" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="257" y="403" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">72,832 → 84,480</text>
+  <text x="257" y="425" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+16.0%</text>
+  <rect x="413" y="378" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="421" y="403" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">1,383 → 1,328</text>
+  <text x="421" y="425" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-4.0%</text>
+  <rect x="577" y="378" width="156" height="61" rx="4" fill="#F2F4F5" />
+  <text x="585" y="403" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">6 → 6</text>
+  <text x="585" y="425" fill="#5B6870" font-family="Arial, sans-serif" font-size="13" font-weight="700">0.0%</text>
+  <rect x="741" y="378" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="749" y="403" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">7 → 5</text>
+  <text x="749" y="425" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-28.6%</text>
+  <rect x="905" y="378" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="913" y="403" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">37.765 → 36.387</text>
+  <text x="913" y="425" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-3.6%</text>
+  <text x="1082" y="408" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">FAIL / FAIL</text>
+  <line x1="25" y1="450" x2="1200" y2="450" stroke="#DCE3E5" stroke-width="1" />
+  <text x="25" y="479" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">Large edit / full locator</text>
+  <text x="25" y="499" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">edit</text>
+  <rect x="249" y="459" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="257" y="484" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">332,544 → 415,616</text>
+  <text x="257" y="506" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+25.0%</text>
+  <rect x="413" y="459" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="421" y="484" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">4,903 → 5,807</text>
+  <text x="421" y="506" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+18.4%</text>
+  <rect x="577" y="459" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="585" y="484" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">12 → 22</text>
+  <text x="585" y="506" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+83.3%</text>
+  <rect x="741" y="459" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="749" y="484" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">10 → 16</text>
+  <text x="749" y="506" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+60.0%</text>
+  <rect x="905" y="459" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="913" y="484" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">160.915 → 202.295</text>
+  <text x="913" y="506" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+25.7%</text>
+  <text x="1082" y="489" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">PASS / PASS</text>
+  <line x1="25" y1="531" x2="1200" y2="531" stroke="#DCE3E5" stroke-width="1" />
+  <text x="25" y="560" fill="#202C33" font-family="Arial, sans-serif" font-size="13" font-weight="700">Large edit / compact anchors</text>
+  <text x="25" y="580" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">edit</text>
+  <rect x="249" y="540" width="156" height="61" rx="4" fill="#F2F4F5" />
+  <text x="257" y="565" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">803,200 → N/A</text>
+  <text x="257" y="587" fill="#5B6870" font-family="Arial, sans-serif" font-size="13" font-weight="700">N/A</text>
+  <rect x="413" y="540" width="156" height="61" rx="4" fill="#F2F4F5" />
+  <text x="421" y="565" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">7,009 → N/A</text>
+  <text x="421" y="587" fill="#5B6870" font-family="Arial, sans-serif" font-size="13" font-weight="700">N/A</text>
+  <rect x="577" y="540" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="585" y="565" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">21 → 32</text>
+  <text x="585" y="587" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+52.4%</text>
+  <rect x="741" y="540" width="156" height="61" rx="4" fill="#EDF7F5" />
+  <text x="749" y="565" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">18 → 16</text>
+  <text x="749" y="587" fill="#087E72" font-family="Arial, sans-serif" font-size="13" font-weight="700">-11.1%</text>
+  <rect x="905" y="540" width="156" height="61" rx="4" fill="#FBEFEC" />
+  <text x="913" y="565" fill="#202C33" font-family="Arial, sans-serif" font-size="12" font-weight="700">241.669 → 360.084</text>
+  <text x="913" y="587" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">+49.0%</text>
+  <text x="1082" y="570" fill="#B44C39" font-family="Arial, sans-serif" font-size="13" font-weight="700">PASS / FAIL</text>
+  <text x="25" y="641" fill="#5B6870" font-family="Arial, sans-serif" font-size="12" font-weight="400">Green/red describes measured direction, not answer quality or causal attribution.</text>
+</svg>

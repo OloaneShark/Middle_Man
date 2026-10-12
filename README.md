@@ -225,6 +225,12 @@ The one demonstrated real Codex input saving is Task A: **86,515 -> 38,269** (-4
 
 Local heuristic tokens size Middle_Man's prepared text; **Codex-reported input** measures an entire observed model conversation. They are not interchangeable. No universal, edit-task, billing, or quota saving is claimed. MCP remains available for interactive repository navigation, diagnostics, and explicit context workflows, but measured persistent-MCP Codex pairs do not make it the preferred token-saving path. Phase 23 adds a local-only Claude Code integration preview, not a real Claude benchmark. Details and frozen evidence are in [Codex benchmarks](docs/CODEX_BENCHMARKS.md#phase-22-final-status).
 
+### Recorded Performance
+
+![Codex-reported input tokens across six independent frozen pairs](docs/assets/codex_input.svg)
+
+The read-only Task A v4 offline locator reduced input **86,515 -> 38,269** with PASS/PASS correctness. Persistent-MCP and edit-task regressions appear in the same chart; the anchor timeout has no optimized usage. See the [full measured report](docs/CODEX_PERFORMANCE.md) for cached/output tokens, exploration, duration, correctness, exact tables, and provenance. These runs do not establish universal provider-token savings.
+
 ## Claude Code Preview (Phase 23)
 
 **Paused:** Claude integration work is retained, but no Claude benchmark completed. Historical runtime probes failed before tool use; they do not establish current account access, Claude quality, or token performance. No Claude model calls are part of this alpha release preparation.

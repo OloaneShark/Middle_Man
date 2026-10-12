@@ -1,0 +1,227 @@
+{
+  "pairs": [
+    {
+      "baseline": {
+        "correct": true,
+        "elapsed_seconds": 40.263,
+        "explicit_file_reads": 7,
+        "mcp_calls": 0,
+        "native_calls": 8,
+        "usage": {
+          "cached_input_tokens": 58368,
+          "input_tokens": 86143,
+          "output_tokens": 634
+        }
+      },
+      "delivery_mode": "mcp",
+      "label": "Task A v4 / MCP one-shot",
+      "local_estimate": {
+        "kind": "initial MCP result estimate",
+        "tokens": 7184
+      },
+      "optimized": {
+        "correct": true,
+        "elapsed_seconds": 82.496,
+        "explicit_file_reads": 3,
+        "mcp_calls": 1,
+        "native_calls": 9,
+        "usage": {
+          "cached_input_tokens": 120320,
+          "input_tokens": 156138,
+          "output_tokens": 1383
+        }
+      },
+      "quality_gate": "CORRECT_WITH_LESS_NATIVE_EXPLORATION",
+      "result_sha256": "b6d3f5065a0d6fc98f810c343d913b958e0895e8093b41b0a12612d32d400309",
+      "run_id": "20260930T102955Z-ea96eff7",
+      "task_id": "preemption-v4",
+      "task_kind": "read-only"
+    },
+    {
+      "baseline": {
+        "correct": true,
+        "elapsed_seconds": 43.617,
+        "explicit_file_reads": 9,
+        "mcp_calls": 0,
+        "native_calls": 14,
+        "usage": {
+          "cached_input_tokens": 70016,
+          "input_tokens": 97833,
+          "output_tokens": 1239
+        }
+      },
+      "delivery_mode": "mcp",
+      "label": "Task A v4 / MCP progressive",
+      "local_estimate": {
+        "kind": "initial MCP result estimate",
+        "tokens": 5687
+      },
+      "optimized": {
+        "correct": true,
+        "elapsed_seconds": 41.262,
+        "explicit_file_reads": 4,
+        "mcp_calls": 1,
+        "native_calls": 7,
+        "usage": {
+          "cached_input_tokens": 116352,
+          "input_tokens": 152900,
+          "output_tokens": 1174
+        }
+      },
+      "quality_gate": "CORRECT_WITH_LESS_NATIVE_EXPLORATION",
+      "result_sha256": "feba63d045f3cf1dafb92f3734500afa68622e8a3a527999c486b1b02cd6a304",
+      "run_id": "20261001T135609Z-65fcdc63",
+      "task_id": "preemption-v4",
+      "task_kind": "read-only"
+    },
+    {
+      "baseline": {
+        "correct": true,
+        "elapsed_seconds": 26.378,
+        "explicit_file_reads": 9,
+        "mcp_calls": 0,
+        "native_calls": 10,
+        "usage": {
+          "cached_input_tokens": 57728,
+          "input_tokens": 86515,
+          "output_tokens": 713
+        }
+      },
+      "delivery_mode": "offline-locator",
+      "label": "Task A v4 / offline locator",
+      "local_estimate": {
+        "kind": "locator text estimate",
+        "tokens": 159
+      },
+      "optimized": {
+        "correct": true,
+        "elapsed_seconds": 17.957,
+        "explicit_file_reads": 8,
+        "mcp_calls": 0,
+        "native_calls": 3,
+        "usage": {
+          "cached_input_tokens": 14336,
+          "input_tokens": 38269,
+          "output_tokens": 628
+        }
+      },
+      "quality_gate": "CORRECT_WITH_LESS_NATIVE_EXPLORATION",
+      "result_sha256": "eb46c76fb93be4841b6c364f40e7e3043cb720a49b9bc5a6a81804f9b31c9b13",
+      "run_id": "20261001T161512Z-015fde5e",
+      "task_id": "preemption-v4",
+      "task_kind": "read-only"
+    },
+    {
+      "baseline": {
+        "correct": false,
+        "elapsed_seconds": 37.765,
+        "explicit_file_reads": 7,
+        "mcp_calls": 0,
+        "native_calls": 6,
+        "usage": {
+          "cached_input_tokens": 72832,
+          "input_tokens": 78925,
+          "output_tokens": 1383
+        }
+      },
+      "delivery_mode": "offline-locator",
+      "label": "OAuth / forced locator",
+      "local_estimate": {
+        "kind": "locator text estimate",
+        "tokens": 44
+      },
+      "optimized": {
+        "correct": false,
+        "elapsed_seconds": 36.387,
+        "explicit_file_reads": 5,
+        "mcp_calls": 0,
+        "native_calls": 6,
+        "usage": {
+          "cached_input_tokens": 84480,
+          "input_tokens": 94466,
+          "output_tokens": 1328
+        }
+      },
+      "quality_gate": "TASK_FAILURE",
+      "result_sha256": "298f577535fdd596e953c9d424dcdd0cf0ec36798d7b7016456d89d3408b18ab",
+      "run_id": "20261002T005428Z-70b36999",
+      "task_id": "oauth-bug",
+      "task_kind": "edit"
+    },
+    {
+      "baseline": {
+        "correct": true,
+        "elapsed_seconds": 160.915,
+        "explicit_file_reads": 10,
+        "mcp_calls": 0,
+        "native_calls": 12,
+        "usage": {
+          "cached_input_tokens": 332544,
+          "input_tokens": 363533,
+          "output_tokens": 4903
+        }
+      },
+      "delivery_mode": "offline-auto",
+      "label": "Large edit / full locator",
+      "local_estimate": {
+        "kind": "locator text estimate",
+        "tokens": 214
+      },
+      "optimized": {
+        "correct": true,
+        "elapsed_seconds": 202.295,
+        "explicit_file_reads": 16,
+        "mcp_calls": 0,
+        "native_calls": 22,
+        "usage": {
+          "cached_input_tokens": 415616,
+          "input_tokens": 494991,
+          "output_tokens": 5807
+        }
+      },
+      "quality_gate": "CORRECT_NO_MEASURED_EXPLORATION_GAIN",
+      "result_sha256": "f3140dd65d2a3d6eb46cb23a8e993995d8d80182ef4337f8e1a3cd22b8101bfe",
+      "run_id": "20261002T123023Z-ca9cd316",
+      "task_id": "large-edit-v1",
+      "task_kind": "edit"
+    },
+    {
+      "baseline": {
+        "correct": true,
+        "elapsed_seconds": 241.669,
+        "explicit_file_reads": 18,
+        "mcp_calls": 0,
+        "native_calls": 21,
+        "usage": {
+          "cached_input_tokens": 803200,
+          "input_tokens": 852482,
+          "output_tokens": 7009
+        }
+      },
+      "delivery_mode": "offline-anchor",
+      "label": "Large edit / compact anchors",
+      "local_estimate": {
+        "kind": "anchor text estimate",
+        "tokens": 66
+      },
+      "optimized": {
+        "correct": false,
+        "elapsed_seconds": 360.084,
+        "explicit_file_reads": 16,
+        "mcp_calls": 0,
+        "native_calls": 32,
+        "usage": {
+          "cached_input_tokens": null,
+          "input_tokens": null,
+          "output_tokens": null
+        }
+      },
+      "quality_gate": "CORRECTNESS_REGRESSION",
+      "result_sha256": "cd8d2bda259de21ee99b75f199a85cd6d909202ce0232cb059cd424ae69180f5",
+      "run_id": "20261002T172314Z-4e89870f",
+      "task_id": "large-edit-v1",
+      "task_kind": "edit"
+    }
+  ],
+  "schema_version": 1
+}
