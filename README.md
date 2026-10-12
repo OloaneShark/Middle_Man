@@ -1,21 +1,75 @@
 # Middle_Man
 
-Standing between the request and the model.
+Local code navigation for agents, plus a deterministic LLM-serving Lab.
 
-Middle_Man Lab implements Phases 1-10: a deterministic LLM serving simulator with token-budgeted scheduling, continuous batching, physical KV blocks, structured metrics, preemption, prefix caching, workloads, benchmarks, inspection traces, and optional plots. The separate Agent Gateway implements Phases 11-19: local repository indexing, incremental caching, explainable relevance search, Context Packs, Git diff-aware context, deterministic output compaction, factual Project Memory, and Session Handoff. Phases 20-21 add an optional local MCP server and Codex setup. The Lab and local Gateway require no model, GPU, PyTorch, or provider API.
+Middle_Man contains two independent systems:
 
-## Quick Start (Windows PowerShell)
+- **Agent Gateway** indexes a repository locally, finds relevant files and symbols,
+  and builds bounded, source-verified Context Packs. It offers a local MCP server
+  and conservative Codex routing.
+- **Lab** simulates LLM serving with token-budgeted scheduling, continuous
+  batching, KV blocks, preemption, prefix caching, and repeatable benchmarks.
+  Lab timings are simulated, not GPU measurements.
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-.\.venv\Scripts\python.exe -m pytest
-.\.venv\Scripts\python.exe -m middle_man simulate
-```
+The local Gateway neither calls a model nor requires a provider API key. A live
+Codex run is a separate, explicitly confirmed action.
 
-On macOS or Linux, use `python3 -m venv .venv` and `.venv/bin/python` in the remaining commands. Calling the virtual environment's Python directly avoids shell activation requirements. The installed `middle-man` command also works when that environment's Scripts or bin directory is on `PATH`.
+## What It Does
 
-For an installed alpha wheel, keep the environment outside the repository being analyzed. From a directory containing the downloaded wheel (Windows PowerShell):
+- Finds likely entry points using paths, symbols, imports, tests, and Git changes,
+  with reasons for each match.
+- Supplies scoped, redacted source excerpts through Context Packs and the optional
+  five-tool MCP interface. Agents can request more context when needed.
+- Offers source-free path and symbol hints for substantial read-only Codex tasks,
+  so an agent can navigate to relevant code without an initial source dump.
+- Provides local output compaction, factual Project Memory, and Session Handoff
+  for continuing repository work.
+- Runs deterministic Lab simulations and benchmarks without a model, GPU, or
+  external service.
+
+MCP serves verified excerpts on request; the featured experiment instead used
+an offline locator with no source excerpts or Middle_Man MCP calls. These are
+different delivery modes, not interchangeable token-saving results.
+
+The Gateway's local context-size estimates are not Codex-reported usage. No
+Gateway mode guarantees provider-token savings. Source redaction is best effort;
+review repository content and client access before sending context externally.
+
+## Recorded Performance
+
+![One recorded Task A v4 read-only offline-locator improvement](docs/assets/codex_highlight.svg)
+
+| Metric | Codex alone | With Middle_Man | Change |
+| --- | ---: | ---: | ---: |
+| Input tokens | 86,515 | 38,269 | -55.8% |
+| Cached input tokens | 57,728 | 14,336 | -75.2% |
+| Output tokens | 713 | 628 | -11.9% |
+| Native tool calls | 10 | 3 | -70.0% |
+| Execution time | 26.38s | 17.96s | -31.9% |
+| Correctness | PASS | PASS | Maintained |
+
+This is **one recorded Task A v4 read-only offline-locator experiment**, not an
+overall result. Both runs passed the structured correctness check. Token counts
+are Codex-reported; time and native calls are observed process metrics.
+
+<img src="docs/assets/codex_input.svg" alt="Grouped comparison of six frozen Codex pairs, including the read-only improvement, historical MCP and edit regressions, and an edit timeout with unavailable usage" width="720">
+
+The other frozen pairs show mixed results, including higher input with historical
+MCP delivery and edit-task hints. The timed-out edit run has no optimized token
+count. Current AUTO bypasses workspace-write tasks; historical full-locator edit
+regressions are **not** current AUTO behavior. These observations do not establish
+universal token, billing, or plan-usage savings.
+
+See the [full performance report](docs/CODEX_PERFORMANCE.md) for all six pairs,
+cached and output usage, file reads, duration, correctness, and source-hash
+provenance.
+
+## Quick Start
+
+The [v0.1.0a1 GitHub prerelease](https://github.com/OloaneShark/Middle_Man/releases/tag/v0.1.0a1)
+includes a wheel. The workflow below was verified on Windows with Python 3.14.
+Run it from a directory containing the downloaded wheel, with the virtual
+environment outside the repository you will inspect:
 
 ```powershell
 python -m venv .venv
@@ -24,237 +78,33 @@ python -m venv .venv
 .\.venv\Scripts\middle-man.exe context find "request scheduling" --repo C:\path\to\project
 ```
 
-The wheel installation does not require a Middle_Man source checkout. The `mcp` extra installs the optional local stdio server; see [Codex setup](docs/CODEX_SETUP.md) for its five-tool profile. The proposed alpha notes are in [docs/RELEASE_NOTES_0.1.0a1.md](docs/RELEASE_NOTES_0.1.0a1.md). This wheel workflow has been verified on Windows; other platforms and supported Python versions have not yet received the same release smoke test.
+`index` writes local metadata under the target repository's Git-ignored
+`.middle_man_cache/`; the search command needs no Codex login or model call. The
+wheel works without a Middle_Man source checkout. The `mcp` extra enables the
+local stdio server; [Codex setup](docs/CODEX_SETUP.md) covers registration and
+the five-tool `codex-core` profile.
 
-## Simulate and Inspect
-
-```bash
-python -m middle_man simulate --requests 2 --prompt-tokens 20 --output-tokens 1 --token-budget 4 --kv-blocks 16
-python -m middle_man simulate --requests 2 --prompt-tokens 2 --output-tokens 3 --token-budget 2 --kv-blocks 3 --tokens-per-block 2 --preemption
-python -m middle_man simulate --requests 1 --prompt-tokens 5 --output-tokens 1 --token-budget 2 --debug --trace-json benchmark_results/trace.json
-```
-
-`--debug` prints a readable timeline of admissions, prefill progress, decode, recomputation, memory changes, preemption, cache events, and completion. `--trace-json` saves the underlying immutable events. `EngineResult.metrics` and `EngineResult.events` remain available to Python callers.
-
-## Benchmarks
-
-Middle_Man Lab benchmarks use a deterministic simulation cost model. They compare scheduling and memory-management strategies *inside Middle_Man*; they are **not measurements of real GPU inference performance**.
-
-```bash
-python -m middle_man benchmark --list
-python -m middle_man benchmark mixed
-python -m middle_man benchmark scheduler-comparison
-python -m middle_man benchmark prefix-cache --seed 7 --json --csv
-python -m middle_man benchmark memory-pressure
-python -m middle_man benchmark token-budget
-python -m middle_man benchmark active-sequences
-python -m middle_man benchmark chunked-prefill
-```
-
-Available workload presets are `short-chat`, `mixed-chat`, `long-context`, `burst-traffic`, `memory-pressure`, `prefix-heavy`, and `scheduler-mixed`. Each benchmark case creates fresh requests, a fresh clock, and fresh KV memory from immutable request specifications. A local seed controls generated variation; no global random state is changed.
-
-Comparisons report measured deltas without declaring an automatic winner. Constrained memory without preemption is recorded as an expected failure when it cannot complete. Chunked prefill is compared across token budgets; no fake on/off switch is provided.
-
-JSON and CSV files are written to `benchmark_results/` by default, which is Git-ignored. Override with `--output-dir`. The files include version, UTC timestamp, workload, seed, configuration, measured simulated metrics, and an explicit simulation marker.
-
-The API is also usable without the CLI:
-
-```python
-from middle_man.lab.suites import build_suite
-
-results = build_suite("prefix-cache", seed=7).run()
-for case in results.cases:
-    print(case.case_name, case.metrics.aggregate if case.metrics else case.failure)
-```
-
-## Optional Plots
-
-```bash
-pip install -e ".[dev,viz]"
-python -m middle_man benchmark scheduler-comparison --plot
-```
-
-Plots are saved headlessly under `benchmark_results/` or `--output-dir`: an event-based request timeline, sampled KV utilization, TTFT distribution, and a throughput comparison when multiple cases succeed. Plots use only observed simulator events and metrics and are labeled **SIMULATED**. Matplotlib is not needed for simulation or benchmark reporting.
-
-## Agent Gateway (Local)
-
-The Gateway answers which repository files and symbols are relevant to a task and can assemble local, source-verified Context Packs. It does not send context to an agent. Python is parsed with the standard-library AST; other recognized text languages are represented accurately without claiming deep syntax parsing. File imports, test-to-source edges, symbol locations, Git state, and path/name matches inform ranking.
-
-```bash
-python -m middle_man index --repo .
-python -m middle_man inspect --repo .
-python -m middle_man context find "KV preemption" --repo .
-python -m middle_man context find "SimulationEngine" --repo . --top-k 5
-python -m middle_man cache status --repo .
-python -m middle_man cache rebuild --repo .
-python -m middle_man cache clear --repo .
-```
-
-The first scan writes a versioned JSON index to `.middle_man_cache/index.json`. Later scans hash file bytes and reuse parsed records with unchanged hashes. Changed and new files are parsed; deleted files and their relationships disappear. Cache corruption or schema/configuration mismatch triggers a rebuild. `cache clear` removes only the index file. Source files remain the source of truth; the cache stores metadata, symbols, and imports, not full source copies.
-
-Default exclusions include `.git`, virtual environments, dependency/build/cache directories, `.env*`, private keys, and common secret-bearing filenames. Root `.gitignore` and `.middlemanignore` are supported with a conservative glob subset: patterns, directory patterns, and negation in order; `.middlemanignore` is applied after `.gitignore`. This is not full Git ignore semantics. Oversized files remain in the map with an `oversized` status but are not parsed. Filename filtering is only a safety foundation, not complete secret detection.
-
-The search API returns ranked PRIMARY and RELATED files with explicit scoring reasons. It uses exact paths/symbols, normalized filename/symbol/import terms, one-hop import and test links, trace paths, and a modest changed-file boost only for already relevant files. It never calls an AI model or network API.
-
-## Context Packs
-
-```bash
-python -m middle_man context pack "KV preemption memory pressure" --repo . --mode safe --max-tokens 8000
-python -m middle_man context pack "SimulationEngine.run" --mode balanced --json benchmark_results/engine-pack.json
-python -m middle_man context pack "prefix cache reference counting" --mode aggressive --output benchmark_results/prefix-pack.md
-python -m middle_man context benchmark
-```
-
-`ContextBuilder` returns an immutable, structured `ContextPack`; formatting and JSON export are separate. SAFE (default) keeps more surrounding source, BALANCED narrows margins, and AGGRESSIVE keeps minimal margins and warns that context was reduced. Complete indexed Python symbols remain atomic when possible. Imports, parent class lines, referenced constants, related tests, and one-hop dependencies can accompany them. Small relevant files may be included whole. Ranges merge to avoid duplicate source. `builder.expand(pack, ExpansionRequest("full_file", "path.py"))` returns a new generation without modifying the old pack. File, symbol, related-import/test, next-candidate, and surrounding-line expansion are also available.
-
-Each source read is confined to the repository, respects indexing/size/ignore rules, and verifies the current SHA-256 against the index. A source change during selection triggers one fresh index/selection attempt; a second race raises a clear stale-source error. The deterministic pack fingerprint covers the task, selected content hashes and ranges, mode, budget, and generation, but not timestamps or unrelated changed paths.
-
-**Estimated context tokens** use `ceil(UTF-8 bytes / 4)` on source text, not rendered headings. The raw baseline is the complete current text of relevance candidates considered, not the entire repository. Metrics report candidate/selected bytes and estimated tokens, files/excerpts/lines, overlap avoided, and estimated reduction. Required exact context can exceed the budget with a warning; lower-priority context is omitted first. These estimates are **not provider billing tokens or Codex plan usage**.
-
-Phase 22.2 adds frequency-aware terms and a coverage/cost allocator. Phase 22.3 pins Task A to immutable Lab commit `284c4451ad9213f4f27f6d534eac8be2484c2f9a` and enforces clean snapshots. Phase 22.4 adds bounded coverage repair, a core `complete_file` hint, and benchmark-only redacted task receipts. Local exact-prompt and receipt-derived checks reach 7/7 required files and identifiers, but short and generic queries remain weaker. These local results do **not** establish a real Codex token saving or answer-quality improvement.
-
-## Git Changes and Output
-
-```bash
-python -m middle_man diff --repo .
-python -m middle_man compact pytest tests-output.txt --max-tokens 1000
-python -m middle_man compact docker docker.log --json benchmark_results/docker-compact.json
-python -m middle_man compact git-diff --repo .
-# Pipe stdin when no file is given:
-python -m pytest -vv | python -m middle_man compact pytest
-```
-
-`GitDiffReader` combines staged and unstaged working-tree changes, records untracked paths, renames, deletions and binary changes, and maps changed Python hunk lines to their enclosing indexed symbols. Non-Git directories degrade gracefully. Diff paths boost only otherwise relevant files; unchanged dependencies and tests remain eligible.
-
-`OutputCompactor` supports pytest, generic logs, Docker/Compose logs, Git status, and structured Git diffs. It condenses passing pytest lines and consecutive exact duplicate lines, preserves failure traces and changed paths, and marks any low-priority omissions. A too-small budget reports that required output exceeds it. Result models contain compacted text, lengths, counts, estimated tokens, warnings, and a fingerprint, but no full raw log copy.
-
-Source excerpts and compacted output are sanitized before formatting or JSON export. The local redactor covers high-confidence assigned secrets, bearer tokens, credential URLs, and complete PEM private-key blocks; it reports categories without values. This is a best-effort safety layer, not a guarantee that every secret pattern is detected. The persistent index still contains no source copies. Local context-efficiency fixtures measure required file/symbol recall alongside estimated reduction; they make no claim about real agent usage.
-
-## Project Memory
-
-```bash
-python -m middle_man memory refresh --repo .
-python -m middle_man memory show --repo .
-python -m middle_man memory status --repo .
-python -m middle_man memory decision add "Keep Lab independent" --repo .
-python -m middle_man memory decision list --repo .
-python -m middle_man memory decision remove <id> --repo .
-python -m middle_man memory issue add "Known local issue" --repo .
-python -m middle_man memory issue list --repo .
-python -m middle_man memory issue resolve <id> --repo .
-```
-
-Project Memory is **not AI-generated long-term memory**. Its derived facts come from the current repository index and Git diff: language counts, technologies with evidence paths and hashes, bounded important components/symbols, branch/HEAD, and changed files/affected symbols. Technology detection uses manifests, known configuration files, and observed imports; it is conservative and may omit a technology when evidence is insufficient. Decisions and issues are explicitly user supplied and labeled as such, never inferred from code. Refresh recomputes derived facts, preserves valid user notes and resolved issue state, and changes the timestamp-free fingerprint when meaningful state changes. Invalid/corrupt memory fails clearly without overwriting potentially recoverable user notes.
-
-The versioned, atomic `.middle_man_cache/project_memory.json` stores compact metadata, not full source, diffs, Context Pack excerpts, or logs. User notes are sanitized with the existing best-effort `SecretRedactor` *before* persistence; redaction categories, not original values, are recorded. Default limits are 20 components and 40 symbols (configurable through `MemorySettings`). Size is reported in serialized bytes and heuristic estimated tokens.
-
-## Session Handoff
-
-```bash
-python -m middle_man handoff create --task "Investigate login" --pytest-output pytest-output.txt --next-step "Check expired state" --repo .
-python -m middle_man handoff create --task "Investigate login" --pytest-stdin --repo .
-python -m middle_man handoff create --task "Investigate login" --context-pack benchmark_results/login-pack.json --tool-output build.log --issue "Known failure" --repo .
-python -m middle_man handoff latest --repo .
-python -m middle_man handoff list --repo .
-python -m middle_man handoff show <fingerprint-or-unique-prefix> --json --repo .
-```
-
-A handoff requires an **explicit task**. It does not infer developer intent, test outcomes, unresolved bugs, or next steps from filenames. It records current Git changes and affected symbols, a refreshed Project Memory fingerprint, optional Context Pack metadata (never excerpts), actual supplied output compacted through Phase 17, explicit issues and next steps, and hashes of referenced files. Pytest stdin is read only with `--pytest-stdin`. Unresolved Project Memory issues may be carried into a handoff, but resolved issues are not. All free-form input is redacted before storage.
-
-Handoffs are immutable versioned JSON records under `.middle_man_cache/handoffs/`, with a safe latest-ID pointer. Old records are retained. Reading compares branch, HEAD, referenced file hashes/existence, and Project Memory fingerprint; stale records remain readable and show `BRANCH_CHANGED`, `HEAD_CHANGED`, `FILE_CHANGED`, `FILE_REMOVED`, and/or `PROJECT_MEMORY_CHANGED`. Handoff size and the local reconstruction estimate use `ceil(UTF-8 bytes / 4)`. The baseline is the full current text of deduplicated changed/selected readable files plus raw **supplied** tool output. This is a local estimated context comparison, not provider billing or plan usage; a negative difference means the handoff is larger than that baseline. A configurable soft limit warns without truncating facts.
-
-## MCP and Codex
-
-For an ordinary repository task, `middle-man codex run --repo . --read-only --dry-run "Explain this project"` previews local source-free AUTO routing without an external call. Live execution is behind `--confirm-external-service` instead of `--dry-run`; it runs at most one Codex process. The first real read-only production smoke test passed, but its 322,353 Codex-reported input tokens are an unpaired observation, **not** a savings result. Production telemetry now distinguishes explicit reads from content-producing search commands and safe relative search targets; `--save-audit` optionally writes a sanitized local receipt. Read-only requires repository integrity after Codex; workspace-write permits changes to the real worktree. Bypass preserves the task bytes exactly. See [Codex integration](docs/CODEX_INTEGRATION.md). This is separate from `middle-man codex benchmark ...`, the frozen-snapshot research harness.
-
-Install the optional SDK and try the Gateway locally from the repository root (Windows PowerShell):
+To try the separate Lab in the same environment:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[mcp]"
-.\.venv\Scripts\python.exe -m middle_man index --repo .
-.\.venv\Scripts\python.exe -m middle_man context find "KV preemption" --repo . --top-k 3
-.\.venv\Scripts\python.exe -m middle_man mcp usage --repo . --json
+.\.venv\Scripts\middle-man.exe simulate
+.\.venv\Scripts\middle-man.exe benchmark --list
 ```
 
-The default `codex-core` server exposes five bounded tools annotated as read-only for repository source. A fresh scoped task can call `middleman_context` for redacted source; each excerpt marks whether it is a complete file. For missing detail on the same task, prefer `middleman_expand_context`; a materially new selection may need another context call. Same-session calls suppress already delivered lines even across different Context Pack fingerprints. `force_replay` remains available only through the internal Python Gateway for explicit diagnostics, not in the Codex-core MCP tool schema. Native reads remain valid for exact or stale source and editing. The server can write local index, memory, handoff, and usage metadata under the Git-ignored `.middle_man_cache/`; it does not edit repository source. Use `--tool-profile full` for the ten-tool diagnostic surface. The `mcp serve` command speaks protocol on stdout and should be launched by an MCP client, not used as an interactive shell command. Codex registration and verification are in [docs/CODEX_SETUP.md](docs/CODEX_SETUP.md); no Codex registration is needed for the local commands above. The root [AGENTS.md](AGENTS.md) gives Codex short repository-specific guidance.
+For Codex, `middle-man codex run` can preview local routing with `--dry-run`.
+Confirmed execution uses the installed Codex CLI and may transmit repository
+content to its external service; see [Codex integration](docs/CODEX_INTEGRATION.md)
+before enabling it. Live experimental inference remains limited by unresolved
+host-filesystem isolation concerns. Read-only sandbox mode alone is not proof of
+filesystem confinement.
 
-Local usage records contain only metadata, input hashes, and sanitized excerpt range/size identity for benchmark overlap analysis, never source text. They also record a per-Gateway session ID, call sequence, ledger line counts, and requested/effective budgets. Normal sessions retain the 12,000-token context maximum; explicitly identified benchmark sessions cap each initial `middleman_context` build at 6,000 while explicit expansion may grow to 12,000. Reported token sizes are heuristic context estimates, not Codex plan usage or provider billing. Neither the server nor the Gateway sends repository content to an external service on its own.
+## Documentation
 
-## Real Codex Benchmark
-
-Phase 22 adds an isolated, correctness-first A/B harness with versioned Task A and two edit fixtures. Task A now uses a fixed pre-Gateway Lab commit rather than moving HEAD; the OAuth and upload fixtures remain separate. Live runs require an explicit external-service confirmation; normal tests and dry runs do not call Codex.
-
-```bash
-python -m middle_man codex benchmark list
-python -m middle_man codex benchmark run-all --repo . --dry-run
-python scripts/measure_phase22_1.py  # local-only heuristic measurement
-```
-
-An early suite attempt was infrastructure-invalid. The first **infrastructure-valid** Task A v1 pair was **FAIL/FAIL**; the valid v2 pair was also **FAIL/FAIL** with higher optimized input. The first v3 pair is **diagnostic only / invalid** because baseline began dirty (` D AGENTS.md`). A later frozen-corpus v3 pair was infrastructure-valid but **FAIL/FAIL** (`TASK_FAILURE`): baseline/optimized input was 88,815/88,159, the optimized pack delivered 6/7 required areas, and four native fallback reads followed. The near-equal input counts and failed correctness do not establish a Middle_Man win. Historical artifacts remain frozen. Methodology is in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
-
-The latest real frozen-corpus Task A v3 pair was also infrastructure-valid but **TASK_FAILURE** on both sides: recomputation and output preservation failed. Its optimized agent requested 9,000 then 11,000 initial-context tokens, so it did **not** execute the intended fixed-6,000 condition. The first larger pack covered 7/7 required files and identifiers without repair. Phase 22.5 now enforces the benchmark cap server-side and records session/delivery diagnostics, but has run **no new external pair**. Lower optimized input in that one failed, protocol-deviating pair is not a token-saving claim; details are in [docs/CODEX_BENCHMARKS.md](docs/CODEX_BENCHMARKS.md).
-
-Phase 22.6 removes model-facing replay from Codex-core and rejects replay-enabled context usage in future optimized benchmarks. Local stdio tests confirm the five-tool surface and zero repeated delivery across two distinct pinned-corpus packs plus expansions. This is **not** a new real benchmark or token-saving result.
-
-The latest controlled Task A v3 pair was infrastructure-valid but failed both answers' recomputation and output-preservation fields despite the optimized 6,000-budget pack delivering 7/7 required files and identifiers. Baseline/optimized Codex input was 83,780/186,395, so no token-saving claim follows. Task A v4 is a separate prompt/schema/evaluator contract that specifies the abstraction expected in each structured field; v3 stays frozen. `run-all` now selects v4 for Task A. Its pinned-corpus exact-prompt BALANCED/6000 check reaches 7/7 files and identifiers at 5,983 estimated selected-source tokens with direct/Gateway/stdio parity. See [Codex benchmarks](docs/CODEX_BENCHMARKS.md).
-
-The first real Task A v4 pair (`20260930T102955Z-ea96eff7`) was infrastructure-valid and **PASS/PASS**. Middle_Man reduced explicit native file reads **7 to 3**, but total native calls rose **8 to 9**, and Codex-reported input rose **86,143 to 156,138** (cached input **58,368 to 120,320**); elapsed time rose **40.263s to 82.496s**. One optimized Context Pack selected 5,949 estimated source tokens, produced a 7,184-token heuristic result, and delivered no repeated source. The diagnostic `input - cached input` was **27,775 to 35,818**; this is not billing or quota. Phase 22.8 adds local selection-phase and usage diagnostics. A zero-depth shadow cut the real-query local pack to 5,404 source tokens but regressed other query coverage, so no LEAN mode was promoted. **There is no real token-saving claim or new external pair in Phase 22.8.**
-
-Phase 22.9 sweeps the existing total `max_context_tokens` cap locally from 2,000 to 6,000 without changing ranking or production defaults. The actual v4 query retains five structured concepts and verified release evidence at 5,500, but the reordered strong query needs 6,000 for full seven-unit recall. Thus 5,500 is a task-sufficient diagnostic, not a supported global cap. BALANCED/6000 and the separate 12,000 benchmark expansion ceiling remain unchanged. See [benchmark details](docs/CODEX_BENCHMARKS.md#phase-229-local-total-budget-investigation). No external inference was run or token savings claimed.
-
-Phase 22.10 prototypes **benchmark-only progressive delivery**: select the same canonical BALANCED/6000 pack, send a smaller atomic source seed plus a deterministic source-free evidence map, and retrieve mapped source through the existing `middleman_expand_context(kind="selected_path")` tool. A local 4,000-token seed leaves all five v4 concepts and release evidence directly available for both exact and actual queries, with estimated initial results of 5,359 and 5,919 tokens versus one-shot 6,913 and 7,184. The full canonical pack, fingerprint, normal one-shot default, five-tool Codex-core surface, and 12,000 expansion ceiling stay intact. This is **not** a new external A/B result or a real token-saving claim; optional expansions can erase the local payload reduction. Details are in [Phase 22.10 benchmarks](docs/CODEX_BENCHMARKS.md#phase-2210-local-progressive-delivery-prototype).
-
-Phase 22.10.1 wires that local 4,000 candidate through the canonical benchmark harness via the explicit `--benchmark-source-delivery-budget 4000` run flag. A dry-run previews the policy-aware optimized MCP command while baseline remains MCP-free. The runner validates progressive seed audit metadata, and sanitized results, reports, and receipts name the selection/delivery/expansion budgets. Default runs remain one-shot. Local stdio and dry-run checks passed; **no external progressive A/B has run** and there is no real token-saving claim.
-
-An earlier valid real Task A v4 pair (`20261001T135609Z-65fcdc63`) was **PASS/PASS**. Progressive delivery reduced native calls **14 to 7**, reads **9 to 4**, and observed interactions **14 to 8**, but Codex-reported input rose **97,833 to 152,900** (cached **70,016 to 116,352**; input minus cached **27,817 to 36,548**). Phase 22.11 therefore tested a benchmark-only MCP locator policy: keep BALANCED/6000 selection, send no source initially, and return path/range hints for native reads or optional expansion. Its local payload estimates are not Codex usage; no external inference ran in Phase 22.11.
-
-The benchmark-only `--optimized-mode offline-locator` runs the unchanged BALANCED/6000 selector on a clean optimized snapshot before Codex starts, appends only grouped path/range/symbol navigation hints, and configures no Middle_Man MCP server or `AGENTS.md`. Baseline receives the original prompt. The locked real Task A v4 pair `20261001T161512Z-015fde5e` was **PASS/PASS**: Codex-reported input fell **86,515 to 38,269** (48,246 fewer; **55.8%**), elapsed time **26.378s to 17.957s**, and observed tool interactions **10 to 3**; Middle_Man MCP calls were **0 to 0**. This supports a token-saving claim for this one Task A v4 pair only, not general savings, billing, or quota.
-
-Offline-locator also accepts the existing `oauth-bug` and `upload-feature` edit fixtures one task at a time. A frozen real OAuth pair (`20261002T005428Z-70b36999`) was infrastructure-valid but **FAIL/FAIL** on the same independent acceptance test: Codex input rose **78,925 to 94,466** (+15,541, 19.7%) and interactions stayed **6 to 6**. Both sides implemented the same TTL-plus-clock-skew interpretation; this does not establish that the locator caused the correctness failure. Upload has not run externally. The OAuth prompt is ambiguous about whether skew extends TTL and remains frozen.
-
-Experimental `--optimized-mode offline-auto` now appends the unchanged full locator only for **read-only** tasks with at least 10,000 estimated candidate-source tokens and nonempty selected paths. All workspace-write tasks bypass regardless of size: the optimized prompt is byte-for-byte the baseline prompt with **zero model-visible Middle_Man content**. Both AUTO branches omit MCP and benchmark `AGENTS.md`; forced `offline-locator` remains available for controlled experiments. The rule is task-ID-independent. Task A uses the locator; OAuth, Upload, and large-edit bypass. See [Codex benchmarks](docs/CODEX_BENCHMARKS.md) for controls and limits.
-
-Phase 22.15 added `large-edit-v1`, a frozen 30-file Lab batch-cancellation edit fixture. The later real pair `20261002T123023Z-ca9cd316` was valid and correct on both sides, but the former size-only AUTO locator increased Codex-reported input **363,533 -> 494,991** (+131,458; +36.16%), interactions **12 -> 22**, reads **10 -> 16**, and elapsed **160.915s -> 202.295s**; MCP calls were **0/0**. The 214-token locator may have encouraged broader exploration, but those tokens do not directly explain the 131k increase. AUTO therefore bypasses full locators for all edit tasks. Phase 22.17 added the separate **experimental** `--optimized-mode offline-anchor` for `large-edit-v1` only: it appends four source-free path/symbol starting points (66 heuristic tokens; 98 including the small prompt wrapper), without MCP or `AGENTS.md`. It is not part of AUTO. Its subsequent real pair is recorded in the final status below.
-
-## Phase 22 Final Status
-
-**Phase 22 is complete.** Middle_Man can analyze a repository locally before an agent run and, for a substantial **read-only** navigation task, offer a tiny source-free locator. `offline-auto` uses that locator only when candidate source is at least 10,000 estimated tokens and selected paths exist; all workspace-write tasks bypass with **zero model-visible Middle_Man tokens** and an optimized prompt byte-equal to baseline. The benchmark CLI's default `mcp` mode does not automatically choose either offline hint mode. Explicit `offline-locator` and `offline-anchor` remain experimental research modes for edit tasks, not recommended AUTO behavior.
-
-The one demonstrated real Codex input saving is Task A: **86,515 -> 38,269** (-48,246, **55.8%**) with both answers correct. OAuth's forced-locator pair failed both sides' ambiguous TTL/skew contract (**78,925 -> 94,466**, +19.7%); the locator is not assigned that correctness failure. The correct/correct large-edit full-locator pair worsened input **363,533 -> 494,991** (+36.16%). The compact-anchor large-edit pair `20261002T172314Z-4e89870f` was a **TASK_FAILURE**: baseline correct, optimized timed out at 360 seconds, interactions **21 -> 32**, and optimized official input usage unavailable. It proves no anchor saving and does not establish that anchors caused the timeout. The broad full locator is not supported for write-task optimization, and candidate size alone is not a sufficient trigger.
-
-Local heuristic tokens size Middle_Man's prepared text; **Codex-reported input** measures an entire observed model conversation. They are not interchangeable. No universal, edit-task, billing, or quota saving is claimed. MCP remains available for interactive repository navigation, diagnostics, and explicit context workflows, but measured persistent-MCP Codex pairs do not make it the preferred token-saving path. Phase 23 adds a local-only Claude Code integration preview, not a real Claude benchmark. Details and frozen evidence are in [Codex benchmarks](docs/CODEX_BENCHMARKS.md#phase-22-final-status).
-
-### Recorded Performance
-
-![One recorded Task A v4 read-only experiment: 55.8% fewer Codex-reported input tokens, 10 to 3 native tool calls, 26.378 to 17.957 seconds, and PASS on both sides](docs/assets/codex_highlight.svg)
-
-In this **one read-only offline-locator pair**, Codex-reported input fell from 86,515 to 38,269 tokens while both structured answers passed. It does not establish universal provider-token or billing savings.
-
-<img src="docs/assets/codex_input.svg" alt="Grouped input-token changes for six independent frozen pairs: one read-only locator reduction, historical MCP and edit regressions, and one edit timeout with unavailable optimized usage" width="720">
-
-The other recorded experiments have mixed results. Historical MCP delivery increased input in both pairs; a former full-locator edit experiment regressed, and current AUTO bypasses edit tasks. The timed-out anchor run has no optimized token count. See the [full measured report](docs/CODEX_PERFORMANCE.md) for exact input, cached input, output, file reads, execution time, correctness, and provenance for all six pairs.
-
-## Claude Code Preview (Phase 23)
-
-**Paused:** Claude integration work is retained, but no Claude benchmark completed. Historical runtime probes failed before tool use; they do not establish current account access, Claude quality, or token performance. No Claude model calls are part of this alpha release preparation.
-
-```bash
-python -m middle_man claude benchmark preflight
-python -m middle_man claude benchmark run preemption-v4 --dry-run --model sonnet
-python -m middle_man claude benchmark run large-edit-v1 --dry-run
-```
-
-The dry-run prepares clean, source-identical snapshots and previews the conservative offline AUTO policy: substantial read-only tasks may receive a source-free locator; edit tasks bypass with identical prompts and zero model-visible Middle_Man tokens. No Claude inference is enabled. The synthetic stream-json parser records provider usage only when observed and keeps it separate from Middle_Man heuristic sizes and cost. Snapshot/ancestor `CLAUDE.md` and `CLAUDE.local.md` cause preflight rejection.
-
-Phase 23.1 validated local Claude Code `2.1.289` help on 2026-10-04. It documents `stream-json`, comma-separated `--tools`, the `sonnet` model alias, and `--safe-mode --restricted --strict-mcp-config` isolation controls; it does not document `--max-turns`. Dry-run commands now include the validated isolation controls on both sides. User memory files were absent, while user settings existed but were not read; the CLI's restricted mode documents ignoring those settings. Runtime permission enforcement, managed policy, authentication, and real stream event behavior remain unverified. See [Claude integration](docs/CLAUDE_INTEGRATION.md).
-
-Phase 23.2 adds a separate, confirmation-gated `claude benchmark runtime-probe` path for tiny disposable protocol checks, never frozen benchmark tasks. Its first authorized read-only call returned an authentication-category error before any tool use; the harness stopped at **one** call, with no retry or write probe. The observed error stream parsed, and the disposable filesystem, primary Git state, and MCP isolation checks remained unchanged. Authentication, real Read/Write/Bash behavior, and read-only enforcement are still unverified. This was **not** an A/B or a token-saving result, and the first real Claude Task A pair is not yet ready to authorize. See [Claude integration](docs/CLAUDE_INTEGRATION.md#phase-232-runtime-probe).
-
-After `claude auth status` was reported logged in, a fresh authorized read-only runtime call still exited 1 before tool use, with a generic runtime-error category. It returned no sentinel, did not create `forbidden.txt`, and left the disposable files and primary repository unchanged. The write probe was **not** run; no retry or additional model call was made. The CLI now reports failed probes with a nonzero exit status. Logged-in status alone has not established usable model access or read-only enforcement. No Claude benchmark A/B or token-saving claim resulted.
-
-## Scope
-
-Claude integration is a local dry-run/parser surface only; provider adapters are not implemented. The local server does not call a model or provider API; the explicit Phase 22 harness can invoke the installed Codex CLI. No Claude token-saving result or provider billing/plan-usage saving is claimed.
-
-Historical Task A v2 is frozen: both sides were infrastructure-valid but **FAIL/FAIL** under the exact structured evaluator, which rejected qualified/composite identifiers. Baseline/optimized Codex input was **84,350 / 122,094** tokens, so there was **no real token saving**. Optimized used one `middleman_context` call and resent zero MCP source, but its pack omitted relevant implementation evidence and Codex made six native fallback reads. The old artifacts are not rescored; see [Codex benchmarks](docs/CODEX_BENCHMARKS.md).
+- [Gateway and Codex MCP setup](docs/CODEX_SETUP.md)
+- [Codex production integration and isolation](docs/CODEX_INTEGRATION.md)
+- [Full recorded performance report](docs/CODEX_PERFORMANCE.md)
+- [Historical Codex benchmark methodology and results](docs/CODEX_BENCHMARKS.md)
+- [Lab and Gateway architecture](docs/ARCHITECTURE.md)
+- [Claude integration status](docs/CLAUDE_INTEGRATION.md)
+- [Alpha release notes](docs/RELEASE_NOTES_0.1.0a1.md)
+- [Contributing](CONTRIBUTING.md)

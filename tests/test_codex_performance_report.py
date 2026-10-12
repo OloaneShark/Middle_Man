@@ -5,6 +5,7 @@ from copy import deepcopy
 import hashlib
 import json
 from pathlib import Path
+import re
 import xml.etree.ElementTree as ET
 
 import pytest
@@ -103,9 +104,9 @@ def test_figures_are_deterministic_accessible_and_documented() -> None:
     report = (ROOT / "docs" / "CODEX_PERFORMANCE.md").read_text(encoding="utf-8")
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert readme.index("docs/assets/codex_highlight.svg") < readme.index("docs/assets/codex_input.svg")
-    assert readme.index("docs/assets/codex_input.svg") < readme.index("docs/CODEX_PERFORMANCE.md", readme.index("### Recorded Performance"))
+    assert readme.index("docs/assets/codex_input.svg") < readme.index("docs/CODEX_PERFORMANCE.md", readme.index("## Recorded Performance"))
     assert "docs/CODEX_PERFORMANCE.md" in readme
-    assert "current AUTO bypasses edit tasks" in readme
+    assert "Current AUTO bypasses workspace-write tasks" in readme
     assert "N/A" in report and "PASS / FAIL (optimized timeout)" in report
     for row in data["pairs"]:
         lines = [line for line in report.splitlines() if line.startswith(f'| {row["label"]} |')]
@@ -133,3 +134,36 @@ def test_featured_chart_rejects_an_unearned_improvement() -> None:
     data["pairs"][2]["optimized"]["correct"] = False
     with pytest.raises(ValueError, match="PASS/PASS"):
         render(data)
+
+
+def test_readme_performance_table_and_relative_links() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    row = next(item for item in _data()["pairs"] if item["delivery_mode"] == "offline-locator"
+               and item["task_id"] == "preemption-v4")
+    baseline, optimized = row["baseline"], row["optimized"]
+    for label, key in (("Input tokens", "input_tokens"),
+                       ("Cached input tokens", "cached_input_tokens"),
+                       ("Output tokens", "output_tokens")):
+        before, after = baseline["usage"][key], optimized["usage"][key]
+        assert f"| {label} | {number(before)} | {number(after)} | {change(delta(before, after))} |" in readme
+    before, after = baseline["native_calls"], optimized["native_calls"]
+    assert f"| Native tool calls | {number(before)} | {number(after)} | {change(delta(before, after))} |" in readme
+    before, after = baseline["elapsed_seconds"], optimized["elapsed_seconds"]
+    assert f"| Execution time | {before:.2f}s | {after:.2f}s | {change(delta(before, after))} |" in readme
+    assert baseline["correct"] and optimized["correct"]
+    assert "| Correctness | PASS | PASS | Maintained |" in readme
+    assert "**one recorded Task A v4 read-only offline-locator experiment**" in readme
+
+    sections = ("# Middle_Man", "## What It Does", "## Recorded Performance",
+                "## Quick Start", "## Documentation")
+    assert [line for line in readme.splitlines() if line.startswith("#")] == list(sections)
+    assert 90 <= len(readme.splitlines()) <= 130
+    assert "https://github.com/OloaneShark/Middle_Man/releases/tag/v0.1.0a1" in readme
+    targets = re.findall(r"\]\(([^)]+)\)", readme)
+    targets += re.findall(r'<img\s+[^>]*src="([^"]+)"', readme)
+    assert targets
+    for target in targets:
+        if target.startswith("https://"):
+            continue
+        path = (ROOT / target.split("#", 1)[0]).resolve()
+        assert path.is_relative_to(ROOT.resolve()) and path.is_file(), target
